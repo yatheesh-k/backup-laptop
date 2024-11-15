@@ -1,0 +1,3 @@
+[submodule "SONARQUBE/db"]
+	path = SONARQUBE/db
+	url = https://github.com/yatheesh-k/DevOps.git
