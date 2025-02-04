@@ -1,13 +1,13 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Description: Install Jenkins on EC2 instance in AWS using CloudFormation with Java 21 installed in /opt for Ubuntu-based instances
 
 Resources:
   JenkinsInstance:
-    Type: 'AWS::EC2::Instance'
+    Type: "AWS::EC2::Instance"
     Properties:
-      InstanceType: 't2.micro'   # You can adjust this to your required instance type
-      ImageId: 'ami-09b0a86a2c84101e1' # AMI ID for an Ubuntu-based instance (change if needed)
-      KeyName: 'ems-instance-jenkins'    # Replace with your SSH key pair name
+      InstanceType: "t2.micro" # You can adjust this to your required instance type
+      ImageId: "ami-09b0a86a2c84101e1" # AMI ID for an Ubuntu-based instance (change if needed)
+      KeyName: "ems-instance-jenkins" # Replace with your SSH key pair name
       SecurityGroups:
         - Ref: JenkinsSecurityGroup
       UserData: !Base64 |
@@ -50,25 +50,24 @@ Resources:
         sudo ufw reload
 
   JenkinsSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
+    Type: "AWS::EC2::SecurityGroup"
     Properties:
-      GroupDescription: 'Allow inbound HTTP and Jenkins port'
+      GroupDescription: "Allow inbound HTTP and Jenkins port"
       SecurityGroupIngress:
-        - IpProtocol: 'tcp'
-          FromPort: '22'
-          ToPort: '22'
-          CidrIp: '0.0.0.0/0'  # Allow SSH access from anywhere (you can restrict this for more security)
-        - IpProtocol: 'tcp'
-          FromPort: '8080'
-          ToPort: '8080'
-          CidrIp: '0.0.0.0/0'  # Allow Jenkins web UI access from anywhere (can be restricted as well)
-        - IpProtocol: 'tcp'
-          FromPort: '80'
-          ToPort: '80'
-          CidrIp: '0.0.0.0/0'  # Allow HTTP traffic (you can change this to HTTPS for security)
+        - IpProtocol: "tcp"
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: "0.0.0.0/0" # Allow SSH access from anywhere (you can restrict this for more security)
+        - IpProtocol: "tcp"
+          FromPort: "8080"
+          ToPort: "8080"
+          CidrIp: "0.0.0.0/0" # Allow Jenkins web UI access from anywhere (can be restricted as well)
+        - IpProtocol: "tcp"
+          FromPort: "80"
+          ToPort: "80"
+          CidrIp: "0.0.0.0/0" # Allow HTTP traffic (you can change this to HTTPS for security)
 
 Outputs:
   JenkinsURL:
-    Description: 'The URL to access Jenkins'
-    Value: !Sub 'http://${JenkinsInstance.PublicIp}:8080'
-
+    Description: "The URL to access Jenkins"
+    Value: !Sub "http://${JenkinsInstance.PublicIp}:8080"
