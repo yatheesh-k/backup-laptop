@@ -72,4 +72,3 @@ Outputs:
     Description: 'The URL to access Jenkins'
     Value: !Sub 'http://${JenkinsInstance.PublicIp}:8080'
 
-
