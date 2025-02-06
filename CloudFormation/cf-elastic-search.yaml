@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  # EC2 Instance
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.small 
+      ImageId: ami-0c55b159cbfafe1f0  # Example for Amazon Linux 2 AMI
+      KeyName: cf-elasticsearch  # Specify your EC2 Key Pair
+      SecurityGroups:
+        - Ref: InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: elasticesearch
+
+  # Elasticsearch Domain (OpenSearch Service)
+  MyElasticsearchDomain:
+    Type: AWS::Elasticsearch::Domain
+    Properties:
+      DomainName: "my-elasticsearch-domain"
+      ElasticsearchVersion: "7.10"  # Specify the version you want
+      ElasticsearchClusterConfig:
+        InstanceType: "t2.small.elasticsearch"
+        InstanceCount: 1
+        DedicatedMasterEnabled: true
+        DedicatedMasterType: "t2.small.elasticsearch"
+        DedicatedMasterCount: 3
+      EBSOptions:
+        EBSEnabled: true
+        VolumeType: "gp2"
+        VolumeSize: 10  # Size of the storage in GB
+      AccessPolicies:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "es:*"
+            Resource: "*"
+      VPCOptions:
+        SubnetIds:
+          - Ref: Subnet-elasticsearch
+        SecurityGroupIds:
+          - Ref: ESecurityGroup
+
+  # Security Group for EC2 Instance
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow SSH and HTTP access to EC2 instance"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0  # Allow SSH from anywhere
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0  # Allow HTTP from anywhere
+
+  # Security Group for Elasticsearch Domain
+  ESecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow access to Elasticsearch domain"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '9200'
+          ToPort: '9200'
+          CidrIp: 0.0.0.0/0  # Allow public access to Elasticsearch (modify for security)
+
+  # VPC for networking (if needed)
+  MyVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsSupport: "true"
+      EnableDnsHostnames: "true"
+      Tags:
+        - Key: Name
+          Value: vpc-elasticsearch
+
+  # Subnet for the EC2 Instance and Elasticsearch
+  MySubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: Ref: vpc-elasticsearch
+      CidrBlock: "10.0.1.0/24"
+      AvailabilityZone: "Asia Pacific (Mumbai)"  # Choose your region's AZ
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Subnet-elasticsearch
+
+ #Outputs:
+  #EC2InstancePublicIP:
+   # Description: "Public IP of EC2 Instance"
+    #Value: !GetAtt MyEC2Instance.PublicIp
+
+  #ElasticsearchEndpoint:
+   # Description: "Elasticsearch Domain Endpoint"
+    #Value: !GetAtt MyElasticsearchDomain.DomainEndpoint
