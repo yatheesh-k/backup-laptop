@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  # S3 Bucket Resource
+  MyS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'my-backup-s3-bucket-name'  # Provide a globally unique bucket name
+      AccessControl: 'Private'  # Private access by default
+  
+  # Security Group for EC2 Instance
+  MyInstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Allow SSH access to EC2 instance'
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: '0.0.0.0/0'  # Allow SSH from anywhere. Be cautious with open access.
+
+  # EC2 Instance Resource
+  MyEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: 't2.micro'  # Instance type, e.g., t2.micro
+      ImageId: 'ami-0c55b159cbfafe1f0'  # Replace with the appropriate AMI ID for your region
+      KeyName: 'my-s3-instance-key-pair'  # Replace with your key pair name for SSH access
+      SecurityGroupIds:
+        - Ref: MyInstanceSecurityGroup  # Reference to the security group

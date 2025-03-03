@@ -1,0 +1,7 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MyS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'my-unique-s3-bucket-name' # Provide a globally unique bucket name
+      AccessControl: 'Private' # You can also choose other ACLs like PublicRead, PublicReadWrite, etc.
