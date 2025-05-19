@@ -1,0 +1,78 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.4'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.invoice'
+version = '0.0.1-SNAPSHOT'
+java {
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'mysql:mysql-connector-java:8.0.33'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+	implementation 'io.springfox:springfox-boot-starter:3.0.0'
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.14'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.mapstruct:mapstruct:1.5.0.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.0.Final'
+	implementation 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'com.h2database:h2'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'org.webjars:jquery:3.6.0'
+	implementation 'org.webjars:webjars-locator-core:0.51'
+	implementation 'javax.ws.rs:javax.ws.rs-api:2.1.1'
+	implementation 'io.github.openfeign:feign-core:11.9'
+	implementation "org.apache.httpcomponents:httpmime:4.5.6"
+	implementation 'org.springframework.boot:spring-boot-starter-freemarker'
+	implementation 'org.freemarker:freemarker:2.3.31' // Latest stable version of FreeMarker
+	implementation 'org.freemarker:freemarker:2.3.32' // Latest FreeMarker version
+	implementation 'org.apache.pdfbox:pdfbox:2.0.29' // Latest PDFBox version
+	implementation 'org.jsoup:jsoup:1.15.3'
+	implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.7'
+	implementation 'com.itextpdf:html2pdf:4.0.0'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
+	implementation group: 'org.opensearch.client', name: 'opensearch-rest-client', version: '2.14.0'
+}
+
+dependencies {
+	implementation('org.opensearch.client:opensearch-java:2.14.0') {
+		exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+	}
+}
+
+dependencies {
+	implementation 'org.xhtmlrenderer:flying-saucer-core:9.9.2'
+	implementation 'org.xhtmlrenderer:flying-saucer-pdf-itext5:9.7.2'
+}
+
+dependencies {
+	implementation 'org.freemarker:freemarker:2.3.32'
+	implementation 'org.apache.pdfbox:pdfbox:2.0.29'
+	implementation 'org.slf4j:slf4j-api:2.0.9'
+	runtimeOnly 'ch.qos.logback:logback-classic:1.4.11'
+}
+
+tasks.compileJava {
+	options.annotationProcessorPath = configurations.annotationProcessor
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

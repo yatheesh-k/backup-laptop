@@ -1,0 +1,127 @@
+
+def COLOR_MAP = [
+    'SUCCESS' : 'good' ,
+    'FAILURE' : 'danger',
+]
+pipeline {
+    agent any
+    tools {
+        maven 'maven'
+        gradle 'gradle8'
+        nodejs 'node18'
+        jdk     'jdk21'
+    }
+    environment {
+        EMPLOYEE_BUILD = "false"
+        IDENTITY_BUILD = "false"
+        UI_BUILD = "false"
+    }
+    stages {
+        stage('Check Changes') {
+            steps {
+                script {
+                    def changeLogSets = currentBuild.changeSets
+                    for (changeLogSet in changeLogSets) {
+                        for (entry in changeLogSet.items) {
+                            echo "Commit: ${entry.commitId} by ${entry.author}"
+                            echo "Message: ${entry.msg}"
+                            for (file in entry.affectedFiles) {
+                                echo "Affected file: ${file.path}"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+   
+     stage('Install Dependencies ') {
+          
+            
+            steps {
+                script{
+                UI_BUILD = "true"
+            }
+                    dir('ui') {
+                    sh 'npm install'
+                    }
+            }
+        }
+        stage('Build UI') {
+        
+            steps {
+                dir('ui') {
+                    sh 'rm -rf build'
+                    sh 'npm run build'
+                }
+            }
+        }
+        stage('Package UI'){
+         
+           steps{
+                dir ('ui') {
+                sh 'sync'
+                sh 'tar -czf ui.tar.gz -C build .'
+                }
+           }
+        }
+        stage('Sonarqube Analysis - UI') {
+           
+            environment {
+                scannerHome = tool 'sonar6.0'
+            }
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh """${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=EMS_UI \
+                    -Dsonar.projectName=EMS_UI\
+                    -Dsonar.projectVersion=1.0 \
+                    -Dsonar.sources=ui/src \
+                    -Dsonar.exclusions='**/*.spec.js, **/*.test.js' \
+                    -Dsonar.sourceEncoding=UTF-8 \
+                    """
+                }
+            }
+        }
+        stage('Quality Gate - UI') {
+     
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
+
+        stage('Upload Artifact - UI') {
+          
+            steps {
+                script {
+                    nexusArtifactUploader(
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        nexusUrl: '122.175.43.71:9001/',
+                        groupId: 'QA',
+                        version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+                        repository: 'EMS_UI/',
+                        credentialsId: 'nexuslogin',
+                        artifacts: [
+                            [artifactId: 'ems-ui',
+                            classifier: '',
+                            file: 'ui/ui.tar.gz',
+                            type: '.tar']
+                        ]
+                    )
+                }
+            }
+        }
+    }
+  
+         post {
+            always {
+                echo 'Slack Notificatons'
+                slackSend channel : 'ems_ci-cd',
+                    color: COLOR_MAP[currentBuild.currentResult], 
+                    message: "*${currentBuild.currentResult}:* job ${env.job_Name} build ${env.BUIILD_NUMBER} \n More info at : ${env.BUILD_URL}" 
+            }
+        }
+    
+}

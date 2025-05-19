@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    stages {
+     
+        stage('Removing Old Containers') {
+            steps {
+                script {
+                    sh 'sudo docker compose -f /var/lib/jenkins/workspace/ems-deployement/docker/DockerCompose.yml down'
+                    sh 'sudo docker system prune -f '
+                }
+            }
+        }
+
+        stage('Build Images') {
+            steps {
+                script {
+                    sh 'sudo docker compose -f /var/lib/jenkins/workspace/ems-deployement/docker/DockerCompose.yml build --no-cache'
+                }
+            }
+        }
+        
+        stage('Starting New Containers') {
+            steps {
+                script {
+                    sh 'sudo docker compose -f /var/lib/jenkins/workspace/ems-deployement/docker/DockerCompose.yml up -d'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'sudo docker system prune -f'
+        }
+    }
+}

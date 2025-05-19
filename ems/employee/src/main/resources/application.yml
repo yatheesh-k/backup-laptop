@@ -1,0 +1,52 @@
+server:
+  port: 8092
+  servlet:
+    contextPath: /ems
+  ssl:
+    enabled: true
+    key-store: ../certificates/ssl.jks
+    key-store-password: pathbreaker
+    key-alias: pbt
+    key-store-type: JKS
+spring:
+  aop:
+    proxy-target-class: true
+  main:
+    allow-circular-references: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: pbtjava@gmail.com
+    password: jcnsrxqjifkrvqxl
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    # Multipart configuration
+    servlet:
+      multipart:
+        enabled: true
+        max-file-size: 2GB
+        max-request-size: 2GB
+  thymeleaf:
+    cache: false
+  security:
+    basic:
+      enabled: false
+fixed:
+  otp: 123456
+es:
+  esHost: 192.168.1.163
+  esPort: 9200
+springdoc:
+  swagger-ui:
+    tagsSorter: alpha
+    path: /swagger-ui
+  api-docs:
+    resolve-schema-properties: true
+    path: /api-docs
+file:
+  upload:
+    path: '/var/www/ems/assets/img/'

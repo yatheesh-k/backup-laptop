@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaySlip</title>
+    <style>
+        body {
+            background-color: rgb(216, 213, 213);
+            background-size: cover;
+        }
+        .main {
+            width: 100%;
+            height: 100%;
+            margin-left: 200px;
+        }
+        .pdfPage {
+            background-color: white;
+            height: auto;
+            width: 1000px;
+            border-color: black;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .top {
+            text-align: center;
+        }
+        .logo img {
+            height: 100px;
+        }
+        .address {
+            margin-top: 20px;
+            color: blue;
+            font-weight: bold;
+        }
+        .head {
+            height: 50px;
+            width: 100%;
+            background-color: rgb(230, 230, 235);
+            text-align: center;
+        }
+        .head h4 {
+            padding: 15px;
+        }
+        .details {
+            display: flex;
+            padding: 40px;
+        }
+        .col50 {
+            margin-top: 30px;
+            width: 50%;
+            float: left;
+        }
+        table th {
+            background-color: rgb(230, 230, 235);
+            height: 30px;
+            width: 240px;
+        }
+        table {
+            border-collapse: collapse;
+            border: 1px solid black;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<div class="main">
+    <div class="pdfPage">
+        <div class="top">
+            <div class="logo">
+                <img src="https://pathbreakertech.com/images/pathbreakertech-logo.png" alt="Company Logo">
+            </div>
+            <div class="address">
+                <p>PathBreaker Technolgies Pvt Ltd</p>
+                <p>2nd floor, Shilpi Valley, Nasuja, Plot.no. 36, Hyderabad, Telangana 500081</p>
+            </div>
+        </div>
+
+        <div class="details">
+            <div class="col50">
+                <table>
+                    <tr>
+                        <th>PaySlip for The Month</th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th>Employee Details</th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th>EmployeeId</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Date of Hiring</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>PF No.</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Location</th>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col50">
+                <table>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Designation</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Department</th>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="details">
+            <div class="col50">
+                <table>
+                    <tr>
+                        <th>Earnings</th>
+                        <th>Amount</th>
+                    </tr>
+                    <tr>
+                        <th>Basic Salary</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Travel Allowance</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>PF Contribution Employee</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Special Allowance</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Other Allowances</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Total Earnings</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>NET PAY</th>
+                        <th></th>
+                    </tr>
+                </table>
+            </div>
+            <div class="col50">
+                <table>
+                    <tr>
+                        <th>Deductions</th>
+                        <th>Amount</th>
+                    </tr>
+                    <tr>
+                        <th>PF Employee</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>PF Employer</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>LOP</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Professional Tax</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Income Tax</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>Total Deductions</th>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

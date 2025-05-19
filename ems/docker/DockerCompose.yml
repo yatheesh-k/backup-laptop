@@ -1,0 +1,42 @@
+services:
+  frontend:
+    build:
+      context: ../ui
+      dockerfile: Dockerfile
+    ports:
+      - "2800:2800"
+    networks:
+      - ems-network
+    environment:
+      - ELASTICSEARCH_URL=http://host.docker.internal:9200
+  identity:
+    build:
+      context: ../
+      dockerfile: docker/identity
+    ports:
+      - "9090:9090"
+    networks:
+      - ems-network
+    environment:
+      - ELASTICSEARCH_URL=http://host.docker.internal:9200
+  employee:
+    build:
+      context: ../
+      dockerfile: docker/employee
+    ports:
+      - "8092:8092"
+    networks:
+      - ems-network
+    environment:
+      - ELASTICSEARCH_URL=http://host.docker.internal:9200
+networks:
+  ems-network:
+
+
+
+
+
+
+
+
+

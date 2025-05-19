@@ -1,0 +1,117 @@
+
+def COLOR_MAP = [
+    'SUCCESS' : 'good' ,
+    'FAILURE' : 'danger'
+]
+pipeline {
+    agent any
+    tools {
+        maven 'maven'
+        gradle 'gradle8'
+        nodejs 'node18'
+        jdk     'jdk21'
+    }
+    environment {
+        EMPLOYEE_BUILD = "false"
+        IDENTITY_BUILD = "false"
+        UI_BUILD = "false"
+    }
+    stages {
+        stage('Check Changes') {
+            steps {
+                script {
+                    def changeLogSets = currentBuild.changeSets
+                    for (changeLogSet in changeLogSets) {
+                        for (entry in changeLogSet.items) {
+                            echo "Commit: ${entry.commitId} by ${entry.author}"
+                            echo "Message: ${entry.msg}"
+                            for (file in entry.affectedFiles) {
+                                echo "Affected file: ${file.path}"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+       stage('Build Identity ') {
+          
+            steps {
+                 script{
+                IDENTITY_BUILD = "true"
+            }
+                    dir('identity') {
+                    sh 'gradle clean build'
+                    }
+            }
+        }
+        stage('Package Identity') {
+         
+            steps {
+                dir('identity') {
+                    sh 'gradle assemble'
+                }
+            }
+        }
+        stage('Sonarqube Analysis - Identity') {
+          
+            environment {
+                scannerHome = tool 'sonar6.0'
+            }
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh """${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=EMS_IDENTITY \
+                    -Dsonar.projectName=EMS_IDENTITY \
+                    -Dsonar.projectVersion=1.0 \
+                    -Dsonar.sources=identity/src \
+                    -Dsonar.exclusions='**/*.spec.js, **/*.test.js' \
+                    -Dsonar.sourceEncoding=UTF-8 \
+                    -Dsonar.java.binaries=identity/build/classes/java/main/com/pb/ems/
+                    """
+                }
+            }
+        }
+        stage('Quality Gate - Identity') {
+         
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Upload Artifact - Identity') {
+           
+            steps {
+                script {
+                    
+                    nexusArtifactUploader(
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        nexusUrl: '122.175.43.71:9001/',
+                        groupId: 'QA',
+                        version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+                        repository: 'EMS_IDENTITY/',
+                        credentialsId: 'nexuslogin',
+                        artifacts: [
+                            [artifactId: 'ems-fe',
+                            classifier: '',
+                            file: 'identity/build/libs/identity-1.0.0.jar',
+                            type: '.jar']
+                        ]
+                    )
+                }
+            }
+        }
+
+  
+         post {
+            always {
+                echo 'Slack Notificatons'
+                slackSend channel : 'ems_ci-cd',
+                    color: COLOR_MAP[currentBuild.currentResult], 
+                    message: "*${currentBuild.currentResult}:* job ${env.job_Name} build ${env.BUIILD_NUMBER} \n More info at : ${env.BUILD_URL}" 
+            }
+        }
+    }
+}

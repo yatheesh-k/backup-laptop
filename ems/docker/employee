@@ -1,0 +1,14 @@
+FROM openjdk:21-jdk-slim
+WORKDIR /app
+COPY ./employee/gradle /app/gradle
+COPY ./employee/gradlew /app/
+COPY ./employee/build.gradle /app/
+COPY ./employee/gradle.properties /app/
+COPY ./employee/settings.gradle /app/
+RUN chmod +x gradlew
+COPY ./employee/src /app/src
+RUN ./gradlew build --no-daemon
+RUN cp /app/build/libs/employee-1.0.0.jar /app/
+COPY ./certificates/ssl.jks /app/certificates/
+EXPOSE 8092
+CMD ["java", "-jar", "/app/employee-1.0.0.jar"]

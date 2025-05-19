@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+    triggers {
+        GenericTrigger(
+            genericVariables: [
+                [key: 'payload', value: '$']
+            ],
+            causeString: 'Triggered on $GIT_URL',
+            printPostContent: true,
+            silentResponse: false
+        )
+    }
+    stages {
+        stage('Parse Webhook') {
+            steps {
+                script {
+                    def json = new groovy.json.JsonSlurper().parseText(payload)
+                    def directories = []
+
+                    json.commits.each { commit ->
+                        commit.modified.each { filePath ->
+                            if (filePath.startsWith('employee/')) {
+                                directories << 'employee'
+                            } else if (filePath.startsWith('ui/')) {
+                                directories << 'ui'
+                            } else if (filePath.startsWith('identity/')) {
+                                directories << 'identity'  
+                            }
+                        }
+                    }
+
+                    directories.unique().each { dir ->
+                        if (dir == 'employee') {
+                            build job: 'EMS_Employee_Module'
+                        } else if (dir == 'ui') {
+                            build job: 'EMS_Ui_Module'
+                        } else if (dir == 'identity') {
+                            build job: 'EMS_Identity'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

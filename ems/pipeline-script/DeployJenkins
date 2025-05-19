@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+
+    environment {
+        GIT_URL = "git@github.com:PathBreakerGit/ems.git"
+        REPO_DIR = "/opt/ems/"
+        NGINX_DIR = "/var/www/ems/"
+        UI_BUILD_DIR = "/opt/ems/ui/"
+        EMPLOYEE_MODULE = "/opt/ems/employee/"
+        IDENTITY_MODULE = "/opt/ems/identity/"
+    }
+
+    stages {
+        stage('Deploy Application') {
+            steps {
+                sshagent(['ac46ef33-599c-4de0-b2b9-036d7cd7b5b4']) {
+                    script {
+                        sh '''
+                            set -e  # Exit on error
+
+                            echo "Cleaning NGINX directory..."
+                            sudo rm -rf $NGINX_DIR/*
+
+                            if [ -d "$REPO_DIR" ]; then
+                                echo "Pulling latest changes from Git repository..."
+                                cd $REPO_DIR
+                                git pull origin main
+                            else
+                                echo "Cloning Git repository..."
+                                git clone $GIT_URL $REPO_DIR
+                                cd $REPO_DIR
+                            fi
+
+                            echo "Building employee module..."
+                            cd $EMPLOYEE_MODULE
+                            ./gradlew clean build
+
+                            echo "Building identity module..."
+                            cd $IDENTITY_MODULE
+                            ./gradlew clean build
+
+                            echo "Building UI..."
+                            cd $UI_BUILD_DIR
+                            npm install
+                            npm run build
+
+                            echo "Copying build artifacts to NGINX directory..."
+                            sudo cp -r $UI_BUILD_DIR/build/* $NGINX_DIR/
+
+                            echo "Restarting services..."
+                            sudo systemctl restart nginx
+                            sudo systemctl restart employee.service 
+                            sudo systemctl restart identity.service
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
