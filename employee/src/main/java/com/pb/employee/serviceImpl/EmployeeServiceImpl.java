@@ -574,7 +574,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeMap.put("Contact No", e -> e.getEmployeeEntity().getMobileNo());
         employeeMap.put("Date Of Birth", e -> e.getEmployeeEntity().getDateOfBirth());
         employeeMap.put("UAN No", e -> e.getEmployeeEntity().getUanNo());
-        employeeMap.put("Department and Designation", e -> e.getEmployeeEntity().getDepartmentName() + ", " + e.getEmployeeEntity().getDesignationName());
+        employeeMap.put("Department And Designation", e -> e.getEmployeeEntity().getDepartmentName() + ", " + e.getEmployeeEntity().getDesignationName());
         employeeMap.put("Email Id", e -> e.getEmployeeEntity().getEmailId());
         employeeMap.put("Alternate No", e -> e.getEmployeeEntity().getAlternateNo());
         employeeMap.put("Date Of Hiring", e -> e.getEmployeeEntity().getDateOfHiring());

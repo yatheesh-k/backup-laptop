@@ -104,8 +104,8 @@
                                    ${person.employeeEntity.dateOfBirth!}
                                <#elseif field == "UAN No">
                                    ${person.employeeEntity.uanNo!}
-                               <#elseif field == "Department and Designation">
-                                   ${person.employeeEntity.departmentName!} ${person.employeeEntity.designationName!}
+                               <#elseif field == "Department And Designation">
+                                   ${person.employeeEntity.departmentName!}, ${person.employeeEntity.designationName!}
                                <#elseif field == "Alternate No">
                                    ${person.employeeEntity.alternateNo!}
                                <#elseif field == "Email Id">
