@@ -19,15 +19,14 @@ const CandidateDocumentsView = () => {
   const { userId } = useSelector(state => state.auth);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditMode, setIsEditMode] = useState(false);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
 
   useEffect(() => {
     if (location.state?.documents) {
       setDocuments(transformDocuments(location.state.documents));
-      setLoading(false);
-      setIsEditMode(location.state.isEditMode || false);
-    } else {
-      fetchDocuments();
     }
   }, [location.state]);
 
@@ -36,7 +35,7 @@ const CandidateDocumentsView = () => {
       setLoading(true);
       const response = await getDocumentByIdAPI(userId, '');
 
-      if (response && response.data && response.data.documentEntities) {
+      if (response?.data?.documentEntities) {
         setDocuments(transformApiResponse(response.data));
       } else {
         setDocuments([]);
@@ -111,7 +110,7 @@ const CandidateDocumentsView = () => {
   };
 
   const transformApiResponse = (apiData) => {
-    if (!apiData || !apiData.documentEntities || apiData.documentEntities.length === 0) {
+    if (!apiData?.documentEntities || apiData.documentEntities.length === 0) {
       return [];
     }
 
@@ -136,21 +135,6 @@ const CandidateDocumentsView = () => {
     return <FiFilePdf className="text-secondary" size={24} />;
   };
 
-  // const handleEdit = () => {
-  //   // Transform the documents to match the expected structure
-  //   const documentsToPass = documents.map(doc => ({
-  //     docName: doc.name,
-  //     filePath: doc.url,
-  //     documentId: doc.documentId
-  //   }));
-
-  //   navigate('/documentUpload', {
-  //     state: {
-  //       isEditMode: true,
-  //       documents: documentsToPass
-  //     }
-  //   });
-  // };
   const handleEditDocument = (documentId) => {
     const documentToEdit = documents.find(doc => doc.documentId === documentId);
     if (!documentToEdit) return;
@@ -162,6 +146,7 @@ const CandidateDocumentsView = () => {
       }
     });
   };
+
   return (
     <LayOut>
       <div className="container-fluid p-0">
@@ -193,18 +178,10 @@ const CandidateDocumentsView = () => {
                   <div>
                     <button
                       onClick={() => navigate(-1)}
-                      className="btn btn-outline-secondary btn-sm me-2"
+                      className="btn btn-outline-secondary btn-sm"
                     >
                       <FiArrowLeft className="me-1" /> Back
                     </button>
-                    {/* {documents.length > 0 && (
-                      <button
-                        onClick={handleEdit}
-                        className="btn btn-primary btn-sm"
-                      >
-                        <PencilSquare className="me-1" /> Edit Documents
-                      </button>
-                    )} */}
                   </div>
                 </div>
               </div>
@@ -274,16 +251,16 @@ const CandidateDocumentsView = () => {
       </div>
 
       <style jsx>{`
-                .custom-link {
-                    text-decoration: none;
-                    color: inherit;
-                    transition: color 0.2s;
-                }
-                
-                .custom-link:hover {
-                    color: #0d6efd;
-                }
-            `}</style>
+        .custom-link {
+          text-decoration: none;
+          color: inherit;
+          transition: color 0.2s;
+        }
+        
+        .custom-link:hover {
+          color: #0d6efd;
+        }
+      `}</style>
     </LayOut>
   );
 };

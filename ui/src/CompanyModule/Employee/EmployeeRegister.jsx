@@ -309,19 +309,19 @@ export default function EmployeeRegister() {
         try {
           const response = await EmployeeGetApiById(location.state.id);
           const employeeData = response.data.data;
-          
+
           // First reset the form with all data except department/designation
           reset({
             ...employeeData,
             department: '', // Clear these initially
             designation: ''
           });
-  
+
           // Set status manually
           const status = employeeData.status;
           setValue("status", status.toString());
           setLoading(true);
-  
+
           // Set department first
           const departmentId = employeeData.department;
           if (departmentId) {
@@ -329,7 +329,7 @@ export default function EmployeeRegister() {
             // Fetch designations for this department
             const designations = await DesignationGetApi(departmentId);
             setDesignations(designations);
-            
+
             // Now set the designation after designations are loaded
             if (employeeData.designation) {
               setTimeout(() => {
@@ -337,7 +337,7 @@ export default function EmployeeRegister() {
               }, 100); // Small delay to ensure select is populated
             }
           }
-  
+
           // Set employeeEducation data
           if (employeeData.personnelEntity?.employeeEducation?.length) {
             reset((prev) => ({
@@ -345,7 +345,7 @@ export default function EmployeeRegister() {
               employeeEducation: employeeData.personnelEntity.employeeEducation
             }));
           }
-  
+
           // Set employeeExperience data
           if (employeeData.personnelEntity?.employeeExperience?.length) {
             reset((prev) => ({
@@ -353,12 +353,12 @@ export default function EmployeeRegister() {
               employeeExperience: employeeData.personnelEntity.employeeExperience
             }));
           }
-  
+
         } catch (error) {
           handleApiErrors(error);
         }
       };
-  
+
       fetchData();
     } else {
       reset();
@@ -375,7 +375,7 @@ export default function EmployeeRegister() {
 
   const validateYear = (dateString) => {
     if (!dateString) return true; // Skip validation if empty
-    
+
     const year = new Date(dateString).getFullYear();
     return year.toString().length === 4 || "Year must be exactly 4 digits";
   };
@@ -408,47 +408,47 @@ export default function EmployeeRegister() {
 
   // Custom Validation Function
   const validateDOB = (value) => {
-  if (!value) return "Date of Birth is required";
+    if (!value) return "Date of Birth is required";
 
-  // Validate year format (must be 4 digits)
-  const year = new Date(value).getFullYear();
-  if (year.toString().length !== 4) {
-    return "Year must be exactly 4 digits";
-  }
+    // Validate year format (must be 4 digits)
+    const year = new Date(value).getFullYear();
+    if (year.toString().length !== 4) {
+      return "Year must be exactly 4 digits";
+    }
 
-  const dobDate = new Date(value);
-  const minHiringDate = new Date(dobDate);
-  minHiringDate.setFullYear(minHiringDate.getFullYear() + 16); // Add 16 years
+    const dobDate = new Date(value);
+    const minHiringDate = new Date(dobDate);
+    minHiringDate.setFullYear(minHiringDate.getFullYear() + 16); // Add 16 years
 
-  if (hiringDate && new Date(hiringDate) < minHiringDate) {
-    return "Employee must be at least 16 years old at hiring.";
-  }
+    if (hiringDate && new Date(hiringDate) < minHiringDate) {
+      return "Employee must be at least 16 years old at hiring.";
+    }
 
-  return true;
-};
+    return true;
+  };
 
   const validateHiringDate = (value) => {
-  if (!value) return "Date of Hiring is required";
+    if (!value) return "Date of Hiring is required";
 
-  // Validate year format (must be 4-digit)
-  const year = new Date(value).getFullYear();
-  if (year.toString().length !== 4) {
-    return "Year must be exactly 4 digits";
-  }
+    // Validate year format (must be 4-digit)
+    const year = new Date(value).getFullYear();
+    if (year.toString().length !== 4) {
+      return "Year must be exactly 4 digits";
+    }
 
-  // Validate hiring date is at least 16 years after DOB
-  const hiringDate = new Date(value);
-  const dobDate = new Date(dob);
+    // Validate hiring date is at least 16 years after DOB
+    const hiringDate = new Date(value);
+    const dobDate = new Date(dob);
 
-  if (
-    dob &&
-    hiringDate < new Date(dobDate.setFullYear(dobDate.getFullYear() + 16))
-  ) {
-    return "Hiring date must be at least 16 years after DOB.";
-  }
+    if (
+      dob &&
+      hiringDate < new Date(dobDate.setFullYear(dobDate.getFullYear() + 16))
+    ) {
+      return "Hiring date must be at least 16 years after DOB.";
+    }
 
-  return true;
-};
+    return true;
+  };
 
   const handleClear = () => {
     reset(); // Reset form fields
@@ -643,6 +643,9 @@ export default function EmployeeRegister() {
                           required: "Email is required",
                           validate: validateEmail
                         })}
+                        onKeyPress={(e) => {
+                          if (e.key === ' ') e.preventDefault();
+                        }}
                       />
                       <small className="text-danger">{errors.emailId?.message}</small>
                     </div>
