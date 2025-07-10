@@ -1,9 +1,12 @@
 package com.pb.employee.request;
 
 
+import com.pb.employee.validations.RoleValidation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,10 +25,6 @@ public class CompanyRequest {
     @Pattern(regexp =  "^(?=.*[a-z])[a-z0-9._%+-]*[a-z][a-z0-9._%+-]*@[a-z0-9.-]+\\.[a-z]{2,6}$", message = "{invalid.emailId}")
     private String emailId;
 
-   // @Schema(example = "password")
-   /* @NotNull(message = "{password.notnull.message}")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\\W)(?!.* ).{6,16}$", message = "{invalid.password}")*/
-    //private String password;
 
     @Schema(example = "companyAddress")
     @Size(min = 2, max = 200)
@@ -95,4 +94,8 @@ public class CompanyRequest {
     @Pattern(regexp = "^[a-z]+$", message = "{company.shortname.message}")
     @Size(min = 2, max = 30, message = "{shortName.notnull.message}")
     private String shortName;
+
+
+    @RoleValidation
+    private List<String> roles;
 }
