@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.YearMonth;
+
 @Slf4j
 @Service
 public class InvoiceServiceImpl implements InvoiceService {
@@ -52,5 +54,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public ResponseEntity<?> updateInvoice(String authToken, String companyId, String customerId, String invoiceId, InvoiceUpdateRequest updateRequest, HttpServletRequest request) throws EmployeeException {
         return entityUtils.sendPatchRequest(authToken, updateRequest, Constants.COMPANY_ADD + companyId  + Constants.CUSTOMER_GET + customerId + Constants.INVOICE_GET + invoiceId);
+    }
+
+    @Override
+    public ResponseEntity<?> downloadInvoicesExcel(String authToken,String companyId, YearMonth yearMonth, HttpServletRequest request) throws EmployeeException {
+        return entityUtils.getExcelRequest(authToken,Constants.COMPANY_ADD + companyId +Constants.SLASH+yearMonth + Constants.INVOICE_DOWNLOAD_EXCEL);
     }
 }

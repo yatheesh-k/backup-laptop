@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.time.YearMonth;
 
 public interface InvoiceService {
 
@@ -19,4 +20,6 @@ public interface InvoiceService {
     ResponseEntity<?> downloadInvoice(String companyId, String customerId,String invoiceId,HttpServletRequest request) throws Exception;
 
     ResponseEntity<?> updateInvoice(String companyId, String customerId, String invoiceId, InvoiceUpdateRequest updateRequest, HttpServletRequest request) throws InvoiceException,IOException;
+
+    ResponseEntity<?> downloadInvoicesExcel(String companyId, YearMonth yearMonth, HttpServletRequest request) throws InvoiceException, IOException;
 }

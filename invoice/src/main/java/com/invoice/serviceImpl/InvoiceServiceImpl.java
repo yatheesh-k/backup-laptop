@@ -21,6 +21,10 @@ import freemarker.template.TemplateException;
 import io.swagger.models.auth.In;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -33,7 +37,9 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -391,6 +397,117 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new InvoiceException(InvoiceErrorMessageKey.UNABLE_TO_UPDATE_CUSTOMER.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+    @Override
+    public ResponseEntity<?> downloadInvoicesExcel(String companyId, YearMonth yearMonth, HttpServletRequest request) throws InvoiceException, IOException {
+        log.info("Downloading invoices for companyId: {} and yearMonth: {}", companyId, yearMonth);
+
+        // Fetch Company Entity
+        CompanyEntity companyEntity = openSearchOperations.getCompanyById(companyId, null, Constants.INDEX_EMS);
+        if (companyEntity == null) {
+            log.error("Company with ID {} not found", companyId);
+            throw new InvoiceException(InvoiceErrorMessageHandler.getMessage(InvoiceErrorMessageKey.COMPANY_NOT_FOUND), HttpStatus.NOT_FOUND);
+        }
+        String index = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
+        // Fetch invoices for the given companyId and yearMonth
+        List<InvoiceModel> invoiceEntities = openSearchOperations.getInvoicesByCompanyId(companyId,index);
+        if (invoiceEntities == null || invoiceEntities.isEmpty()) {
+            log.error("No invoices found for companyId: {} and yearMonth: {}", companyId, yearMonth);
+            throw new InvoiceException(InvoiceErrorMessageHandler.getMessage(InvoiceErrorMessageKey.INVOICE_NOT_FOUND), HttpStatus.NOT_FOUND);
+        }
+        List<InvoiceResponse> invoiceResponses = new ArrayList<>();
+        CompanyEntity unmaskedCompany = InvoiceUtils.unMaskCompanyProperties(companyEntity, request);
+
+        Map<String, CustomerModel> customerCache = new HashMap<>();
+
+        // Unmask sensitive properties in each invoice and filter by YearMonth
+        for (InvoiceModel invoice : invoiceEntities) {
+            String custId = invoice.getCustomerId();
+            CustomerModel unmaskedCustomer = customerCache.get(custId);
+            if (unmaskedCustomer == null) {
+
+                CustomerModel customerModel=customerRepository.findById(custId)
+                        .orElseThrow(() -> {
+                            log.error("Customer with ID {} not found", custId);
+                            return new InvoiceException(InvoiceErrorMessageHandler.getMessage(InvoiceErrorMessageKey.CUSTOMER_NOT_FOUND), HttpStatus.NOT_FOUND);
+                        });
+                unmaskedCustomer = InvoiceUtils.unMaskCustomerProperties(customerModel);
+                customerCache.put(custId, unmaskedCustomer); // Store in cache
+            }
+            BankEntity bankEntity = openSearchOperations.getBankById(index, null, invoice.getBankId());
+            if (bankEntity == null) {
+                log.error("Bank details not found for invoice ID: {}", invoice.getBankId());
+                throw new InvoiceException(InvoiceErrorMessageHandler.getMessage(InvoiceErrorMessageKey.BANK_DETAILS_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+            BankEntity unmaskedBank = InvoiceUtils.unMaskBankProperties(bankEntity);
+            InvoiceUtils.unMaskInvoiceProperties(invoice);
+            // Apply YearMonth filter on decoded invoiceDate
+            try {
+                LocalDate invoiceDate = LocalDate.parse(invoice.getInvoiceDate()); // now it's decoded
+                if (!YearMonth.from(invoiceDate).equals(yearMonth)) {
+                    continue; // skip if not matching month
+                }
+            } catch (Exception e) {
+                log.warn("Skipping invoice due to invalid date: {}", invoice.getInvoiceId());
+                continue;
+            }
+            InvoiceResponse response = InvoiceResponse.builder()
+                    .company(unmaskedCompany)
+                    .customer(unmaskedCustomer)
+                    .bank(unmaskedBank)
+                    .build();
+            InvoiceUtils.calculateGrandTotal(invoice, response);
+            response.setInvoice(invoice);
+            invoiceResponses.add(response);
+        }
+        // Generate Excel file from the list of InvoiceResponse objects
+        byte[] excelContent = generateInvoicesExcel(invoiceResponses);
+        if (excelContent == null) {
+            log.error("Failed to generate Excel content for invoices");
+            throw new InvoiceException(InvoiceErrorMessageHandler.getMessage(InvoiceErrorMessageKey.UNABLE_TO_GENERATE_EXCEL), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        // Prepare HTTP headers for the response
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDisposition(ContentDisposition.builder(Constants.ATTACHMENT)
+                .filename("Invoices-" + companyEntity.getShortName() + "-" + yearMonth + ".xlsx")
+                .build());
+        log.info("Invoices downloaded successfully for companyId: {} and yearMonth: {}", companyId, yearMonth);
+        return new ResponseEntity<>(excelContent, headers, HttpStatus.OK);
+    }
+
+    private byte[] generateInvoicesExcel(List<InvoiceResponse> invoiceResponses) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Invoices");
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("InvoiceNumber");
+            headerRow.createCell(1).setCellValue("CustomerGst");
+            headerRow.createCell(2).setCellValue("InvoiceDate");
+            headerRow.createCell(3).setCellValue("CGstAmount");
+            headerRow.createCell(4).setCellValue("SGstAmount");
+            headerRow.createCell(5).setCellValue("IGstAmount");
+            // Write data rows
+            int rowNum = 1;
+            for (InvoiceResponse response : invoiceResponses) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(response.getInvoice().getInvoiceNo());
+                row.createCell(1).setCellValue(response.getCustomer().getCustomerGstNo());
+                row.createCell(2).setCellValue(response.getInvoice().getInvoiceDate());
+                row.createCell(3).setCellValue(response.getInvoice().getCGst());
+                row.createCell(4).setCellValue(response.getInvoice().getSGst());
+                row.createCell(5).setCellValue(response.getInvoice().getIGst());
+            }
+            // Auto-size columns
+            for (int i = 0; i < 4; i++) {
+                sheet.autoSizeColumn(i);
+            }
+            // Convert to byte array
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            return out.toByteArray();
+        }
     }
 
     private byte[] generatePdfFromHtml(String html) throws IOException {

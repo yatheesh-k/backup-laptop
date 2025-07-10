@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.YearMonth;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -92,5 +93,16 @@ public class InvoiceController {
                                             @PathVariable String invoiceId,
                                             @RequestBody @Valid InvoiceUpdateRequest updateRequest, HttpServletRequest request) throws InvoiceException, IOException {
         return invoiceService.updateInvoice(companyId,customerId, invoiceId, updateRequest, request);
+    }
+    @GetMapping("company/{companyId}/{yearMonth}/downloadInvoicesExcel")
+    @Operation(security = { @SecurityRequirement(name = Constants.AUTH_KEY) },summary = "${api.downloadInvoicesExcel.tag}", description = "${api.downloadInvoicesExcel.description}")
+    @ApiResponse(responseCode = "200", description = "OK")
+    public ResponseEntity<?> downloadInvoicesExcel(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+                                                   @RequestHeader(Constants.AUTH_KEY) String authToken,
+                                                   @Parameter(required = true, description = "${api.createCompanyPayload.description}")
+                                                   @PathVariable String companyId,
+                                                   @PathVariable YearMonth yearMonth,
+                                                   HttpServletRequest request) throws InvoiceException, IOException {
+        return invoiceService.downloadInvoicesExcel(companyId, yearMonth, request);
     }
 }
