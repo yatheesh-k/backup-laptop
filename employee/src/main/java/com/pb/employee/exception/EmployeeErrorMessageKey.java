@@ -188,7 +188,9 @@ public enum EmployeeErrorMessageKey {
     INVALID_FIELD("invalid.field"),
     INVALID_FILE_FORMAT("invalid.file.format"),
     EMAIL_ALREADY_USED_BY_USER("email.already.used.by.user"),
-    INVALID_FIELD_SIZE("invalid.field.size");
+    INVALID_FIELD_SIZE("invalid.field.size"),
+    ROLE_NOT_FOUND("role.not.found"),
+    INVALID_ROLE("invalid.role"),;
     private final String key;
 
     EmployeeErrorMessageKey(String keyVal) {
