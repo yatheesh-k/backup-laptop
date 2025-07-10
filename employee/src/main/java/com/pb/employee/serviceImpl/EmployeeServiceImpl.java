@@ -11,12 +11,12 @@ import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.exception.ErrorMessageHandler;
 import com.pb.employee.opensearch.OpenSearchOperations;
 import com.pb.employee.persistance.model.*;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
 import com.pb.employee.request.*;
 import com.pb.employee.response.EmployeeDownloadResponse;
 import com.pb.employee.response.EmployeeResponse;
 import com.pb.employee.service.AttendanceService;
 import com.pb.employee.service.EmployeeService;
-import com.pb.employee.service.SalaryService;
 import com.pb.employee.util.*;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -927,4 +927,34 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return scheme + "://" + serverName + ":" + serverPort + contextPath;
     }
+
+    @Override
+    public List<EmployeeAccountsResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException {
+        String index = ResourceIdUtils.generateCompanyIndex(companyName);
+        List<EmployeeEntity> employeeEntities;
+        List<EmployeeAccountsResponse> employeeResponses = new ArrayList<>();
+        try {
+            employeeEntities = openSearchOperations.getCompanyEmployees(companyName);
+
+            for (EmployeeEntity employee : employeeEntities) {
+                if (employee.getStatus().equalsIgnoreCase(Constants.ACTIVE) && !employee.getEmployeeType().equalsIgnoreCase(Constants.ADMIN)) {
+                    EmployeeUtils.unmaskEmployeeProperties(employee, null, null);
+                    List<EmployeeSalaryEntity> employeeSalaryEntity = openSearchOperations.getEmployeeSalaries(companyName, employee.getId(), Constants.ACTIVE);
+                    if (employeeSalaryEntity != null && !employeeSalaryEntity.isEmpty()) {
+                        EmployeeSalaryEntity activeSalary = employeeSalaryEntity.get(0);
+                        EmployeeAccountsResponse employeeAccountsResponse = EmployeeUtils.unMaskEmployeeAccountProperties(activeSalary, employee);
+                        employeeResponses.add(employeeAccountsResponse);
+                    }
+                }
+
+            }
+        } catch (Exception ex) {
+            log.error("Exception while fetching employees for company {}: {}", companyName, ex.getMessage());
+            throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNABLE_GET_EMPLOYEES),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return employeeResponses;
+    }
+
 }

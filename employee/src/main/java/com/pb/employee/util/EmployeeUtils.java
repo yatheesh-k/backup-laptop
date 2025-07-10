@@ -3,6 +3,7 @@ package com.pb.employee.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.persistance.model.*;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
 import com.pb.employee.request.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -337,6 +338,66 @@ public class EmployeeUtils {
     }
 
 
+
+
+    public static EmployeeAccountsResponse unMaskEmployeeAccountProperties(EmployeeSalaryEntity salaryEntity, EmployeeEntity employee) {
+        String te= null, tax = null, itax = null, ttax = null, tded = null, net = null;
+        Double pfEmpr = null, pfEmp= null;
+        EmployeeAccountsResponse employeeAccountsResponse = new EmployeeAccountsResponse();
+
+        if(salaryEntity.getPfTax() != null) {
+            tax = new String((Base64.getDecoder().decode(salaryEntity.getPfTax().toString().getBytes())));
+            double pfTax = Double.parseDouble(tax); // Parse tax to double
+            employeeAccountsResponse.setPfTax(String.format("%.2f",pfTax/12));
+        }
+        if (salaryEntity.getIncomeTax() != null){
+            itax = new String((Base64.getDecoder().decode(salaryEntity.getIncomeTax().toString().getBytes())));
+            salaryEntity.setIncomeTax(itax);
+            double incomeTax = Double.parseDouble(itax); // Parse itax to double
+            employeeAccountsResponse.setTds(String.format("%.2f",incomeTax/12));
+        }
+        if(salaryEntity.getTotalEarnings() != null) {
+            te = new String((Base64.getDecoder().decode(salaryEntity.getTotalEarnings().toString().getBytes())));
+        }
+        if(salaryEntity.getTotalDeductions() != null) {
+            tded = new String((Base64.getDecoder().decode(salaryEntity.getTotalDeductions().toString().getBytes())));
+        }
+        if(salaryEntity.getTotalTax() != null) {
+            ttax = new String((Base64.getDecoder().decode(salaryEntity.getTotalTax().toString().getBytes())));
+        }
+        if (salaryEntity.getNetSalary() != null) {
+            double tdedValue = Double.parseDouble(tded);
+            double ttaxValue = Double.parseDouble(ttax);
+            double tEarValue = Double.parseDouble(te);
+
+            double totalAmount = tdedValue+ttaxValue;
+            double netAmount = tEarValue -totalAmount;
+            employeeAccountsResponse.setEmployeeSalary(String.format("%.2f",netAmount/12));
+        }
+
+        if (salaryEntity.getSalaryConfigurationEntity().getDeductions() != null) {
+            Map<String, String> decodedDeductions = new HashMap<>();
+            for (Map.Entry<String, String> entry : salaryEntity.getSalaryConfigurationEntity().getDeductions().entrySet()) {
+                if (entry.getKey().equalsIgnoreCase("Provident Fund Employee")) {
+                    String pfEmployer = unMaskValue(entry.getValue());
+                    pfEmp = Double.parseDouble(pfEmployer); // Parse pf to double
+                    employeeAccountsResponse.setPfAmount(String.format("%.2f",pfEmp/12));
+                }
+                if (entry.getKey().equalsIgnoreCase("Provident Fund Employer")) {
+                    String pfEmployer = unMaskValue(entry.getValue());
+                    pfEmpr = Double.parseDouble(pfEmployer); // Parse pf to double
+                    employeeAccountsResponse.setPfAmount(String.format("%.2f", pfEmpr / 12));                }
+            }
+            employeeAccountsResponse.setPfAmount(String.valueOf((pfEmpr + pfEmp)));
+            employeeAccountsResponse.setFirstName(employee.getFirstName());
+            employeeAccountsResponse.setLastName(employee.getLastName());
+            employeeAccountsResponse.setEmailId(employee.getEmailId());
+            employeeAccountsResponse.setUanNumber(employee.getUanNo() != null ? employee.getUanNo() : null);
+            employeeAccountsResponse.setAadhaarId(employee.getAadhaarId() != null ? employee.getAadhaarId() : null);
+            employeeAccountsResponse.setPanNo(employee.getPanNo() != null ? employee.getPanNo() : null);
+        }
+        return employeeAccountsResponse;
+    }
     public static EmployeeSalaryEntity unMaskEmployeeSalaryProperties(EmployeeSalaryEntity salaryEntity) {
 
         String var = null, fix = null, bas = null, gross = null;

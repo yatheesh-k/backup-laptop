@@ -2,6 +2,7 @@ package com.pb.employee.controller;
 
 import com.pb.employee.common.ResponseBuilder;
 import com.pb.employee.exception.EmployeeException;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
 import com.pb.employee.request.EmployeeDetailsDownloadRequest;
 import com.pb.employee.request.EmployeeIdRequest;
 import com.pb.employee.request.EmployeeRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 
 @RestController
@@ -158,5 +160,18 @@ public class EmployeeController {
                                               @PathVariable String employeeId,
                                               HttpServletRequest request) throws EmployeeException, IOException {
         return employeeService.getEmployeeImage(companyName, employeeId, request);
+    }
+
+    @RequestMapping(value = "{companyName}/employee/accounts", method = RequestMethod.GET)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY)},
+            summary = "${api.getEmployee.tag}", description = "${api.getEmployee.description}")
+    @ResponseStatus(HttpStatus.OK)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Employee Image fetched Successfully")
+    public ResponseEntity<?> getEmployeeAccountDetails(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef}")
+                                              @RequestHeader(Constants.AUTH_KEY) String authToken,
+                                              @PathVariable String companyName) throws EmployeeException, IOException {
+        List<EmployeeAccountsResponse> employeeAccountsResponses = employeeService.getEmployeesAccountsDetails(companyName);
+        return new ResponseEntity<>(
+                ResponseBuilder.builder().build().createSuccessResponse(employeeAccountsResponses), HttpStatus.OK);
     }
 }
