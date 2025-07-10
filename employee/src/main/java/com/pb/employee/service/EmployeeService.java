@@ -2,6 +2,7 @@ package com.pb.employee.service;
 
 
 import com.pb.employee.exception.EmployeeException;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
 import com.pb.employee.request.*;
 import com.pb.employee.response.EmployeeResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface EmployeeService {
     ResponseEntity<?> registerEmployee(EmployeeRequest employeeRequest, HttpServletRequest request) throws EmployeeException;
@@ -27,4 +29,7 @@ public interface EmployeeService {
 
     ResponseEntity<?> uploadEmployeeImage(String companyName, String employeeId, MultipartFile file) throws EmployeeException, IOException;
 
-    ResponseEntity<?> getEmployeeImage(String companyName, String employeeId,HttpServletRequest request) throws EmployeeException, IOException;}
+    ResponseEntity<?> getEmployeeImage(String companyName, String employeeId,HttpServletRequest request) throws EmployeeException, IOException;
+
+    List<EmployeeAccountsResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException, IOException;
+}
