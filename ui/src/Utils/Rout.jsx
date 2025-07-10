@@ -23,14 +23,9 @@ import AttendanceList from '../CompanyModule/Attendance/AttendanceList';
 import AttendanceReport from '../CompanyModule/Attendance/AttendanceReport';
 import EmployeePayslips from '../EmployeeModule/EmployeePayslips';
 import OfferLetter from '../EmployeeModule/OfferLetter';
-import PaySlipLetter from '../EmployeeModule/PaySlipLetter';
-import HikeLetter from '../EmployeeModule/HikeLetter';
-import ExistingLetter from '../EmployeeModule/ExistingLetter';
 import CompanySalaryStructure from '../CompanyModule/Settings/CompanySalaryStructure';
 import EmployeeSalaryList from '../CompanyModule/PayRoll/EmployeeSalaryList';
 import Profile from '../LayOut/Profile';
-import Message from '../LayOut/Message';
-import PaySlipDoc from '../Login/PayslipDoc';
 import EmployeeSalaryById from '../EmployeeModule/EmployeeSalaryById';
 import Reset from '../LayOut/Reset';
 import ForgotPassword from '../Login/ForgotPassword'
@@ -68,7 +63,6 @@ import InvoiceView from '../InvoiceModule/Invoice/InvoiceView';
 import InvoicePdf from '../InvoiceModule/Invoice/InvoicePdf';
 import ProductView from '../InvoiceModule/Products/ProductsView';
 import ProductRegistration from '../InvoiceModule/Products/ProductRegistration'
-import CreatePassword from '../Login/CreatePassword';
 import EmployeeRegister from '../CompanyModule/Employee/EmployeeRegister';
 import EmployeeSalaryStructureView from '../CompanyModule/PayRoll/EmployeeSalaryStructureView';
 import InternOfferLetter from '../CompanyModule/Settings/Internship/InternOfferLetter/InternOfferLetter';
@@ -100,6 +94,7 @@ import EmployeeDocumentUpload from '../CompanyModule/Employee/EmployeeDocumentUp
 import EmployeeDocumentView from '../CompanyModule/Employee/EmployeeDocumentView';
 import InvoiceTemplates from '../CompanyModule/Settings/InvoiceTemplates/InvoiceTemplates';
 import CandidateToEmployee from '../CompanyModule/Candidate/CandidateToEmployee';
+import PFEmployeesDocUpload from '../AccountantModule/PF/PFEmployeesDocUpload';
 
 export const allAvailableRoutes = [
   {path: '/main', allowedTypes: ['ems_admin', 'company_admin', 'Admin', 'HR', 'employee']},
@@ -191,6 +186,8 @@ export const allAvailableRoutes = [
   {path: '/invoiceTemplate2', allowedTypes: ['company_admin', 'Admin' , 'Accountant'] },
   {path: '/employeeDocumentUpload', allowedTypes: ['employee'] },
   {path: '/employeeDocumentView', allowedTypes: ['company_admin', 'Admin','HR','employee'] },
+  // Accountant-specific routes
+  {path: '/pfsubmission', allowedTypes: ['company_admin', 'Admin', 'Accountant'] },
 ];
 
 const Routing = () => {
@@ -555,6 +552,11 @@ const Routing = () => {
       <Route
         path="/employeeDocumentView"
         element={<ProtectedRoute element={<EmployeeDocumentView/>} allowedTypes={['employee']} />}
+      />
+      {/* Accountant Specific Roles */}
+      <Route
+        path="/pfsubmission"
+        element={<ProtectedRoute element={<PFEmployeesDocUpload/>} allowedTypes={['company_admin', 'Admin', 'Accountant']} />}    
       />
     </Routes>
   );

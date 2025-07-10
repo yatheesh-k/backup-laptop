@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useForm, Controller } from 'react-hook-form';
 import LayOut from '../../LayOut/LayOut';
@@ -14,7 +14,6 @@ import {
     File as FiFile,
     FileEarmarkPdf as FiFilePdf,
     FileEarmarkWord as FiFileWord,
-    FileEarmarkImage as FiFileImage,
     ChevronDown,
     ChevronUp,
     CheckCircleFill,
@@ -49,7 +48,6 @@ const CandidateDocumentUpload = () => {
         experience: []
     });
     const [isEditMode, setIsEditMode] = useState(false);
-    const [existingDocuments, setExistingDocuments] = useState([]);
     const [documentId, setDocumentId] = useState('');
 
     const educationQualifications = [
@@ -67,7 +65,7 @@ const CandidateDocumentUpload = () => {
         setValue,
         getValues,
         watch,
-        formState: { errors, isValid, isDirty },
+        formState: { errors, isValid },
         trigger,
         reset
     } = useForm({
@@ -454,10 +452,9 @@ const CandidateDocumentUpload = () => {
             }, 300);
 
             // Use new API
-            const response = isEditMode
-                ? await updateCandidateDocument(userId, documentId, documentNo, docNames, files)
-                : await uploadDocumentAPI(userId, docNames, files);
-
+            (isEditMode ?
+                await updateCandidateDocument(userId, documentId, documentNo, docNames, files)
+                : await uploadDocumentAPI(userId, docNames, files));
             clearInterval(progressInterval);
             setUploadProgress(100);
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -734,8 +731,6 @@ const CandidateDocumentUpload = () => {
     const DragDropArea = ({ fieldName, label, required = false, accept = ".pdf,.doc,.docx,.png,.jpg,.jpeg", description }) => {
         const file = getValues(fieldName);
         const fileInputRef = useRef(null);
-        const isImageField = accept.includes('.png') || accept.includes('.jpg') || accept.includes('.jpeg');
-
         const handleClick = (e) => {
             e.stopPropagation();
             fileInputRef.current?.click();

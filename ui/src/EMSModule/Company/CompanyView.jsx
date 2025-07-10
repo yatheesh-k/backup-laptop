@@ -142,7 +142,17 @@ const CompanyView = () => {
           {row.companyName.length > 20 ? `${row.companyName.slice(0, 20)}...` : row.companyName}
         </div>
       ),
-      width: "220px",
+      width: "200px",
+      wrap: true,
+    },
+     {
+      name: <h6><b>Service Name</b></h6>,
+      selector: row => (
+        <div title={row.shortName}>
+          {row.shortName.length > 20 ? `${row.shortName.slice(0, 20)}...` : row.shortName}
+        </div>
+      ),
+      width: "100px",
       wrap: true,
     },
     {
