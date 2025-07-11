@@ -212,5 +212,5 @@ public class Constants {
     public static final String CANDIDATE_LOGIN="candidateLogin";
     public static final String REFERENCE_ID = "referenceId";
     public static final String CONVERTED = "convertedToEmployee";
-    public static final String INVOICE_DOWNLOAD_EXCEL = "/downloadInvoicesExcel";
+    public static final String EMP_TYPE = "employeeType";
 }

@@ -40,6 +40,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -960,5 +961,96 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return employeeResponses;
     }
+
+    @Override
+    public ResponseEntity<?> registerEmployeeForAccounts(String companyName, MultipartFile file) throws EmployeeException, IOException {
+
+        try {
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Company not found for ID: {}", companyName);
+                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+            EmployeeEntity companyAdmin = openSearchOperations.getCompanyAdmin(companyName, Constants.INDEX_EMS);
+            if (!companyAdmin.getRoles().contains(Constants.ACCOUNTANT)) {
+                log.error("Company admin not found for company: {}", companyName);
+                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNAUTHORIZED_ACCESS), HttpStatus.NOT_FOUND);
+            }
+            if (file.isEmpty()) {
+                log.error("File is empty for company: {}", companyName);
+                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EMPTY_FILE), HttpStatus.BAD_REQUEST);
+            }
+            if (!file.getContentType().equals(Constants.EXCEL_TYPE)) {
+                log.error("Invalid file type: {}", file.getContentType());
+                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.INVALID_FILE_TYPE), HttpStatus.BAD_REQUEST);
+            }
+
+            log.info("Processing employee accounts for company: {}", companyName);
+            String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
+            List<EmployeeEntity> employees = parseExcelSheet(companyEntity.getCompanyName(), file, indexName);
+            for (EmployeeEntity employee :employees) {
+                openSearchOperations.saveEntity(employee, employee.getId(), indexName);
+            }
+        }catch (EmployeeException e) {
+            log.error("Exception while fetching company details: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("An unexpected error occurred while fetching company details: {}", e.getMessage());
+            throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNABLE_GET_COMPANY), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(
+                ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+
+    }
+
+    public List<EmployeeEntity> parseExcelSheet(String companyId, MultipartFile file, String index) throws IOException, EmployeeException {
+        List<EmployeeEntity> employees = new ArrayList<>();
+        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+        Sheet sheet = workbook.getSheetAt(0);
+
+        DataFormatter formatter = new DataFormatter();
+
+        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            Row row = sheet.getRow(i);
+            if (row == null) continue;
+
+            EmployeeEntity employee = new EmployeeEntity();
+
+            employee.setEmailId(formatter.formatCellValue(row.getCell(2)));
+            String resourceId = ResourceIdUtils.generateEmployeeResourceId(employee.getEmailId());
+
+            // check if employee exists
+            EmployeeEntity employeeEntity = openSearchOperations.getEmployeeById(resourceId, null, index);
+            if (employeeEntity != null) {
+                log.error("Employee with email {} already exists", employee.getEmailId());
+                throw new EmployeeException(
+                        String.format(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EMPLOYEE_EMAILID_ALREADY_EXISTS), employee.getEmailId()),
+                        HttpStatus.CONFLICT
+                );
+            }
+
+            employee.setFirstName(formatter.formatCellValue(row.getCell(0)));
+            employee.setLastName(formatter.formatCellValue(row.getCell(1)));;
+            employee.setMobileNo(base64Encode(formatter.formatCellValue(row.getCell(3))));
+            employee.setUanNo(base64Encode(formatter.formatCellValue(row.getCell(4))));
+            employee.setPanNo(base64Encode(formatter.formatCellValue(row.getCell(5))));
+            employee.setAadhaarId(base64Encode(formatter.formatCellValue(row.getCell(6))));
+            employee.setPfNo(base64Encode(formatter.formatCellValue(row.getCell(7))));
+            employee.setId(resourceId);
+            employee.setCompanyId(companyId);
+            employee.setStatus(Constants.ACTIVE);
+            employee.setType(Constants.EMPLOYEE);
+
+            employees.add(employee);
+        }
+
+        workbook.close();
+        return employees;
+    }
+    private String base64Encode(String value) {
+        return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
+    }
+
+
 
 }

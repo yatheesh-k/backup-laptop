@@ -116,7 +116,7 @@ public class LoginServiceImpl implements LoginService {
                 List<String> roles = new ArrayList<>();
                 openSearchOperations.saveOtpToCandidate(candidate, otp, request.getCompany());
                 roles.add(candidate.getType());
-                token = JwtTokenUtil.generateEmployeeToken(candidate.getId(), roles, request.getCompany(), request.getUsername());
+                token = JwtTokenUtil.generateEmployeeToken(candidate.getId(), roles, request.getCompany(), request.getUsername(), candidate.getType());
 
             } else {
                 log.error("Invalid credentials");
@@ -198,11 +198,12 @@ public class LoginServiceImpl implements LoginService {
             }else {
                 roles.add(Constants.EMPLOYEE);
             }
-            token = JwtTokenUtil.generateEmployeeToken(employee.getId(), roles, request.getCompany(), request.getUsername());
+            token = JwtTokenUtil.generateEmployeeToken(employee.getId(), roles, request.getCompany(), request.getUsername(), employee.getUserType());
         }else {
             openSearchOperations.saveOtpToUser(userEntity, otp, request.getCompany());
             roles.add(userEntity.getUserType());
-            token = JwtTokenUtil.generateEmployeeToken(userEntity.getId(), roles, request.getCompany(), request.getUsername());
+            token = JwtTokenUtil.generateEmployeeToken(userEntity.getId(), roles, request.getCompany(), request.getUsername(), userEntity.getType()
+            );
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(new LoginResponse(token, null)), HttpStatus.OK);
