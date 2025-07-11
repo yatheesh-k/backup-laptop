@@ -33,8 +33,7 @@ public enum InvoiceErrorMessageKey {
     PURCHASE_ORDER_ALREADY_EXISTS("purchase.order.already.exist"),
     UNABLE_TO_GET_TEMPLATE("unable.to.get.template"),
     INVALID_TEMPLATE_NUMBER("invalid.template.number"),
-    CUSTOMER_MOBILE_ALREADY_EXISTS("customer.mobile.already.exists"),
-    UNABLE_TO_GENERATE_EXCEL("unable.to.generate.excel");
+    CUSTOMER_MOBILE_ALREADY_EXISTS("customer.mobile.already.exists");
 
     private final String message;
 

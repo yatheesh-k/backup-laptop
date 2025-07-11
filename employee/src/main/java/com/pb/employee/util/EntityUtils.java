@@ -87,28 +87,6 @@ public class EntityUtils {
         }
     }
 
-    public ResponseEntity<byte[]> getExcelRequest(String authToken,String uri) throws WebClientResponseException {
-
-        try {
-            byte[] excelData = webClient.get()
-                    .uri(uri)
-                    .header(Constants.AUTH_KEY, authToken)
-                    .retrieve()
-                    .toEntity(byte[].class)
-                    .block()
-                    .getBody();
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=invoices.xlsx")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(excelData);
-        } catch (WebClientResponseException e) {
-            log.error("WebClient error - Status: {}, Body: {}", e.getRawStatusCode(), e.getResponseBodyAsString());
-            log.error("Request URI: {}", uri);
-            return ResponseEntity.status(e.getRawStatusCode())
-                    .body(e.getResponseBodyAsString().getBytes());
-        }
-    }
-
     public ResponseEntity<String> sendPatchRequest(String authToken, Object request, String uri) throws WebClientResponseException {
 
         try {
