@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 
 @AllArgsConstructor
 @Getter
-public enum RoleType {
+public enum UserType {
 
     HRM(APIConstants.HRM),
     ACCOUNTANT(APIConstants.ACCOUNTANT),;
@@ -23,18 +23,18 @@ public enum RoleType {
         return value;
     }
 
-    public static RoleType value(String value) throws Exception {
+    public static UserType value(String value) throws Exception {
         if(!StringUtils.isNotEmpty(value))
             throw new EmployeeException(ErrorMessageHandler
-                    .getMessage(EmployeeErrorMessageKey.ATTENDANCE_ALREADY_EXISTS.INVALID_ROLE), HttpStatus.BAD_REQUEST);
+                    .getMessage(EmployeeErrorMessageKey.INVALID_USER_TYPE), HttpStatus.BAD_REQUEST);
 
-        for (RoleType type : values()) {
+        for (UserType type : values()) {
             if (type.value().equalsIgnoreCase(value)) {
                 return type;
             }
         }
         throw new EmployeeException(String.format(ErrorMessageHandler
-                .getMessage(EmployeeErrorMessageKey.INVALID_ROLE), value), HttpStatus.BAD_REQUEST);
+                .getMessage(EmployeeErrorMessageKey.INVALID_USER_TYPE), value), HttpStatus.BAD_REQUEST);
     }
 
     public static boolean exists(String value) {

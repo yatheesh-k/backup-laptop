@@ -29,4 +29,6 @@ public interface CompanyService {
     ResponseEntity<?> getCompanyImageById(String companyId, HttpServletRequest request)  throws EmployeeException;
 
     ResponseEntity<?> passwordResetForEmployee(EmployeePasswordReset employeePasswordReset, String id) throws EmployeeException;
+
+    ResponseEntity<?> updateCompanyUserType(String companyName, UpdateUserTypeRequest updatePayload) throws EmployeeException;
 }

@@ -174,4 +174,16 @@ public class EmployeeController {
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(employeeAccountsResponses), HttpStatus.OK);
     }
+
+
+    @RequestMapping(value = "{companyName}/employees/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY)},
+            summary = "${api.registerEmployees.tag}", description = "${api.registerEmployees.description}")
+    @ResponseStatus(HttpStatus.OK)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Employee Image fetched Successfully")
+    public ResponseEntity<?> registerEmployeeForAccounts(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef}")
+                                                       @RequestHeader(Constants.AUTH_KEY) String authToken,
+                                                       @PathVariable String companyName, @RequestParam("file") MultipartFile file) throws EmployeeException, IOException {
+        return employeeService.registerEmployeeForAccounts(companyName, file);
+    }
 }
