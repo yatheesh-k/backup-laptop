@@ -48,8 +48,9 @@ public class InvoiceController {
                                                    @Parameter(required = true, description = "${api.createCompanyPayload.description}")
                                                    @PathVariable String companyId,
                                                    @RequestParam(required = false,name = Constants.CUSTOMER_ID) String customerId,
+                                                   @RequestParam(required = false) String year,@RequestParam(required = false) String month,
                                                    HttpServletRequest request) throws InvoiceException {
-        return invoiceService.getCompanyAllInvoices(companyId,customerId,request);
+        return invoiceService.getCompanyAllInvoices(companyId,customerId,year,month,request);
     }
 
     @GetMapping("company/{companyId}/customer/{customerId}/invoice/{invoiceId}")
@@ -66,7 +67,6 @@ public class InvoiceController {
                                             HttpServletRequest request) throws InvoiceException, IOException {
         return invoiceService.getInvoiceById(companyId,customerId,invoiceId,request);
     }
-
 
     @GetMapping("company/{companyId}/customer/{customerId}/downloadInvoice/{invoiceId}")
     @Operation(security = { @SecurityRequirement(name = Constants.AUTH_KEY) },summary = "${api.getInvoice.tag}", description = "${api.getInvoice.description}")
@@ -93,16 +93,5 @@ public class InvoiceController {
                                             @PathVariable String invoiceId,
                                             @RequestBody @Valid InvoiceUpdateRequest updateRequest, HttpServletRequest request) throws InvoiceException, IOException {
         return invoiceService.updateInvoice(companyId,customerId, invoiceId, updateRequest, request);
-    }
-    @GetMapping("company/{companyId}/{yearMonth}/downloadInvoicesExcel")
-    @Operation(security = { @SecurityRequirement(name = Constants.AUTH_KEY) },summary = "${api.downloadInvoicesExcel.tag}", description = "${api.downloadInvoicesExcel.description}")
-    @ApiResponse(responseCode = "200", description = "OK")
-    public ResponseEntity<?> downloadInvoicesExcel(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
-                                                   @RequestHeader(Constants.AUTH_KEY) String authToken,
-                                                   @Parameter(required = true, description = "${api.createCompanyPayload.description}")
-                                                   @PathVariable String companyId,
-                                                   @PathVariable YearMonth yearMonth,
-                                                   HttpServletRequest request) throws InvoiceException, IOException {
-        return invoiceService.downloadInvoicesExcel(companyId, yearMonth, request);
     }
 }

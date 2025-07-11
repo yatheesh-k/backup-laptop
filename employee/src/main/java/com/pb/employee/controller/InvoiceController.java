@@ -64,9 +64,10 @@ public class InvoiceController {
                                                     @RequestHeader(Constants.AUTH_KEY) String authToken,
                                                     @Parameter(required = true, description = "${api.getCompanyPayload.description}")
                                                     @PathVariable String companyId,
-                                                    @RequestParam(required = false,name = Constants.CUSTOMER_ID) String customerId
+                                                    @RequestParam(required = false,name = Constants.CUSTOMER_ID) String customerId,
+                                                   @RequestParam(required = false) String year,@RequestParam(required = false) String month
                                                     ) throws EmployeeException {
-        return invoiceService.getCompanyAllInvoices(authToken,companyId,customerId);
+        return invoiceService.getCompanyAllInvoices(authToken,companyId,customerId,year,month);
     }
 
     @GetMapping("company/{companyId}/customer/{customerId}/downloadInvoice/{invoiceId}")
@@ -83,7 +84,6 @@ public class InvoiceController {
         return invoiceService.downloadInvoice(authToken,companyId,customerId,invoiceId,request);
     }
 
-
     @PatchMapping("company/{companyId}/customer/{customerId}/invoice/{invoiceId}")
     @Operation(security = { @SecurityRequirement(name = Constants.AUTH_KEY) },summary = "${api.updateInvoice.tag}", description = "${api.updateInvoice.description}")
     @ApiResponse(responseCode = "200", description = "OK")
@@ -97,16 +97,5 @@ public class InvoiceController {
                                              @PathVariable String invoiceId,
                                              @RequestBody @Valid InvoiceUpdateRequest updateRequest, HttpServletRequest request) throws EmployeeException {
         return invoiceService.updateInvoice(authToken,companyId,customerId,invoiceId, updateRequest,request);
-    }
-    @GetMapping("company/{companyId}/{yearMonth}/downloadInvoicesExcel")
-    @Operation(security = { @SecurityRequirement(name = Constants.AUTH_KEY) },summary = "${api.downloadInvoicesExcel.tag}", description = "${api.downloadInvoicesExcel.description}")
-    @ApiResponse(responseCode = "200", description = "OK")
-    public ResponseEntity<?> downloadInvoicesExcel(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
-                                                   @RequestHeader(Constants.AUTH_KEY) String authToken,
-                                                   @Parameter(required = true, description = "${api.createCompanyPayload.description}")
-                                                   @PathVariable String companyId,
-                                                   @PathVariable YearMonth yearMonth,
-                                                   HttpServletRequest request) throws IOException, EmployeeException {
-        return invoiceService.downloadInvoicesExcel(authToken,companyId, yearMonth, request);
     }
 }

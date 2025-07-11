@@ -16,11 +16,9 @@ public interface InvoiceService {
 
     ResponseEntity<?> getInvoiceById(String authToken,String companyId,String customerId,String invoiceId)throws EmployeeException;
 
-    ResponseEntity<?> getCompanyAllInvoices(String authToken,String companyId,String customerId)throws EmployeeException;
+    ResponseEntity<?> getCompanyAllInvoices(String authToken,String companyId,String customerId,String year,String month)throws EmployeeException;
 
     ResponseEntity<?> downloadInvoice(String authToken, String companyId, String customerId,String invoiceId,HttpServletRequest request)throws EmployeeException;
     ResponseEntity<?> updateInvoice(String authToken, String companyId, String customerId, String invoiceId, InvoiceUpdateRequest updateRequest, HttpServletRequest request)  throws EmployeeException;
-    ResponseEntity<?> downloadInvoicesExcel(String companyId, String id, YearMonth yearMonth, HttpServletRequest request) throws EmployeeException, IOException;
-
 
 }

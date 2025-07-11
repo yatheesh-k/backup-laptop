@@ -13,13 +13,11 @@ public interface InvoiceService {
 
     ResponseEntity<?> generateInvoice(String companyId,String customerId,InvoiceRequest request) throws InvoiceException, IOException;
 
-    ResponseEntity<?> getCompanyAllInvoices(String companyId,String customerId,HttpServletRequest request) throws InvoiceException;
+    ResponseEntity<?> getCompanyAllInvoices(String companyId,String customerId,String year,String month,HttpServletRequest request) throws InvoiceException;
 
     ResponseEntity<?> getInvoiceById(String companyId,String customerId,String invoiceId,HttpServletRequest request)throws InvoiceException, IOException;
 
     ResponseEntity<?> downloadInvoice(String companyId, String customerId,String invoiceId,HttpServletRequest request) throws Exception;
 
     ResponseEntity<?> updateInvoice(String companyId, String customerId, String invoiceId, InvoiceUpdateRequest updateRequest, HttpServletRequest request) throws InvoiceException,IOException;
-
-    ResponseEntity<?> downloadInvoicesExcel(String companyId, YearMonth yearMonth, HttpServletRequest request) throws InvoiceException, IOException;
 }
