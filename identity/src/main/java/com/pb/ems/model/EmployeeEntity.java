@@ -51,6 +51,7 @@ public class EmployeeEntity implements Entity {
     private String bankBranch;
     private String profileImage;
     private String type;
+    private String userType;
 
     private Long otp;
     private Long expiryTime;

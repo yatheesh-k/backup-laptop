@@ -1138,5 +1138,26 @@ public class OpenSearchOperations {
     }
 
 
+    public EmployeeEntity getCompanyAdmin(String companyName, String indexEms) {
+        SearchResponse<EmployeeEntity> searchResponse = null;
+        try {
+            BoolQuery boolQuery = BoolQuery.of(b -> b
+                    .filter(f -> f.matchPhrase(m -> m.field(Constants.COMPANY).query(companyName)))
+                    .filter(f -> f.matchPhrase(m -> m.field(Constants.TYPE).query(Constants.EMPLOYEE)))
+                    .filter(f -> f.matchPhrase(m -> m.field(Constants.EMP_TYPE).query(Constants.EMPLOYEE_TYPE))));
+            SearchRequest searchRequest = SearchRequest.of(s -> s
+                    .index(indexEms)  // Specify the index
+                    .query(Query.of(q -> q.bool(boolQuery)))
+                    .size(1));
+            searchResponse = esClient.search(searchRequest, EmployeeEntity.class);
 
+        } catch (IOException e) {
+            logger.error("Unable to fetch company admin details", e);
+        }
+        List<Hit<EmployeeEntity>> hits = searchResponse.hits().hits();
+        if (hits != null && !hits.isEmpty()) {
+            return hits.get(0).source();
+        }
+        return null;
+    }
 }
