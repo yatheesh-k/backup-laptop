@@ -49,6 +49,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
 	implementation group: 'org.opensearch.client', name: 'opensearch-rest-client', version: '2.14.0'
+	implementation 'org.apache.poi:poi:5.3.0'
+	implementation 'org.apache.poi:poi-ooxml:5.3.0'
 }
 
 dependencies {

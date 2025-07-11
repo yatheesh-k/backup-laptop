@@ -427,6 +427,9 @@ public class EmployeeServiceImpl implements EmployeeService {
             CompanyUtils.unmaskCompanyProperties(companyEntity, request);
             List<EmployeeEntity> employeeEntities = validateEmployee(companyEntity);
             EmployeeDownloadResponse response = new EmployeeDownloadResponse();
+            response = new EmployeeDownloadResponse();
+            response.setEmployeeEntity(new EmployeeEntity());
+            response.setResPayload(new EmployeeSalaryEntity());
             for (EmployeeEntity employee : employeeEntities){
                 resPayloads = openSearchOperations.getEmployeeSalaries(companyName, employee.getId(),Constants.ACTIVE);
                 if (resPayloads != null && !resPayloads.isEmpty()) {
@@ -438,7 +441,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 }
                 response.setEmployeeEntity(employee);
                 employeeDownloadResponses.add(response);
-                response = new EmployeeDownloadResponse(); // Reset for next employee
+                response = new EmployeeDownloadResponse();// Reset for next employee
+                response.setEmployeeEntity(new EmployeeEntity());
                 response.setResPayload(new EmployeeSalaryEntity()); // Reset salary payload
             }
 
