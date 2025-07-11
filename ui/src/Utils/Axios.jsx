@@ -592,13 +592,17 @@ export const EmployeeSalaryGetApiById = (employeeId, salaryId) => {
 }
 
 export const EmployeeSalaryPatchApiById = (employeeId, salaryId, data) => {
-  const company = localStorage.getItem("companyName")
   return axiosInstance.patch(`/employee/${employeeId}/salary/${salaryId}`, data);
 }
 
 export const EmployeeSalaryDeleteApiById = (employeeId, salaryId) => {
   const company = localStorage.getItem("companyName")
   return axiosInstance.delete(`/${company}/employee/${employeeId}/salary/${salaryId}`);
+}
+
+export const EmployeesAccountGetAll = () => {
+  const company = localStorage.getItem("companyName")
+  return axiosInstance.get(`/${company}/employee/accounts`);
 }
 
 export const downloadEmployeeSalaryDataAPI = async (format, selectedFields, showToast) => {

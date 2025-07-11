@@ -8,22 +8,19 @@ import {
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
-import { OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 const CompanyRegistration = () => {
   const {
     register,
-    watch,
     handleSubmit,
-    setValue,
     formState: { errors },
     reset,
   } = useForm({ mode: "onChange" });
-  const [postImage, setPostImage] = useState("");
   const [companyType, setCompanyType] = useState("");
+  const [userType, setUserType] = useState([]); // State to track user type
   const [editMode, setEditMode] = useState(false); // State to track edit mode
   const [errorMessage, setErrorMessage] = useState("");
-  const watchRegistrationNumber = watch("cinNo", "");
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -46,8 +43,22 @@ const CompanyRegistration = () => {
     setCompanyType(e.target.value);
   };
 
+  const handleUserTypeChange = (e) => {
+    const { value, checked } = e.target;
+
+    if (checked) {
+      setUserType([value]); // ✅ set the array with only one selected value
+    } else {
+      setUserType([]); // ❌ if unchecked, clear all
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
+      const payload = {
+        ...data, // spread all values from form
+        userType: userType, // override userType with the one from state
+      };
       const updateData = {
         companyAddress: data.companyAddress,
         mobileNo: data.mobileNo,
@@ -58,6 +69,7 @@ const CompanyRegistration = () => {
         companyBranch: data.address,
         address: data.address,
         companyType: data.companyType,
+        userType: data.userType,
       };
 
       // Conditionally add CIN number or Company Registration Number
@@ -72,7 +84,7 @@ const CompanyRegistration = () => {
         toast.success("Company Updated Successfully");
       } else {
         // Create new company
-        await CompanyRegistrationApi(data);
+        await CompanyRegistrationApi(payload);
         toast.success("Company Created Successfully");
       }
 
@@ -121,7 +133,7 @@ const CompanyRegistration = () => {
         if (error.response.status === 409) {
           const conflictMessage =
             error.response.data.message || "A conflict occurred.";
-          // toast.error(conflictMessage);  // Show conflict error in toast
+          //  toast.error(conflictMessage);  // Show conflict error in toast
         }
       } else {
         // General error (non-Axios)
@@ -174,7 +186,7 @@ const CompanyRegistration = () => {
   const backForm = () => {
     setCompanyType("");
     reset();
-    navigate("/companyView")
+    navigate("/companyView");
     // setEditMode(true);  // Optionally, if you want to reset edit mode
   };
   const toInputTitleCase = (e) => {
@@ -298,7 +310,6 @@ const CompanyRegistration = () => {
         newValue += char;
       }
     }
-
     // Update the input value
     e.target.value = newValue;
   };
@@ -330,7 +341,8 @@ const CompanyRegistration = () => {
 
     // Allow spaces at the end if the user typed them (by preserving the original input length)
     if (value.length < leadingTrimmedValue.length) {
-      formattedValue = formattedValue + " ".repeat(input.value.length - formattedValue.length);
+      formattedValue =
+        formattedValue + " ".repeat(input.value.length - formattedValue.length);
     }
 
     // Update input value
@@ -339,7 +351,6 @@ const CompanyRegistration = () => {
     // Restore the cursor position
     input.setSelectionRange(cursorPosition, cursorPosition);
   };
-
 
   const validateREGISTER = (value) => {
     const spaceError = "Spaces are not allowed in the Register Number.";
@@ -362,8 +373,8 @@ const CompanyRegistration = () => {
   };
 
   const handlePaste = (e) => {
-    const pastedText = e.clipboardData.getData('Text');
-    const sanitizedText = pastedText.replace(/[^A-Za-z0-9]/g, ''); // Keep only alphanumeric characters
+    const pastedText = e.clipboardData.getData("Text");
+    const sanitizedText = pastedText.replace(/[^A-Za-z0-9]/g, ""); // Keep only alphanumeric characters
     e.preventDefault(); // Prevent the default paste action
     e.target.value = sanitizedText; // Insert the sanitized text back into the input
   };
@@ -519,7 +530,6 @@ const CompanyRegistration = () => {
     // Update the input field's value
     event.target.value = value;
   }
-
   return (
     <LayOut>
       <div className="container-fluid p-0">
@@ -662,7 +672,13 @@ const CompanyRegistration = () => {
                           trigger={["hover", "focus"]}
                           placement="top"
                           overlay={
-                            <Tooltip className="p-2 shadow-sm border-0" style={{ minWidth: "200px", backgroundColor: '#000' }}>
+                            <Tooltip
+                              className="p-2 shadow-sm border-0"
+                              style={{
+                                minWidth: "200px",
+                                backgroundColor: "#000",
+                              }}
+                            >
                               <p className="mb-0 small text-white fw-semibold">
                                 Remember this service name for future reference
                               </p>
@@ -732,8 +748,7 @@ const CompanyRegistration = () => {
                     <div className="col-lg-1"></div>
                     <div className="col-12 col-md-6 col-lg-5 mb-3">
                       <label className="form-label">
-                        Mobile Number{" "}
-                        <span style={{ color: "red" }}>*</span>
+                        Mobile Number <span style={{ color: "red" }}>*</span>
                       </label>
                       <input
                         type="tel"
@@ -759,9 +774,7 @@ const CompanyRegistration = () => {
                               return true;
                             },
                             notRepeatingDigits: (value) => {
-                              const isRepeating = /^(\d)\1{12}$/.test(
-                                value
-                              ); // Check for repeating digits
+                              const isRepeating = /^(\d)\1{12}$/.test(value); // Check for repeating digits
                               return (
                                 !isRepeating ||
                                 "Mobile Number cannot consist of the same digit repeated."
@@ -775,9 +788,7 @@ const CompanyRegistration = () => {
                         })}
                       />
                       {errors.mobileNo && (
-                        <p className="errorMsg">
-                          {errors.mobileNo.message}
-                        </p>
+                        <p className="errorMsg">{errors.mobileNo.message}</p>
                       )}
                     </div>
                     <div className="col-12 col-md-6 col-lg-5 mb-2">
@@ -852,7 +863,7 @@ const CompanyRegistration = () => {
                             value: 250,
                             message: "Maximum 250 Characters allowed",
                           },
-                          validate: validateAddress
+                          validate: validateAddress,
                         })}
                       />
                       {errors.companyAddress && (
@@ -860,6 +871,106 @@ const CompanyRegistration = () => {
                           {errors.companyAddress.message}
                         </p>
                       )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-12">
+              <div className="card">
+                <div className="card-header ">
+                  <div className="d-flex justify-content-start align-items-start">
+                    <h5 className="card-title" style={{ marginBottom: "0px" }}>
+                      User Type
+                    </h5>
+                    <span
+                      className="text-danger"
+                      style={{ marginLeft: "10px" }}
+                    >
+                      {errors.userType && (
+                        <p className="mb-0">{errors.userType.message}</p>
+                      )}
+                    </span>
+                    <div className="d-flex align-items-center justify-content-start">
+                      <OverlayTrigger
+                        trigger={["hover", "focus"]}
+                        placement="auto"
+                        overlay={
+                          <Tooltip
+                            className="p-2 shadow-sm border-0"
+                            style={{
+                              backgroundColor: "#000",
+                              whiteSpace: "normal", // ✅ allow wrapping
+                              maxWidth: "700px", // ✅ set max width
+                              width: "auto", // ✅ content determines width until max
+                            }}
+                          >
+                            {" "}
+                            <p className="mb-0 text-white fw-semibold w-100">
+                              We recommend selecting "HRM and Accountant" for
+                              comprehensive access to all features. If you
+                              choose "Accountant," you will have limited access
+                              to HRM features.
+                            </p>
+                          </Tooltip>
+                        }
+                      >
+                        <span className="ms-2" style={{ cursor: "pointer" }}>
+                          <i className="bi bi-info-circle text-primary"></i>
+                        </span>
+                      </OverlayTrigger>
+                    </div>
+                  </div>
+                  <hr
+                    className="dropdown-divider"
+                    style={{ borderTopColor: "#d7d9dd", width: "100%" }}
+                  />
+                </div>
+
+                <div className="card-body">
+                  <div className="row">
+                    <div className="col-12 col-md-6 col-lg-5 mb-3">
+                      <div>
+                        <label>
+                          <input
+                            type="radio"
+                            name="userType"
+                            value="HRM"
+                            style={{ marginRight: "10px" }}
+                            {...register("userType", {
+                              required: !editMode
+                                ? "Please Select Your User Type"
+                                : false,
+                            })}
+                            disabled={editMode}
+                            checked={userType.includes("HRM")}
+                            onChange={handleUserTypeChange}
+                          />
+                          HRM and Accountant
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-lg-1"></div>
+                    <div className="col-12 col-md-6 col-lg-5 mb-3">
+                      <label className="ml-3">
+                        <input
+                          type="radio"
+                          name="userType"
+                          value="Accountant"
+                          style={{ marginRight: "10px" }}
+                          {...register("userType", {
+                            required: !editMode
+                              ? "Please Select Your User Type"
+                              : false,
+                          })}
+                          disabled={editMode}
+                          checked={userType.includes("Accountant")}
+                          onChange={handleUserTypeChange}
+                        />
+                        Accountant
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -951,9 +1062,7 @@ const CompanyRegistration = () => {
                       </>
                     )}
                     <div className="col-12 col-md-6 col-lg-5 mb-3">
-                      <label className="form-label">
-                        Company GST Number{" "}
-                      </label>
+                      <label className="form-label">Company GST Number </label>
                       <input
                         type="text"
                         className="form-control"
@@ -1161,7 +1270,7 @@ const CompanyRegistration = () => {
                             value: 250,
                             message: "Maximum 250 Characters allowed",
                           },
-                          validate: validateAddress
+                          validate: validateAddress,
                         })}
                       />
                       {errors.address && (
@@ -1216,7 +1325,8 @@ const CompanyRegistration = () => {
             </div>
           </div>
         </form>
-      </div>,,
+      </div>
+      ,,
     </LayOut>
   );
 };
