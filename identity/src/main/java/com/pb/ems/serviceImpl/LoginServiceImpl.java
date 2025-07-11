@@ -192,6 +192,9 @@ public class LoginServiceImpl implements LoginService {
             openSearchOperations.saveOtpToEmployee(employee, otp, request.getCompany());
             if (employee.getEmployeeType().equals(Constants.EMPLOYEE_TYPE)) {
                 roles.add(Constants.COMPANY_ADMIN);
+                if (employee.getRoles() != null && !employee.getRoles().isEmpty()) {
+                    roles.addAll(employee.getRoles());
+                }
             }else {
                 roles.add(Constants.EMPLOYEE);
             }

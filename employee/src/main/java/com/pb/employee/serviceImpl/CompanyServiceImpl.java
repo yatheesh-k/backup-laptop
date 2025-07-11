@@ -140,6 +140,7 @@ public class CompanyServiceImpl implements CompanyService {
                 employeeType(Constants.EMPLOYEE_TYPE).
                 employeeId(employeeAdminId).
                 companyId(resourceId).
+                roles(companyRequest.getRoles()).
                 emailId(companyRequest.getEmailId()).
                 password(password).
                 status(status).
