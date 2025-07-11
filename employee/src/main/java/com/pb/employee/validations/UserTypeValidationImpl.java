@@ -4,9 +4,11 @@ import com.pb.employee.persistance.model.RoleType;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class RoleValidationImpl implements ConstraintValidator<RoleValidation, String> {
+import java.util.List;
+
+public class UserTypeValidationImpl implements ConstraintValidator<UserTypeValidation, List<String>> {
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
+    public boolean isValid(List<String> value, ConstraintValidatorContext context) {
         return RoleType.exists(value);
     }
 }

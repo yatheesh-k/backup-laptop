@@ -160,7 +160,7 @@ const SideNav = () => {
           </div>
         )}
       </div>
-      <nav className="nav-items-container">
+      <nav className="nav-items-container mt-2">
         <ul className="nav-items">
           {getRoleNavItems.map((item) => renderNavItem(item))}
         </ul>

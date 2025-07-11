@@ -95,6 +95,9 @@ import EmployeeDocumentView from '../CompanyModule/Employee/EmployeeDocumentView
 import InvoiceTemplates from '../CompanyModule/Settings/InvoiceTemplates/InvoiceTemplates';
 import CandidateToEmployee from '../CompanyModule/Candidate/CandidateToEmployee';
 import PFEmployeesDocUpload from '../AccountantModule/PF/PFEmployeesDocUpload';
+import EmployeeManager from '../CompanyModule/Employee/EmployeeManager/EmployeeManager';
+import EmployeeSummary from '../CompanyModule/Employee/EmployeeManager/EmployeeSummary';
+import TimelineDates from '../CompanyModule/Settings/TimeLine/TimeLineDates';
 
 export const allAvailableRoutes = [
   {path: '/main', allowedTypes: ['ems_admin', 'company_admin', 'Admin', 'HR', 'employee']},
@@ -188,6 +191,9 @@ export const allAvailableRoutes = [
   {path: '/employeeDocumentView', allowedTypes: ['company_admin', 'Admin','HR','employee'] },
   // Accountant-specific routes
   {path: '/pfsubmission', allowedTypes: ['company_admin', 'Admin', 'Accountant'] },
+  {path: '/employeeManagement', allowedTypes: ['company_admin', 'Admin', 'Accountant'] },
+  {path: '/employeeSummary', allowedTypes: ['company_admin', 'Admin', 'Accountant'] },
+  {path: '/timelineDates', allowedTypes: ['company_admin'] },
 ];
 
 const Routing = () => {
@@ -557,6 +563,18 @@ const Routing = () => {
       <Route
         path="/pfsubmission"
         element={<ProtectedRoute element={<PFEmployeesDocUpload/>} allowedTypes={['company_admin', 'Admin', 'Accountant']} />}    
+      />
+      <Route 
+      path='/employeeManagement'
+      element={<ProtectedRoute element={<EmployeeManager/>} allowedTypes={['company_admin','Admin','Accountant']} />}
+      />
+      <Route
+        path="/employeeSummary"
+        element={<ProtectedRoute element={<EmployeeSummary/>} allowedTypes={['company_admin', 'Admin', 'Accountant']} />}
+      />
+      <Route
+        path="/timelineDates"
+        element={<ProtectedRoute element={<TimelineDates/>} allowedTypes={['company_admin']} />} 
       />
     </Routes>
   );
