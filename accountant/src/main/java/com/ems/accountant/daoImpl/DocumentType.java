@@ -1,0 +1,31 @@
+package com.ems.accountant.daoImpl;
+
+import com.ems.accountant.persistance.EmployeeAccountEntity;
+import com.ems.accountant.persistance.model.Entity;
+import com.ems.accountant.persistance.model.IDEntity;
+import lombok.Getter;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Getter
+public class DocumentType {
+
+    private final String type;
+    private final Class<? extends IDEntity> entityClass;
+
+    private static final Map<Class<? extends Entity>, DocumentType> typeMap = new HashMap<>();
+
+    public DocumentType(String type, Class<? extends IDEntity> entityClass) {
+        this.type = type;
+        this.entityClass = entityClass;
+        typeMap.put(entityClass, this);
+    }
+
+    public static <T extends Entity> DocumentType getByType(Class<T> type) {
+        return typeMap.get(type);
+    }
+
+    public static final DocumentType EMPLOYEE_ACCOUNT = new DocumentType("employee_account", EmployeeAccountEntity.class);
+
+}
