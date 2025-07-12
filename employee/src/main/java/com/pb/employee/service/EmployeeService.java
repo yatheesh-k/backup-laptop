@@ -32,4 +32,6 @@ public interface EmployeeService {
     ResponseEntity<?> getEmployeeImage(String companyName, String employeeId,HttpServletRequest request) throws EmployeeException, IOException;
 
     List<EmployeeAccountsResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException, IOException;
+
+    ResponseEntity<?> registerEmployeeForAccounts(String companyName, MultipartFile file) throws EmployeeException, IOException;
 }

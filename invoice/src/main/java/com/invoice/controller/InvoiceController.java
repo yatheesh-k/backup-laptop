@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.YearMonth;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -47,8 +48,9 @@ public class InvoiceController {
                                                    @Parameter(required = true, description = "${api.createCompanyPayload.description}")
                                                    @PathVariable String companyId,
                                                    @RequestParam(required = false,name = Constants.CUSTOMER_ID) String customerId,
+                                                   @RequestParam(required = false) String year,@RequestParam(required = false) String month,
                                                    HttpServletRequest request) throws InvoiceException {
-        return invoiceService.getCompanyAllInvoices(companyId,customerId,request);
+        return invoiceService.getCompanyAllInvoices(companyId,customerId,year,month,request);
     }
 
     @GetMapping("company/{companyId}/customer/{customerId}/invoice/{invoiceId}")
@@ -65,7 +67,6 @@ public class InvoiceController {
                                             HttpServletRequest request) throws InvoiceException, IOException {
         return invoiceService.getInvoiceById(companyId,customerId,invoiceId,request);
     }
-
 
     @GetMapping("company/{companyId}/customer/{customerId}/downloadInvoice/{invoiceId}")
     @Operation(security = { @SecurityRequirement(name = Constants.AUTH_KEY) },summary = "${api.getInvoice.tag}", description = "${api.getInvoice.description}")
