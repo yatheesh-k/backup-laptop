@@ -322,6 +322,11 @@ export const EmployeeGetApi = () => {
   return axiosInstance.get(`/${company}/employee`)
 }
 
+export const EmployeeAccountsApi = () => {
+  const company = localStorage.getItem("companyName");
+  return axiosInstance.get(`/${company}/employee/accounts`);
+};
+
 export const EmployeeNoAttendanceGetAPI = (month, year) => {
   const company = localStorage.getItem("companyName");
   return axiosInstance.get(`/${company}/withoutAttendance`, {
