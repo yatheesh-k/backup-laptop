@@ -40,4 +40,6 @@ public class Constants {
     public static final String HRM = "hrm";
     public static final String CA = "ca";
     public static final String ACTIVE = "active";
+    public static final String EMPLOYEE_ID = "employeeId";
+    public static final Object DELETED = "Deleted";
 }
