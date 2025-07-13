@@ -10,5 +10,5 @@ public interface EmployeeAccountDao extends Dao<EmployeeAccountEntity> {
     default Class<EmployeeAccountEntity> getEntityClass() {return EmployeeAccountEntity.class;}
 
 
-    Collection<EmployeeAccountEntity> getEmployeeAccountByUanMonthYear(String uanEncoded, String id, String prevMonth, String prevYear, String companyMonth) throws AccountantException;
+    Collection<EmployeeAccountEntity> getEmployeeAccountByUanMonthYear(String uanEncoded, String id, String month, String year, String companyMonth, String employeeId, String accountId) throws AccountantException;
 }

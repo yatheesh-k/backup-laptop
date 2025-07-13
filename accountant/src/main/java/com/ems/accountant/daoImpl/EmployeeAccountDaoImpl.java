@@ -20,22 +20,29 @@ public class EmployeeAccountDaoImpl extends AbstractDao<EmployeeAccountEntity> i
     public EmployeeAccountDaoImpl(Repository repository) {super(repository);}
 
     @Override
-    public Collection<EmployeeAccountEntity> getEmployeeAccountByUanMonthYear(String uanEncoded, String id, String prevMonth, String prevYear, String companyName) throws AccountantException {
+    public Collection<EmployeeAccountEntity> getEmployeeAccountByUanMonthYear(String uanEncoded, String id, String month, String year, String companyName, String employeeId, String accountId) throws AccountantException {
         Collection<Filter> filters = new ArrayList<>();
 
         if (StringUtils.isNotBlank(uanEncoded)) {
             filters.add(new Filter(Constants.UAN_NUMBER, Operator.EQ, uanEncoded));
         }
-
         if (StringUtils.isNotBlank(id)) {
             filters.add(new Filter(Constants.COMPANY_ID, Operator.EQ, id));
         }
-        if (StringUtils.isNotBlank(prevMonth)) {
-            filters.add(new Filter(Constants.MONTH, Operator.EQ, prevMonth));
+        if (StringUtils.isNotBlank(month)) {
+            filters.add(new Filter(Constants.MONTH, Operator.EQ, month));
         }
-        if (StringUtils.isNotBlank(prevYear)) {
-            filters.add(new Filter(Constants.YEAR, Operator.EQ, prevYear));
+        if (StringUtils.isNotBlank(year)) {
+            filters.add(new Filter(Constants.YEAR, Operator.EQ, year));
         }
+        if (StringUtils.isNotBlank(accountId)) {
+            filters.add(new Filter(Constants.ID, Operator.EQ, accountId));
+        }
+        if (StringUtils.isNotBlank(employeeId)) {
+            filters.add(new Filter(Constants.EMPLOYEE_ID, Operator.EQ, employeeId));
+        }
+
+
 
         return search(filters, companyName);
     }

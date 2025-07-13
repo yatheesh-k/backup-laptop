@@ -22,7 +22,7 @@ public class ResourceIdUtils {
     public static String generateCompanyIndex(String name) {
         return Constants.INDEX_EMS+"_"+name;
     }
-    public static String generateEmployeeAccountResourceId(String uanNo) {
+    public static String generateEmployeeAccountResourceId(String uanNo, String month, String year) {
         return generateGlobalResourceId(ResourceType.EMPLOYEE_ACCOUNT, uanNo);
     }
 

@@ -9,6 +9,8 @@ import com.ems.accountant.exception.ErrorMessageKey;
 import com.ems.accountant.persistance.CompanyEntity;
 import com.ems.accountant.persistance.EmployeeAccountEntity;
 import com.ems.accountant.persistance.EmployeeEntity;
+import com.ems.accountant.request.EmployeePFRequest;
+import com.ems.accountant.request.EmployeePFUpdate;
 import com.ems.accountant.service.EmployeePFService;
 import com.ems.accountant.utils.Constants;
 import com.ems.accountant.utils.ResourceIdUtils;
@@ -16,6 +18,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +49,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
 
 
     @Override
-    public ResponseEntity<?> employeeAccountsComparing(String companyName, String month, String year, MultipartFile file) throws AccountantException, IOException {
+    public ResponseEntity<?> employeePFComparing(String companyName, String month, String year, MultipartFile file) throws AccountantException, IOException {
         Map<String, Object> responseBody;
         try {
             CompanyEntity companyEntity = validatingCompanyAndFile(companyName, file);
@@ -87,7 +92,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
 
 
     @Override
-    public ResponseEntity<?> registerEmployeeForAccounts(String companyName, String month, String year, MultipartFile file) throws AccountantException, IOException {
+    public ResponseEntity<?> registerEmployeeForPF(String companyName, String month, String year, MultipartFile file) throws AccountantException, IOException {
 
         try {
             CompanyEntity companyEntity = validatingCompanyAndFile(companyName, file);
@@ -138,7 +143,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
                     .orElseThrow(() -> new AccountantException("Employee not found for UAN: " + uanPlain, HttpStatus.NOT_FOUND));
 
             EmployeeAccountEntity employee = new EmployeeAccountEntity();
-            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(uanEncoded);
+            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(uanEncoded, month, year);
 
             employee.setId(resourceId);
             employee.setEmployeeName(employeeName);
@@ -236,7 +241,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             });
 
             Collection<EmployeeAccountEntity> previousAccount = accountDao.getEmployeeAccountByUanMonthYear(
-                    uanEncoded, company.getId(), prevMonth, prevYear, company.getShortName());
+                    uanEncoded, company.getId(), prevMonth, prevYear, company.getShortName(), null, null);
 
             if (previousAccount != null && !previousAccount.isEmpty()) {
                 EmployeeAccountEntity prevEntity = previousAccount.iterator().next();
@@ -287,5 +292,144 @@ public class EmployeePFServiceImpl implements EmployeePFService {
         }
         return true;
     }
+
+
+    @Override
+    public ResponseEntity<?> addSingleEmployeeForPF(String companyName, EmployeePFRequest request) throws AccountantException, IOException {
+
+        try {
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Company not found for ID: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+            log.info("Processing employee accounts for company: {}", companyName);
+            String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
+            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(request.getUanNo(), request.getMonth(), request.getYear());
+            EmployeeEntity employeeEntity = openSearchOperations.getEmployeeByUanNo(companyEntity.getShortName(), request.getUanNo());
+            if (employeeEntity == null) {
+                log.error("Employee not found for UAN: {}", request.getUanNo());
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeEntity.getEmployeeId(), resourceId, request.getMonth(), request.getYear());
+            if (employees != null && !employees.isEmpty() && employees.stream().anyMatch(emp -> !emp.getProvidentFund().isEmpty())) {
+                log.error("Employee account already exists for UAN: {}", request.getUanNo());
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PF_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+            }
+            EmployeeAccountEntity employee = objectMapper.convertValue(request, EmployeeAccountEntity.class);
+            employee.setId(resourceId);
+            employee.setCompanyId(companyEntity.getId());
+            employee.setType(Constants.EMPLOYEE_ACCOUNT);
+            employee.setUanNo(base64Encode(request.getUanNo()));
+            employee.setProvidentFund(base64Encode(request.getProvidentFund()));
+            employee.setEmployeeName(request.getEmployeeName());
+            employee.setEmployeeId(employeeEntity.getId());
+
+            accountDao.save(employee, companyName);
+
+        }catch (AccountantException e) {
+            log.error("Exception while fetching company details: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("An unexpected error occurred while fetching company details: {}", e.getMessage());
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_PF), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(
+                ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+
+    }
+
+    @Override
+    public Collection<EmployeeAccountEntity> getEmployeeAccountDetails(String companyName, String employeeId, String accountId, String month, String year) {
+        try {
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Exception while fetching company details: Company not found for name: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+            log.debug("Getting employee accounts for company: {}, employeeId: {}, month: {}, year: {}",
+                    companyName, accountId, month, year);
+            Collection<EmployeeAccountEntity> employeeAccountEntities = accountDao.getEmployeeAccountByUanMonthYear(null, companyEntity.getId(), month, year, companyEntity.getShortName(), employeeId, accountId);
+            return employeeAccountEntities;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> updateEmployeeForPf(String companyName, String employeeId, String accountId, EmployeePFUpdate request) throws AccountantException {
+
+        try {
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Company not found for ID: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+            log.info("Processing employee accounts for company: {}", companyName);
+            String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
+            Object employeeEntity = openSearchOperations.getById(employeeId, null, indexName);
+            if (employeeEntity == null) {
+                log.error("Employee not found for ID: {}", employeeId);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeId, accountId, request.getMonth(), request.getYear());
+            if (employees == null && employees.isEmpty()) {
+                log.error("Employee account not found for ID: {}", accountId);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PF_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+            EmployeeAccountEntity entitySrc = objectMapper.convertValue(request, EmployeeAccountEntity.class);
+            EmployeeAccountEntity entityTgt = objectMapper.convertValue(employees, EmployeeAccountEntity.class);
+            BeanUtils.copyProperties(entitySrc, entityTgt, getNullPropertyNames(entitySrc));
+            entityTgt.setPanNo(base64Encode(request.getPanNo()));
+            entityTgt.setProvidentFund(base64Encode(request.getProvidentFund()));
+
+        }catch (AccountantException e) {
+            log.error("Exception while fetching company details: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("An unexpected error occurred while fetching company details: {}", e.getMessage());
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_PF), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(
+                ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+
+    }
+
+    @Override
+    public void deleteEmployeeAccountDetails(String companyName, String employeeId, String accountId) {
+        try {
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Exception while fetching company details: Company not found for name: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+            log.debug("Deleting employee accounts for company: {}, employeeId: {}, accountId: {}",
+                    companyName, employeeId, accountId);
+            Collection<EmployeeAccountEntity> employeeAccountEntities = this.getEmployeeAccountDetails(companyName, employeeId, accountId, null, null);
+            if (employeeAccountEntities == null || employeeAccountEntities.isEmpty()) {
+                log.error("Employee account not found for ID: {}", accountId);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PF_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+
+            EmployeeAccountEntity employeeAccountEntity = accountDao.get(employeeAccountEntities.stream().findFirst().get().getId(), companyName).orElseThrow();
+            accountDao.delete(employeeAccountEntity.getId(), companyName);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String[] getNullPropertyNames(Object source) {
+        final BeanWrapper src = new BeanWrapperImpl(source);
+        Set<String> emptyNames = new HashSet<>();
+        for (var pd : src.getPropertyDescriptors()) {
+            Object value = src.getPropertyValue(pd.getName());
+            if (value == null) {
+                emptyNames.add(pd.getName());
+            }
+        }
+        return emptyNames.toArray(new String[0]);
+    }
+
 
 }

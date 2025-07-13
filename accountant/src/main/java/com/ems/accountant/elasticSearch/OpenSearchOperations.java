@@ -135,4 +135,24 @@ public class OpenSearchOperations {
         return employeeEntities;
     }
 
+    public EmployeeEntity getEmployeeByUanNo(String shortName, String uanNo) {
+        logger.debug("Getting employee by UAN No: {} for company {}", uanNo, shortName);
+        BoolQuery boolQuery = BoolQuery.of(b -> b
+                .filter(f -> f.matchPhrase(m -> m.field(Constants.SHORT_NAME).query(shortName)))
+                .filter(f -> f.matchPhrase(m -> m.field(Constants.UAN_NUMBER).query(uanNo))));
+        SearchRequest searchRequest = SearchRequest.of(s -> s
+                .index(ResourceIdUtils.generateCompanyIndex(shortName))  // Specify the index
+                .query(Query.of(q -> q.bool(boolQuery)))
+                .size(1));
+        try {
+            SearchResponse<EmployeeEntity> searchResponse = esClient.search(searchRequest, EmployeeEntity.class);
+            List<Hit<EmployeeEntity>> hits = searchResponse.hits().hits();
+            if (hits != null && !hits.isEmpty()) {
+                return hits.get(0).source();
+            }
+        } catch (IOException e) {
+            logger.error("Unable to fetch employee details", e);
+        }
+        return null;
+    }
 }

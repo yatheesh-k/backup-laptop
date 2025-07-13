@@ -16,7 +16,9 @@ public enum ErrorMessageKey {
     INVALID_FILE_TYPE("invalid.file.type"),
     EMPTY_FILE("empty.file"),
     COMPANY_NOT_EXIST("company.not.exist"),
-    EMPLOYEE_NOT_FOUND("employee.not.found"),;
+    EMPLOYEE_NOT_FOUND("employee.not.found"),
+    EMPLOYEE_PF_ALREADY_EXISTS("employee.pf.already.exists"),
+    EMPLOYEE_PF_NOT_FOUND("employee.pf.not.found"),;
 
     private final String key;
 
