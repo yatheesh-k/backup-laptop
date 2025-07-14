@@ -11,4 +11,6 @@ public interface EmployeeAccountDao extends Dao<EmployeeAccountEntity> {
 
 
     Collection<EmployeeAccountEntity> getEmployeeAccountByUanMonthYear(String uanEncoded, String id, String month, String year, String companyMonth, String employeeId, String accountId) throws AccountantException;
+
+    Collection<EmployeeAccountEntity> getEmployeeAccountByPanMonthYear(String panEncoded,String id,String month,String year, String companyMonth, String employeeId,String accountId) throws AccountantException;
 }
