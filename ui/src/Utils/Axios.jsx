@@ -6,6 +6,8 @@ const hostname = window.location.hostname;
 
 const BASE_URL = `${protocol}//${hostname}:8092/ems`;
 const Login_URL = `${protocol}//${hostname}:9090/ems`;
+// New microservice (port 8093)
+const MICROSERVICE_URL = `${protocol}//${hostname}:8093/ems`;
 
 // ✅ Create Axios Instance (Without Token)
 const axiosInstance = axios.create({
@@ -13,6 +15,9 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+});
+const microserviceAxiosInstance = axios.create({
+  baseURL: MICROSERVICE_URL,  // Instance for 8093 microservices
 });
 
 // ✅ Attach Token Dynamically Using Axios Interceptors
@@ -26,6 +31,24 @@ axiosInstance.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+// ✅ Attach Token Dynamically Using Axios Interceptors
+const attachTokenInterceptor = (config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
+  // Only set Content-Type if it's not FormData
+  if (!(config.data instanceof FormData)) {
+    config.headers['Content-Type'] = 'application/json';
+  }
+  
+  return config;
+};
+
+axiosInstance.interceptors.request.use(attachTokenInterceptor);
+microserviceAxiosInstance.interceptors.request.use(attachTokenInterceptor);
 
 // // Refresh token function
 // const refreshAuthToken = async () => {
@@ -322,10 +345,45 @@ export const EmployeeGetApi = () => {
   return axiosInstance.get(`/${company}/employee`)
 }
 
-export const EmployeeAccountsApi = () => {
+export const EmployeePFDetailsGetAPI = () => {
   const company = localStorage.getItem("companyName");
   return axiosInstance.get(`/${company}/employee/accounts`);
 };
+
+// Compare PF Excel
+export const EmployeePFComparingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employee`, formData, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
+
+// Register new employee
+export const RegisterPFEmployeeAPI = (employeeData) => {
+  const company = localStorage.getItem("companyName");
+  return microserviceAxiosInstance.post(`/${company}/employees/pf/register`, employeeData);
+};
+
+export const SubmitPFForProcessingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employees/account`, formData, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
 
 export const EmployeeNoAttendanceGetAPI = (month, year) => {
   const company = localStorage.getItem("companyName");
