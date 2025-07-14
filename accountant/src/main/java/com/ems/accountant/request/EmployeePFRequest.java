@@ -43,6 +43,4 @@ public class EmployeePFRequest {
     @Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "{providentFund.message}")
     private String providentFund;
 
-
-
 }

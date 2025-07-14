@@ -23,7 +23,7 @@ public class GSTAccountController {
 
     @RequestMapping(value = "{companyName}/gst", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
-            summary = "${api.employeePFComparing.tag}", description = "${api.employeePFComparing.description}")
+            summary = "${api.gstComparing.tag}", description = "${api.gstComparing.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
     public ResponseEntity<?> gstComparing(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
@@ -35,7 +35,7 @@ public class GSTAccountController {
 
     @RequestMapping(value = "{companyName}/gst/account", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
-            summary = "${api.employeePFComparing.tag}", description = "${api.employeePFComparing.description}")
+            summary = "${api.registerGSTAccount.tag}", description = "${api.registerGSTAccount.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
     public ResponseEntity<?> registerGSTAccount(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
