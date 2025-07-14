@@ -23,9 +23,11 @@ public class ResourceIdUtils {
         return Constants.INDEX_EMS+"_"+name;
     }
     public static String generateEmployeeAccountResourceId(String uanNo, String month, String year) {
-        return generateGlobalResourceId(ResourceType.EMPLOYEE_ACCOUNT, uanNo);
+        return generateGlobalResourceId(ResourceType.EMPLOYEE_ACCOUNT, uanNo, month, year);
     }
-
+    public static String generatePFResponseResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.PF_RESPONSE, companyName, month, year);
+    }
 
     /**
      * Generate a global resource ID based on the resource type
