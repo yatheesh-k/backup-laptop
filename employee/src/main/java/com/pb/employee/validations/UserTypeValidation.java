@@ -12,7 +12,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Constraint(validatedBy = UserTypeValidationImpl.class)
 public @interface UserTypeValidation {
-
     String message() default "The User type doesn't match!";
     Class<?>[] groups() default {};
     Class<? extends String>[] payload() default {};

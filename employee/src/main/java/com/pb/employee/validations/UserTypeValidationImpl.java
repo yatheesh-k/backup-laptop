@@ -1,14 +1,12 @@
 package com.pb.employee.validations;
 
-import com.pb.employee.persistance.model.RoleType;
+import com.pb.employee.persistance.model.UserType;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-import java.util.List;
-
-public class UserTypeValidationImpl implements ConstraintValidator<UserTypeValidation, List<String>> {
+public class UserTypeValidationImpl implements ConstraintValidator<UserTypeValidation, String> {
     @Override
-    public boolean isValid(List<String> value, ConstraintValidatorContext context) {
-        return RoleType.exists(value);
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        return UserType.exists(value);
     }
 }

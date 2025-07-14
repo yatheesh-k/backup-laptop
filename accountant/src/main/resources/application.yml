@@ -1,0 +1,47 @@
+server:
+  port: 8093
+  servlet:
+    contextPath: /ems
+  ssl:
+    enabled: true
+    key-store: ../certificates/ssl.jks
+    key-store-password: pathbreaker
+    key-alias: pbt
+    key-store-type: JKS
+spring:
+  aop:
+    proxy-target-class: true
+  main:
+    allow-circular-references: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: cubhrm@gmail.com
+    password: dmbn xzzi qjfr srwt
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    # Multipart configuration
+    servlet:
+      multipart:
+        enabled: true
+        max-file-size: 2GB
+        max-request-size: 2GB
+  thymeleaf:
+    cache: false
+  security:
+    basic:
+      enabled: false
+es:
+  esHost: localhost
+  esPort: 9200
+springdoc:
+  swagger-ui:
+    tagsSorter: alpha
+    path: /swagger-ui
+  api-docs:
+    resolve-schema-properties: true
+    path: /api-docs

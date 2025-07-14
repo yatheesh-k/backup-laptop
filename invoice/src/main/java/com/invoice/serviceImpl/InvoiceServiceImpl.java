@@ -21,6 +21,10 @@ import freemarker.template.TemplateException;
 import io.swagger.models.auth.In;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -33,7 +37,9 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -118,7 +124,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public ResponseEntity<?> getCompanyAllInvoices(String companyId, String customerId,HttpServletRequest request) throws InvoiceException {
+    public ResponseEntity<?> getCompanyAllInvoices(String companyId, String customerId,String year,String month,HttpServletRequest request) throws InvoiceException {
         List<InvoiceModel> invoiceEntities;
         InvoiceResponse invoiceResponse = null;
 
@@ -153,6 +159,27 @@ public class InvoiceServiceImpl implements InvoiceService {
 
             // Unmask sensitive properties in each invoice
             for (InvoiceModel invoice : invoiceEntities) {
+
+                InvoiceUtils.unMaskInvoiceProperties(invoice);
+                // Filter by year and/or month (based on parameters)
+                boolean include = true;
+                try {
+                    log.info("Filtering invoice with ID: {} for year: {}, month: {}", invoice.getInvoiceId(), year, month);
+                    LocalDate invoiceDate = LocalDate.parse(invoice.getInvoiceDate()); // decoded already
+
+                    if (StringUtils.hasText(year)) {
+                        include = include && invoiceDate.getYear() == Integer.parseInt(year);
+                    }
+                    if (StringUtils.hasText(month)) {
+                        include = include && invoiceDate.getMonthValue() == Integer.parseInt(month);
+                    }
+                } catch (Exception e) {
+                    log.info("Skipping invoice due to invalid date format: {}", invoice.getInvoiceId());
+                    continue;
+                }
+
+                if (!include) continue; // skip non-matching invoices
+
                 // Fetch and unmask customer (with caching)
                 String custId = invoice.getCustomerId();
                 CustomerModel unmaskedCustomer = customerCache.get(custId);
@@ -172,13 +199,11 @@ public class InvoiceServiceImpl implements InvoiceService {
                     throw new InvoiceException(InvoiceErrorMessageHandler.getMessage(InvoiceErrorMessageKey.BANK_DETAILS_NOT_FOUND), HttpStatus.NOT_FOUND);
                 }
                 BankEntity unmaskedBank = InvoiceUtils.unMaskBankProperties(bankEntity); // assuming you have this
-                InvoiceUtils.unMaskInvoiceProperties(invoice);
                 InvoiceResponse response = InvoiceResponse.builder().company(unmaskedCompany).customer(unmaskedCustomer).bank(unmaskedBank).build();
                 InvoiceUtils.calculateGrandTotal(invoice, response);
                 response.setInvoice(invoice);
                 invoiceResponses.add(response);
             }
-
             // Return success response with the list of invoices
             log.info("Successfully fetched invoices for companyId: {} and customerId: {}", companyId, customerId);
             return ResponseEntity.ok(ResponseBuilder.builder().build().createSuccessResponse(invoiceResponses));

@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.YearMonth;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -63,9 +64,10 @@ public class InvoiceController {
                                                     @RequestHeader(Constants.AUTH_KEY) String authToken,
                                                     @Parameter(required = true, description = "${api.getCompanyPayload.description}")
                                                     @PathVariable String companyId,
-                                                    @RequestParam(required = false,name = Constants.CUSTOMER_ID) String customerId
+                                                    @RequestParam(required = false,name = Constants.CUSTOMER_ID) String customerId,
+                                                   @RequestParam(required = false) String year,@RequestParam(required = false) String month
                                                     ) throws EmployeeException {
-        return invoiceService.getCompanyAllInvoices(authToken,companyId,customerId);
+        return invoiceService.getCompanyAllInvoices(authToken,companyId,customerId,year,month);
     }
 
     @GetMapping("company/{companyId}/customer/{customerId}/downloadInvoice/{invoiceId}")
@@ -81,7 +83,6 @@ public class InvoiceController {
                                              @PathVariable String invoiceId,HttpServletRequest request) throws EmployeeException {
         return invoiceService.downloadInvoice(authToken,companyId,customerId,invoiceId,request);
     }
-
 
     @PatchMapping("company/{companyId}/customer/{customerId}/invoice/{invoiceId}")
     @Operation(security = { @SecurityRequirement(name = Constants.AUTH_KEY) },summary = "${api.updateInvoice.tag}", description = "${api.updateInvoice.description}")

@@ -7,12 +7,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.time.YearMonth;
 
 public interface InvoiceService {
 
     ResponseEntity<?> generateInvoice(String companyId,String customerId,InvoiceRequest request) throws InvoiceException, IOException;
 
-    ResponseEntity<?> getCompanyAllInvoices(String companyId,String customerId,HttpServletRequest request) throws InvoiceException;
+    ResponseEntity<?> getCompanyAllInvoices(String companyId,String customerId,String year,String month,HttpServletRequest request) throws InvoiceException;
 
     ResponseEntity<?> getInvoiceById(String companyId,String customerId,String invoiceId,HttpServletRequest request)throws InvoiceException, IOException;
 
