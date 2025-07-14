@@ -1,6 +1,8 @@
 package com.ems.accountant.utils;
 
 import com.ems.accountant.model.ResourceType;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,11 @@ public class ResourceIdUtils {
     }
     public static String generatePFResponseResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.PF_RESPONSE, companyName, month, year);
+    }
+
+    public static String generateTDSResponseResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.TDS_RESPONSE, companyName, month, year);
+
     }
 
     /**

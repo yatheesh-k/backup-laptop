@@ -47,4 +47,5 @@ public class Constants {
     public static final String PT_MISSING_FOR_PF_EMPLOYEES = "Employees not in the PT sheet who are having PF";
     public static final String PT_EMPLOYEES_WITHOUT_PF = "Employees in PT sheet but not having PF";
     public static final String PF_RESPONSE = "pf_response";
+    public static final String TDS_RESPONSE = "tds_response";
 }
