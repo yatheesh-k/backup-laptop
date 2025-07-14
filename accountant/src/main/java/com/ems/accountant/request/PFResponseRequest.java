@@ -16,12 +16,7 @@ import lombok.*;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EmployeePFRequest {
-
-    @Schema(example = "xxx yyy")
-    @Size(min = 2, max = 100, message = "{employee.size.message}")
-    @Pattern(regexp = "^[A-Z][a-zA-Z]*(?:\\s[A-Z][a-zA-Z]*)*$", message = "{employee.name.message}")
-    private String employeeName;
+public class PFResponseRequest {
 
     @MonthValidation
     private String month;
@@ -31,18 +26,12 @@ public class EmployeePFRequest {
     @Pattern(regexp = "^(19|20)\\d{2}$", message = "{year.message}")
     private String year;
 
-    @Schema(example = "ABCDE1234F")
-    @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]$", message = "{pan.message}")
-    private String pan;
+    @Schema(example = "something")
+    @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{ignoredCompanyEmployees.message}")
+    private String ignoredCompanyEmployees;
 
-    @Schema(example = "100456789012")
-    @Pattern(regexp = "^\\d{12}$", message = "{uan.message}")
-    private String uanNo;
-
-    @Schema(example = "1800")
-    @Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "{providentFund.message}")
-    private String providentFund;
-
-
+    @Schema(example = "something")
+    @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{invalidPFAmounts.message}")
+    private String invalidPFAmounts;
 
 }

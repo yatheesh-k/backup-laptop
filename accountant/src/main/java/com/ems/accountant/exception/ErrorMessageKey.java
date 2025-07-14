@@ -19,7 +19,14 @@ public enum ErrorMessageKey {
     EMPLOYEE_NOT_FOUND("employee.not.found"),
     EMPLOYEE_PF_ALREADY_EXISTS("employee.pf.already.exists"),
     EMPLOYEE_PF_NOT_FOUND("employee.pf.not.found"),
-    CUSTOMER_GST_NOT_FOUND("customer.gst.not.found");
+    CUSTOMER_GST_NOT_FOUND("customer.gst.not.found"),
+    PF_RESPONSE_ALREADY_EXISTS("pf.response.already.exists"),
+    UNABLE_SAVE_PF_RESPONSE("unable.to.save.pf.response"),
+    PF_RESPONSE_NOT_FOUND("pf.response.not.found"),
+    UNABLE_FETCH_PF_RESPONSE("unable.to.fetch.pf.response"),
+    NO_CHANGES_DETECTED("no.changes.detected"),
+    UNABLE_UPDATE_PF_RESPONSE("unable.to.update.pf.response"),
+    UNABLE_DELETE_PF_RESPONSE("unable.to.delete.pf.response");
 
     private final String key;
 
