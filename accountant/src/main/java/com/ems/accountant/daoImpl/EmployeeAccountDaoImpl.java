@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Component
 public class EmployeeAccountDaoImpl extends AbstractDao<EmployeeAccountEntity> implements EmployeeAccountDao{
@@ -43,6 +44,32 @@ public class EmployeeAccountDaoImpl extends AbstractDao<EmployeeAccountEntity> i
         }
 
 
+
+        return search(filters, companyName);
+    }
+
+    @Override
+    public Collection<EmployeeAccountEntity> getEmployeeAccountByPanMonthYear(String panEncoded, String id, String month, String year, String companyName, String employeeId, String accountId) throws AccountantException {
+        Collection<Filter> filters = new ArrayList<>();
+
+        if (StringUtils.isNotBlank(panEncoded)) {
+            filters.add(new Filter(Constants.PAN_NUMBER, Operator.EQ, panEncoded));
+        }
+        if (StringUtils.isNotBlank(id)) {
+            filters.add(new Filter(Constants.COMPANY_ID, Operator.EQ, id));
+        }
+        if (StringUtils.isNotBlank(month)) {
+            filters.add(new Filter(Constants.MONTH, Operator.EQ, month));
+        }
+        if (StringUtils.isNotBlank(year)) {
+            filters.add(new Filter(Constants.YEAR, Operator.EQ, year));
+        }
+        if (StringUtils.isNotBlank(accountId)) {
+            filters.add(new Filter(Constants.ID, Operator.EQ, accountId));
+        }
+        if (StringUtils.isNotBlank(employeeId)) {
+            filters.add(new Filter(Constants.EMPLOYEE_ID, Operator.EQ, employeeId));
+        }
 
         return search(filters, companyName);
     }
