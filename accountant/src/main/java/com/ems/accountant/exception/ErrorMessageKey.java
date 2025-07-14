@@ -18,7 +18,8 @@ public enum ErrorMessageKey {
     COMPANY_NOT_EXIST("company.not.exist"),
     EMPLOYEE_NOT_FOUND("employee.not.found"),
     EMPLOYEE_PF_ALREADY_EXISTS("employee.pf.already.exists"),
-    EMPLOYEE_PF_NOT_FOUND("employee.pf.not.found"),;
+    EMPLOYEE_PF_NOT_FOUND("employee.pf.not.found"),
+    UNABLE_SAVE_EMPLOYEE_PT("unable.to.save.employee.pt"), EMPLOYEE_PT_NOT_FOUND("employee.pt.not.found");
 
     private final String key;
 

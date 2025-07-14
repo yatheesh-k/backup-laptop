@@ -11,11 +11,9 @@ import lombok.*;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EmployeePFUpdate {
-
+public class EmployeePTUpdate {
     private String employeeName;
     private String month;
     private String year;
-    private String panNo;
-    private String providentFund;
+    private String professionalTax;
 }
