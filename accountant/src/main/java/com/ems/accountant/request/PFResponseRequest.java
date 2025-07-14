@@ -27,8 +27,8 @@ public class PFResponseRequest {
     private String year;
 
     @Schema(example = "something")
-    @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{notCompanyEmployees.message}")
-    private String notCompanyEmployees;
+    @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{ignoredCompanyEmployees.message}")
+    private String ignoredCompanyEmployees;
 
     @Schema(example = "something")
     @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{invalidPFAmounts.message}")

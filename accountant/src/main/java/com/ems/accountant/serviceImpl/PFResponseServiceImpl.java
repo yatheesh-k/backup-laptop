@@ -113,7 +113,7 @@ public class PFResponseServiceImpl implements PFResponseService {
         }
         try {
             if ((updateRequest.getInvalidPFAmounts() .equals(pfResponseEntity.getInvalidPFAmounts()))
-                    && (updateRequest.getNotCompanyEmployees().equals(pfResponseEntity.getNotCompanyEmployees()))) {
+                    && (updateRequest.getIgnoredCompanyEmployees().equals(pfResponseEntity.getIgnoredCompanyEmployees()))) {
                 log.warn("No changes detected in PF Response with ID {} for company {}", pfResponseId, companyName);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }

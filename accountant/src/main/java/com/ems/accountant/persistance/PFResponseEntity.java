@@ -17,7 +17,7 @@ public class PFResponseEntity extends AbstractEntity{
     private String month;
     private String year;
     private String companyId;
-    private String notCompanyEmployees;
+    private String ignoredCompanyEmployees;
     private String invalidPFAmounts;
 
 

@@ -27,7 +27,7 @@ public class EmployeePFController {
     @Autowired
     private EmployeePFService employeePFService;
 
-    @RequestMapping(value = "{companyName}/employee/pf", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "{companyName}/pf/comparing", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.employeePFComparing.tag}", description = "${api.employeePFComparing.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
