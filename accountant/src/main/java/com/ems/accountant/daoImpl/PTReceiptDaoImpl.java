@@ -4,15 +4,16 @@ import com.ems.accountant.controller.filter.Filter;
 import com.ems.accountant.controller.filter.Operator;
 import com.ems.accountant.dao.PTReceiptDao;
 import com.ems.accountant.exception.AccountantException;
-import com.ems.accountant.persistance.PFResponseEntity;
 import com.ems.accountant.persistance.PTReceiptEntity;
 import com.ems.accountant.repository.Repository;
 import com.ems.accountant.utils.Constants;
 import io.micrometer.common.util.StringUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
+@Component
 public class PTReceiptDaoImpl extends AbstractDao<PTReceiptEntity> implements PTReceiptDao {
 
     public PTReceiptDaoImpl(Repository repository) {super(repository);}

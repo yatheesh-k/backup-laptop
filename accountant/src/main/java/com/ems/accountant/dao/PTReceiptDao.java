@@ -1,8 +1,6 @@
 package com.ems.accountant.dao;
 
 import com.ems.accountant.exception.AccountantException;
-import com.ems.accountant.persistance.PFReceiptsEntity;
-import com.ems.accountant.persistance.PFResponseEntity;
 import com.ems.accountant.persistance.PTReceiptEntity;
 
 import java.util.Collection;
