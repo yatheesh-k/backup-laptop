@@ -43,4 +43,8 @@ public class Constants {
     public static final String EMPLOYEE_ID = "employeeId";
     public static final Object DELETED = "Deleted";
     public static final String PF_RESPONSE = "pf_response";
+    public static final String PF_RECEIPTS = "pf_receipts";
+    public static final Object SLASH = "/";
+    public static final String PATH_PATTERN = "/var/www/ems/assets/img/**";
+    public static final String FILE_STORED_PATH = "file:/var/www/ems/assets/img/";
 }
