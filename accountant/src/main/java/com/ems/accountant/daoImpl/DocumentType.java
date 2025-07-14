@@ -1,6 +1,7 @@
 package com.ems.accountant.daoImpl;
 
 import com.ems.accountant.persistance.EmployeeAccountEntity;
+import com.ems.accountant.persistance.PFResponseEntity;
 import com.ems.accountant.persistance.model.Entity;
 import com.ems.accountant.persistance.model.IDEntity;
 import lombok.Getter;
@@ -27,5 +28,8 @@ public class DocumentType {
     }
 
     public static final DocumentType EMPLOYEE_ACCOUNT = new DocumentType("employee_account", EmployeeAccountEntity.class);
+
+    public static final DocumentType PF_RESPONSE = new DocumentType("pf_response", PFResponseEntity.class);
+
 
 }

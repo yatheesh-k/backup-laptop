@@ -1,7 +1,5 @@
 package com.pb.employee.daoImpl;
 
-import com.pb.employee.persistance.model.Entity;
-import com.pb.employee.persistance.model.IDEntity;
 import lombok.Getter;
 
 import java.util.HashMap;
