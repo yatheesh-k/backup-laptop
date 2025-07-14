@@ -16,6 +16,7 @@ public enum ResourceType {
 
     COMPANY("company"                                     , Constants.COMPANY),
     EMPLOYEE_ACCOUNT("employee_account", Constants.EMPLOYEE_ACCOUNT),
+    GST_ACCOUNT("gst_account"                             , Constants.GST_ACCOUNT),
 
     UNDEFINED(""                                    , "");
 

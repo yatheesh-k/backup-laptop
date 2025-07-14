@@ -25,6 +25,9 @@ public class ResourceIdUtils {
     public static String generateEmployeeAccountResourceId(String uanNo, String month, String year) {
         return generateGlobalResourceId(ResourceType.EMPLOYEE_ACCOUNT, uanNo);
     }
+    public static String generateGSTAccountResourceId(String invoiceNumber) {
+        return generateGlobalResourceId(ResourceType.GST_ACCOUNT, invoiceNumber);
+    }
 
 
     /**
