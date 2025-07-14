@@ -42,6 +42,10 @@ public class Constants {
     public static final String ACTIVE = "active";
     public static final String EMPLOYEE_ID = "employeeId";
     public static final Object DELETED = "Deleted";
+    public static final String PT_MISMATCH_EMPLOYEES = "PT Mismatch Employees";
+    public static final String PAN_NUMBER = "panNo";
+    public static final String PT_MISSING_FOR_PF_EMPLOYEES = "Employees not in the PT sheet who are having PF";
+    public static final String PT_EMPLOYEES_WITHOUT_PF = "Employees in PT sheet but not having PF";
     public static final String PF_RESPONSE = "pf_response";
     public static final String PF_RECEIPTS = "pf_receipts";
     public static final Object SLASH = "/";
