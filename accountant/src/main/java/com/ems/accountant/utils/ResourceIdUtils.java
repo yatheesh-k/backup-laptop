@@ -32,8 +32,11 @@ public class ResourceIdUtils {
     }
 
     public static String generatePFReceiptsResourceId(String companyName, String month, String year) {
-        return generateGlobalResourceId(ResourceType.PF_RECEIPTS, companyName, month, year);
+        return generateGlobalResourceId(ResourceType.PF_RECEIPT, companyName, month, year);
 
+    }
+    public static String generatePTReceiptsResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.PT_RECEIPT, companyName, month, year);
     }
     /**
      * Generate a global resource ID based on the resource type

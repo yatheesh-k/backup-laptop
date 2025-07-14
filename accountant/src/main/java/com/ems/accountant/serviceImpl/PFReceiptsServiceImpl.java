@@ -8,6 +8,7 @@ import com.ems.accountant.exception.ErrorMessageHandler;
 import com.ems.accountant.exception.ErrorMessageKey;
 import com.ems.accountant.persistance.CompanyEntity;
 import com.ems.accountant.persistance.PFReceiptsEntity;
+import com.ems.accountant.persistance.PTReceiptEntity;
 import com.ems.accountant.request.PFReceiptUpdateRequest;
 import com.ems.accountant.request.PFReceiptsRequest;
 import com.ems.accountant.service.PFReceiptsService;
@@ -87,7 +88,7 @@ public class PFReceiptsServiceImpl implements PFReceiptsService {
             receipts.setPfTotalAmount(base64Encode(request.getPfTotalAmount()));
             receipts.setMonth(request.getMonth());
             receipts.setYear(request.getYear());
-            receipts.setType(Constants.PF_RECEIPTS);
+            receipts.setType(Constants.PF_RECEIPT);
             storeEmployeePFReceipts(request.getFile(), companyName, receipts);
             receiptsDao.save(receipts, companyName);
 
@@ -109,7 +110,7 @@ public class PFReceiptsServiceImpl implements PFReceiptsService {
                 String companyFolderPath = folderPath + companyName;
                 String filename = companyFolderPath+Constants.SLASH+companyName+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+file.getOriginalFilename();
                 file.transferTo(new File(filename));
-                receipts.setPfReceiptFileName(companyName+Constants.SLASH+companyName+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+"_"+file.getOriginalFilename());
+                receipts.setPfReceiptFileName(companyName+Constants.SLASH+Constants.PF_RECEIPT+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+"_"+file.getOriginalFilename());
                 ResponseEntity.ok(filename);
             }
 
@@ -168,8 +169,11 @@ public class PFReceiptsServiceImpl implements PFReceiptsService {
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }
 
-            PFReceiptsEntity updatedData = objectMapper.convertValue(updateRequest, PFReceiptsEntity.class);
-            BeanUtils.copyProperties(updatedData, pfReceiptsEntity, getNullPropertyNames(updatedData));
+
+            PFReceiptsEntity updatedData = new PFReceiptsEntity();
+            updatedData.setPfReceiptNumber(base64Encode(updateRequest.getPfReceiptNumber()));
+            updatedData.setPfReceiptDate(updateRequest.getPfReceiptDate());
+            updatedData.setPfTotalAmount(base64Encode(updateRequest.getPfTotalAmount()));            BeanUtils.copyProperties(updatedData, pfReceiptsEntity, getNullPropertyNames(updatedData));
             storeEmployeePFReceipts(updateRequest.getFile(), companyName, pfReceiptsEntity);
             receiptsDao.save(pfReceiptsEntity, companyName);
         } catch (AccountantException ex) {
