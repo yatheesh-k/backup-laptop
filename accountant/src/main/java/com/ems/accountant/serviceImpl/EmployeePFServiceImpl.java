@@ -372,7 +372,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
                 log.error("Employee not found for ID: {}", employeeId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
-            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeId, accountId, request.getMonth(), request.getYear());
+            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeId, accountId, null, null);
             if (employees == null && employees.isEmpty()) {
                 log.error("Employee account not found for ID: {}", accountId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PF_NOT_FOUND), HttpStatus.NOT_FOUND);
@@ -380,7 +380,6 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             EmployeeAccountEntity entitySrc = objectMapper.convertValue(request, EmployeeAccountEntity.class);
             EmployeeAccountEntity entityTgt = objectMapper.convertValue(employees, EmployeeAccountEntity.class);
             BeanUtils.copyProperties(entitySrc, entityTgt, getNullPropertyNames(entitySrc));
-            entityTgt.setPanNo(base64Encode(request.getPanNo()));
             entityTgt.setProvidentFund(base64Encode(request.getProvidentFund()));
 
         }catch (AccountantException e) {

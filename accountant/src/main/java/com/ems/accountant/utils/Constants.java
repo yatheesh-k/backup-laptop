@@ -42,4 +42,5 @@ public class Constants {
     public static final String ACTIVE = "active";
     public static final String EMPLOYEE_ID = "employeeId";
     public static final Object DELETED = "Deleted";
+    public static final String PF_RESPONSE = "pf_response";
 }

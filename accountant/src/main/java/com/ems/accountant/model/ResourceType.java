@@ -16,6 +16,7 @@ public enum ResourceType {
 
     COMPANY("company"                                     , Constants.COMPANY),
     EMPLOYEE_ACCOUNT("employee_account", Constants.EMPLOYEE_ACCOUNT),
+    PF_RESPONSE("pf_response",            Constants.PF_RESPONSE),
 
     UNDEFINED(""                                    , "");
 
