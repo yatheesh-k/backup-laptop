@@ -322,9 +322,25 @@ public class EmployeePTServiceImpl implements EmployeePTService {
 
             String employeeName = getStringCellValue(row.getCell(0));
             String panPlain = getStringCellValue(row.getCell(1));
-            String ptAmount = getStringCellValue(row.getCell(2));
+            String salaryCell = getStringCellValue(row.getCell(2));
 
-            if (panPlain == null || panPlain.isBlank()) continue;
+            if (panPlain == null || panPlain.isBlank()||salaryCell== null||salaryCell.isBlank()) continue;
+
+            double salary;
+            try {
+                salary = Double.parseDouble(salaryCell);
+            } catch (NumberFormatException e) {
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVALID_SALARY_FORMAT), HttpStatus.BAD_REQUEST);
+            }
+
+            int ptAmount;
+            if (salary <= 15000) {
+                ptAmount = 0;
+            } else if (salary <= 20000) {
+                ptAmount = 150;
+            } else {
+                ptAmount = 200;
+            }
 
             String panEncoded = base64Encode(panPlain);
 
@@ -343,7 +359,7 @@ public class EmployeePTServiceImpl implements EmployeePTService {
             employee.setMonth(month);
             employee.setYear(year);
             employee.setCompanyId(company.getId());
-            employee.setProfessionalTax(base64Encode(ptAmount));
+            employee.setProfessionalTax(base64Encode(String.valueOf(ptAmount)));
             employee.setType(Constants.EMPLOYEE_ACCOUNT);
 
             employees.add(employee);
