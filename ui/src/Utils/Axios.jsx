@@ -385,12 +385,51 @@ export const SubmitPFForProcessingAPI = (month, year, file) => {
 };
 
 export const GetPFForMonthAndYearAPI = (month, year) => {
-  const company = localStorage.getItem("companyName"); // Retrieve company name from storage
+  const company = localStorage.getItem("companyName"); 
 
   return microserviceAxiosInstance.get(`/${company}/employee/account`, {
     params: {
       month: month,
       year: year
+    }
+  });
+};
+
+export const AddPFReceiptsAPI = (data) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+
+  return microserviceAxiosInstance.post(`/${company}/pf/receipt`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const AddPFResponseAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  
+  return microserviceAxiosInstance.post(`/${companyName}/pf/response`, data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export const GetPFResponsesAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/pf/response`, {
+    params: {
+      ...(month && { month }),
+      ...(year && { year })
+    },
+    headers: {
+      "Content-Type": "application/json"
     }
   });
 };

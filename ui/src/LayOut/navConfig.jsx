@@ -67,6 +67,7 @@ export const NAV_CONFIG = {
                 // Provident Fund (PF)
                 { title: 'Manage Provident Fund Submission', path: '/companyPFSubmission' },
                 { title: 'Provident Fund Processing', path: '/pfProcessing' },
+                { title: 'Provident Fund Response View', path: '/pfResponsesView' },
 
                 // Professional Tax (PT)
                 { title: 'Manage Professional Tax Submission', path: '/companyPTSubmission' },

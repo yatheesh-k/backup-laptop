@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import LayOut from "../../LayOut/LayOut";
 import { 
   GetPFForMonthAndYearAPI,
-//   UploadPFAcknowledgementAPI 
+  AddPFReceiptsAPI  
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
@@ -39,9 +39,7 @@ const PFProcessing = () => {
     setIsFetching(true);
     try {
       const response = await GetPFForMonthAndYearAPI(approvalMonth, approvalYear);
-      // Check if response exists and has data property
       if (response && response.data) {
-        // The actual employee data is in response.data.data array
         setApprovalList(response.data.data || []);
         toast.success("Approval list fetched successfully");
       } else {
@@ -56,37 +54,39 @@ const PFProcessing = () => {
     }
   };
 
-  // Upload acknowledgement
+  // Upload acknowledgement with all required PF receipt fields
   const uploadAcknowledgement = async (data) => {
-    if (!approvalMonth || !approvalYear) {
-      toast.error("Please select month and year first");
-      return;
+  if (!approvalMonth || !approvalYear) {
+    toast.error("Please select month and year first");
+    return;
+  }
+
+  setIsUploading(true);
+  try {
+    const response = await AddPFReceiptsAPI({
+      month: approvalMonth,
+      year: approvalYear,
+      pfTotalAmount: data.pfTotalAmount,
+      pfReceiptNumber: data.pfReceiptNumber,
+      pfReceiptDate: data.pfReceiptDate,
+      file: data.file[0], // pass File object
+    });
+
+    if (response.data.success) {
+      toast.success("Provident Fund acknowledgement uploaded successfully");
+      reset();
+      setAcknowledgementFile(null);
+      setApprovalList([]);
+      setApprovalMonth("");
+      setApprovalYear("");
     }
-    
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", data.acknowledgementFile[0]);
-      formData.append("month", approvalMonth);
-      formData.append("year", approvalYear);
-      
-      const response = await (formData);
-      
-      if (response.data.success) {
-        toast.success("Acknowledgement uploaded successfully");
-        // Reset form
-        reset();
-        setAcknowledgementFile(null);
-        setApprovalList([]);
-        setApprovalMonth("");
-        setApprovalYear("");
-      }
-    } catch (error) {
-      handleApiError(error);
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  } catch (error) {
+    handleApiError(error);
+  } finally {
+    setIsUploading(false);
+  }
+};
+
 
   const handleApiError = (error) => {
     const errorMsg = error.response?.data?.message || 
@@ -97,7 +97,7 @@ const PFProcessing = () => {
     console.error("API Error:", error);
   };
 
-  // Download Excel
+  // Download Excel (unchanged)
   const downloadApprovalListExcel = () => {
     if (approvalList.length === 0) {
       toast.warning("No data to export");
@@ -141,7 +141,6 @@ const PFProcessing = () => {
             </nav>
           </div>
         </div>
-
         <div className="row">
           <div className="col-12">
             <div className="card">
@@ -247,37 +246,88 @@ const PFProcessing = () => {
                   )}
                 </div>
                 
-                {/* Step 2: Upload Acknowledgement */}
+                {/* Step 2: Updated Acknowledgement Upload Form */}
                 {approvalList.length > 0 && (
                   <div>
                     <h5 className="mb-3">2. Upload Payment Acknowledgement</h5>
                     <form onSubmit={handleSubmit(uploadAcknowledgement)}>
-                      <div className="row g-3 align-items-end mb-3">
+                      <div className="row g-3 mb-3">
+                        <div className="col-md-6">
+                          <label className="form-label">Provident Fund Total Amount</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            {...register("pfTotalAmount", {
+                              required: "PF Total Amount is required",
+                              pattern: {
+                                value: /^[0-9]+(\.[0-9]{1,2})?$/,
+                                message: "Enter a valid amount"
+                              }
+                            })}
+                          />
+                          {errors.pfTotalAmount && (
+                            <div className="text-danger small mt-1">
+                              {errors.pfTotalAmount.message}
+                            </div>
+                          )}
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label">Provident Fund Receipt Number</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            {...register("pfReceiptNumber", {
+                              required: "Provident Fund Receipt Number is required"
+                            })}
+                          />
+                          {errors.pfReceiptNumber && (
+                            <div className="text-danger small mt-1">
+                              {errors.pfReceiptNumber.message}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="col-md-6">
+                          <label className="form-label">Provident Fund Receipt Date</label>
+                          <input
+                            type="date"
+                            className="form-control"
+                            {...register("pfReceiptDate", {
+                              required: "Provident Fund Receipt Date is required"
+                            })}
+                          />
+                          {errors.pfReceiptDate && (
+                            <div className="text-danger small mt-1">
+                              {errors.pfReceiptDate.message}
+                            </div>
+                          )}
+                        </div>
+
                         <div className="col-md-6">
                           <label className="form-label">Acknowledgement File</label>
                           <input
                             type="file"
                             className="form-control"
                             accept=".pdf,.jpg,.png"
-                            {...register("acknowledgementFile", {
+                            {...register("file", {
                               required: "Please upload acknowledgement file"
                             })}
                             onChange={(e) => setAcknowledgementFile(e.target.files[0])}
                           />
-                          {errors.acknowledgementFile && (
+                          {errors.file && (
                             <div className="text-danger small mt-1">
-                              {errors.acknowledgementFile.message}
+                              {errors.file.message}
                             </div>
                           )}
                           <div className="form-text">
-                            Upload the payment confirmation from EPFO portal (PDF or image)
+                            Upload the payment acknowledgement from EPFO portal (PDF or image)
                           </div>
                         </div>
                         
-                        <div className="col-md-3">
+                        <div className="col-md-12 mt-3">
                           <button
                             type="submit"
-                            className="btn btn-success mb-4"
+                            className="btn btn-success"
                             disabled={isUploading || !acknowledgementFile}
                           >
                             {isUploading ? 'Uploading...' : 'Upload Acknowledgement'}

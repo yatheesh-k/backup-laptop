@@ -102,6 +102,7 @@ import InvoiceTemplates from '../CompanyModule/Settings/InvoiceTemplates/Invoice
 import CandidateToEmployee from '../CompanyModule/Candidate/CandidateToEmployee';
 import CompanyPFSubmission from '../AccountantModule/PF/CompanyPFSubmission';
 import PFProcessing from '../AccountantModule/PF/PFProcessing';
+import PFResponsesView from '../AccountantModule/PF/PFResponsesView';
 import CompanyPTSubmission from '../AccountantModule/ProfessionalTax/CompanyPTSubmission';
 import PTProcessing from '../AccountantModule/ProfessionalTax/PTProcessing';
 import CompanyTDSSubmission from '../AccountantModule/Tds/CompanyTDSSubmission';
@@ -200,6 +201,7 @@ export const allAvailableRoutes = [
   {path: '/employeeDocumentView', allowedTypes: ['company_admin', 'Admin','HR','employee'] },
   {path: '/companyPFSubmission', allowedTypes: ['company_admin'] },
   {path: '/pfProcessing', allowedTypes: ['company_admin'] },
+  {path: '/pfResponsesView', allowedTypes: ['company_admin'] },
   {path: '/companyPTSubmission', allowedTypes: ['company_admin'] },
   {path: '/ptProcessing', allowedTypes: ['company_admin'] },
   {path: '/companyTDSSubmission', allowedTypes: ['company_admin'] },
@@ -576,6 +578,10 @@ const Routing = () => {
       <Route
         path="/pfProcessing"
         element={<ProtectedRoute element={<PFProcessing/>} allowedTypes={['company_admin']} />}
+      />
+      <Route
+        path="/pfResponsesView"
+        element={<ProtectedRoute element={<PFResponsesView/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/companyPTSubmission"

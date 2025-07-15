@@ -4,7 +4,8 @@ import {
   EmployeePFDetailsGetAPI,
   EmployeePFComparingAPI,
   RegisterPFEmployeeAPI,
-  SubmitPFForProcessingAPI
+  SubmitPFForProcessingAPI,
+  AddPFResponseAPI
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
 import { Download, Upload, PlusCircle, CheckCircle, ArrowClockwise } from "react-bootstrap-icons";
@@ -33,13 +34,14 @@ const CompanyPFSubmission = () => {
   const [showRemarksModal, setShowRemarksModal] = useState(false);
   const [currentRemarkItem, setCurrentRemarkItem] = useState(null);
   const [remarks, setRemarks] = useState("");
-  const [savedRemarks, setSavedRemarks] = useState({});
+  const [savedRemarks, setSavedRemarks] = useState({
+    "Company Employees Who are not in the Sheet": "",
+    "PF Mismatch Employees": ""
+  });
   const [fileName, setFileName] = useState("");
 
-  // Create a ref for the form section
   const formRef = useRef(null);
 
-  // Download Excel template
   const downloadPFDetailsExcel = async () => {
     setIsLoading(true);
     try {
@@ -65,7 +67,6 @@ const CompanyPFSubmission = () => {
     }
   };
 
-  // Handle comparison file upload
   const handleComparisonFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -77,11 +78,13 @@ const CompanyPFSubmission = () => {
 
     setComparisonFile(file);
     setFileName(file.name);
-    setComparisonResult(null); // Clear previous comparison results
-    setSavedRemarks({}); // Clear previous remarks
+    setComparisonResult(null);
+    setSavedRemarks({
+      "Company Employees Who are not in the Sheet": "",
+      "PF Mismatch Employees": ""
+    });
   };
 
-  // Compare PF data
   const comparePFData = async () => {
     if (!comparisonFile) {
       toast.error("Please upload an Excel file first");
@@ -102,7 +105,6 @@ const CompanyPFSubmission = () => {
       );
 
       setComparisonResult(response.data);
-      setSavedRemarks({}); // Clear previous remarks when new comparison is done
       toast.success("Comparison completed");
     } catch (error) {
       handleApiError(error);
@@ -111,7 +113,6 @@ const CompanyPFSubmission = () => {
     }
   };
 
-  // Register new employee
   const registerNewEmployee = async () => {
     if (!newEmployee.firstName || !newEmployee.lastName || !newEmployee.panNo || !newEmployee.pfAmount) {
       toast.error("Please fill all required fields");
@@ -132,7 +133,6 @@ const CompanyPFSubmission = () => {
 
       if (response.data.success) {
         toast.success("Employee registered successfully");
-        // Add to employees list without updating Excel
         const newEmployeeData = {
           "Employee Name": `${newEmployee.firstName} ${newEmployee.lastName}`,
           "PAN No": newEmployee.panNo,
@@ -142,7 +142,6 @@ const CompanyPFSubmission = () => {
         
         setEmployees(prevEmployees => [...prevEmployees, newEmployeeData]);
 
-        // Remove this employee from "Employees Not existed in company" list
         if (comparisonResult) {
           const updatedNotExisted = comparisonResult.data["Employees Not existed in company"]
             .filter(name => name !== `${newEmployee.firstName} ${newEmployee.lastName}`);
@@ -156,7 +155,6 @@ const CompanyPFSubmission = () => {
           }));
         }
 
-        // Reset form
         setNewEmployee({
           firstName: "",
           lastName: "",
@@ -175,7 +173,6 @@ const CompanyPFSubmission = () => {
     }
   };
 
-  // Submit PF for processing
   const submitPFForProcessing = async () => {
     if (!comparisonFile) {
       toast.error("Please upload an Excel file first");
@@ -189,6 +186,20 @@ const CompanyPFSubmission = () => {
 
     setIsSubmitting(true);
     try {
+      // First save the remarks
+      if (savedRemarks["Company Employees Who are not in the Sheet"] || 
+          savedRemarks["PF Mismatch Employees"]) {
+        const responseData = {
+          month: selectedMonth,
+          year: selectedYear,
+          ignoredCompanyEmployees: savedRemarks["Company Employees Who are not in the Sheet"] || "N/A",
+          invalidPFAmounts: savedRemarks["PF Mismatch Employees"] || "N/A"
+        };
+
+        await AddPFResponseAPI(responseData);
+      }
+
+      // Then submit for processing
       const response = await SubmitPFForProcessingAPI(
         selectedMonth,
         selectedYear,
@@ -197,15 +208,15 @@ const CompanyPFSubmission = () => {
 
       if (response.data && response.data.message === "Success") {
         toast.success("Provident Fund submitted for processing successfully");
-        // Reset form
         setComparisonFile(null);
         setComparisonResult(null);
         setSelectedMonth("");
         setSelectedYear("");
-        setSavedRemarks({});
+        setSavedRemarks({
+          "Company Employees Who are not in the Sheet": "",
+          "PF Mismatch Employees": ""
+        });
         setFileName("");
-      } else {
-        toast.error("Submission completed but with unexpected response");
       }
     } catch (error) {
       handleApiError(error);
@@ -214,40 +225,34 @@ const CompanyPFSubmission = () => {
     }
   };
 
-  // Open remarks modal
-  const openRemarksModal = (item, category) => {
-    setCurrentRemarkItem({ item, category });
-    setRemarks(savedRemarks[`${category}-${item}`] || "");
+  const openRemarksModal = (category) => {
+    setCurrentRemarkItem(category);
+    setRemarks(savedRemarks[category] || "");
     setShowRemarksModal(true);
   };
 
-  // Save remarks
   const saveRemarks = () => {
     if (!currentRemarkItem) return;
     
-    const key = `${currentRemarkItem.category}-${currentRemarkItem.item}`;
     setSavedRemarks(prev => ({
       ...prev,
-      [key]: remarks
+      [currentRemarkItem]: remarks
     }));
     
     setShowRemarksModal(false);
     toast.success("Remarks saved successfully");
   };
 
-  // Check if all issues have remarks
   const allIssuesHaveRemarks = () => {
     if (!comparisonResult) return false;
     
-    // Check if there's a remark for each category (not each item)
+    // Only check for these two categories that require remarks
     const hasMissingRemark = comparisonResult.data["Company Employees Who are not in the Sheet"]?.length > 0 && 
-      !savedRemarks["Company Employees Who are not in the Sheet-remark"];
-    const hasNotExistedRemark = comparisonResult.data["Employees Not existed in company"]?.length > 0 && 
-      !savedRemarks["Employees Not existed in company-remark"];
+      !savedRemarks["Company Employees Who are not in the Sheet"];
     const hasMismatchRemark = comparisonResult.data["PF Mismatch Employees"]?.length > 0 && 
-      !savedRemarks["PF Mismatch Employees-remark"];
+      !savedRemarks["PF Mismatch Employees"];
     
-    return !hasMissingRemark && !hasNotExistedRemark && !hasMismatchRemark;
+    return !hasMissingRemark && !hasMismatchRemark;
   };
 
   const handleApiError = (error) => {
@@ -256,14 +261,15 @@ const CompanyPFSubmission = () => {
     console.error(error);
   };
 
-  // Handle reupload - scroll to form and clear comparison results
   const handleReupload = () => {
     setComparisonResult(null);
-    setSavedRemarks({});
+    setSavedRemarks({
+      "Company Employees Who are not in the Sheet": "",
+      "PF Mismatch Employees": ""
+    });
     setFileName("");
     setComparisonFile(null);
     
-    // Scroll to the form section
     if (formRef.current) {
       formRef.current.scrollIntoView({ behavior: 'smooth' });
     }
@@ -302,7 +308,7 @@ const CompanyPFSubmission = () => {
               <div className="card-body">
                 {/* Step 1: Download Template */}
                 <div className="mb-4">
-                  <h5>1. Download Employee Provident Fund Details</h5>
+                  <h5 className="mb-3">1. Download Employee Provident Fund Details</h5>
                   <div className="mb-3">
                     <button
                       className="btn btn-primary"
@@ -409,9 +415,9 @@ const CompanyPFSubmission = () => {
                             <span>Employees Missing from Uploaded Sheet ({comparisonResult.data["Company Employees Who are not in the Sheet"].length})</span>
                             <button
                               className="btn btn-sm btn-light"
-                              onClick={() => openRemarksModal("remark", "Company Employees Who are not in the Sheet")}
+                              onClick={() => openRemarksModal("Company Employees Who are not in the Sheet")}
                             >
-                              {savedRemarks["Company Employees Who are not in the Sheet-remark"] ? (
+                              {savedRemarks["Company Employees Who are not in the Sheet"] ? (
                                 <span>Edit Remarks</span>
                               ) : (
                                 <span>Add Remarks</span>
@@ -426,10 +432,10 @@ const CompanyPFSubmission = () => {
                                 </li>
                               ))}
                             </ul>
-                            {savedRemarks["Company Employees Who are not in the Sheet-remark"] && (
+                            {savedRemarks["Company Employees Who are not in the Sheet"] && (
                               <div className="mt-3">
                                 <strong className="me-2">Remarks:</strong>
-                                <span>{savedRemarks["Company Employees Who are not in the Sheet-remark"]}</span>
+                                <span>{savedRemarks["Company Employees Who are not in the Sheet"]}</span>
                               </div>
                             )}
                           </div>
@@ -441,25 +447,13 @@ const CompanyPFSubmission = () => {
                         <div className="card mb-3 border-warning">
                           <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                             <span>Employees Not Found in Company Records ({comparisonResult.data["Employees Not existed in company"].length})</span>
-                            <div>
-                              <button
-                                className="btn btn-sm btn-light me-2"
-                                onClick={() => setShowAddEmployee(true)}
-                              >
-                                <PlusCircle className="me-1 d-inline-flex align-items-center" />
-                                Add Employee
-                              </button>
-                              <button
-                                className="btn btn-sm btn-light"
-                                onClick={() => openRemarksModal("remark", "Employees Not existed in company")}
-                              >
-                                {savedRemarks["Employees Not existed in company-remark"] ? (
-                                  <span>Edit Remarks</span>
-                                ) : (
-                                  <span>Add Remarks</span>
-                                )}
-                              </button>
-                            </div>
+                            <button
+                              className="btn btn-sm btn-light me-2"
+                              onClick={() => setShowAddEmployee(true)}
+                            >
+                              <PlusCircle className="me-1 d-inline-flex align-items-center" />
+                              Add Employee
+                            </button>
                           </div>
                           <div className="card-body">
                             <ul className="list-group">
@@ -469,12 +463,6 @@ const CompanyPFSubmission = () => {
                                 </li>
                               ))}
                             </ul>
-                            {savedRemarks["Employees Not existed in company-remark"] && (
-                              <div className="mt-3">
-                                <strong className="me-2">Remarks:</strong>
-                                <span>{savedRemarks["Employees Not existed in company-remark"]}</span>
-                              </div>
-                            )}
                           </div>
                         </div>
                       )}
@@ -486,9 +474,9 @@ const CompanyPFSubmission = () => {
                             <span>PF Amount Mismatches ({comparisonResult.data["PF Mismatch Employees"].length})</span>
                             <button
                               className="btn btn-sm btn-light"
-                              onClick={() => openRemarksModal("remark", "PF Mismatch Employees")}
+                              onClick={() => openRemarksModal("PF Mismatch Employees")}
                             >
-                              {savedRemarks["PF Mismatch Employees-remark"] ? (
+                              {savedRemarks["PF Mismatch Employees"] ? (
                                 <span>Edit Remarks</span>
                               ) : (
                                 <span>Add Remarks</span>
@@ -507,7 +495,6 @@ const CompanyPFSubmission = () => {
                                 </thead>
                                 <tbody>
                                   {comparisonResult.data["PF Mismatch Employees"].map((mismatch, i) => {
-                                    // Assuming mismatch is in format: "Name (Expected: X, Uploaded: Y)"
                                     const match = mismatch.match(/(.*?) \(Expected: (.*?), Uploaded: (.*?)\)/);
                                     return match ? (
                                       <tr key={i}>
@@ -524,10 +511,10 @@ const CompanyPFSubmission = () => {
                                 </tbody>
                               </table>
                             </div>
-                            {savedRemarks["PF Mismatch Employees-remark"] && (
+                            {savedRemarks["PF Mismatch Employees"] && (
                               <div className="mt-3">
                                 <strong className="me-2">Remarks:</strong>
-                                <span>{savedRemarks["PF Mismatch Employees-remark"]}</span>
+                                <span>{savedRemarks["PF Mismatch Employees"]}</span>
                               </div>
                             )}
                           </div>
@@ -540,8 +527,8 @@ const CompanyPFSubmission = () => {
                           className="btn btn-outline-primary"
                           onClick={handleReupload}
                         >
-                          <ArrowClockwise className="me-2" />
-                          Update & Reupload
+                          <ArrowClockwise className="me-2 d-inline-flex align-items-center" />
+                           Reupload
                         </button>
                       </div>
 
@@ -560,7 +547,7 @@ const CompanyPFSubmission = () => {
                             onClick={submitPFForProcessing}
                             disabled={isSubmitting || !allIssuesHaveRemarks()}
                           >
-                            <CheckCircle className="me-2" />
+                            <CheckCircle className="me-2 d-inline-flex align-items-center" />
                             {isSubmitting ? 'Submitting...' : 'Submit for Processing'}
                           </button>
                         </div>
@@ -679,7 +666,7 @@ const CompanyPFSubmission = () => {
                     <div className="modal-dialog modal-dialog-centered">
                       <div className="modal-content">
                         <div className="modal-header">
-                          <h5 className="modal-title">Add Remarks</h5>
+                          <h5 className="modal-title">Add Remarks for {currentRemarkItem}</h5>
                           <button
                             type="button"
                             className="btn-close"
@@ -688,15 +675,12 @@ const CompanyPFSubmission = () => {
                         </div>
                         <div className="modal-body">
                           <div className="mb-3">
-                            <label className="form-label">
-                              <strong>{currentRemarkItem.category}</strong>
-                            </label>
                             <textarea
                               className="form-control"
                               rows="4"
                               value={remarks}
                               onChange={(e) => setRemarks(e.target.value)}
-                              placeholder="Enter your remarks here..."
+                              placeholder={`Enter remarks for ${currentRemarkItem}...`}
                             />
                           </div>
                         </div>
