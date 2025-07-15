@@ -83,7 +83,7 @@ public class EmployeePFController {
     public ResponseEntity<?> getPFForMonthAndYear(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName, @RequestParam String month, @RequestParam(required = false) String year) {
+            @PathVariable String companyName, @RequestParam(required = false) String month, @RequestParam(required = false) String year) {
         Collection<EmployeeAccountEntity> getPFForMonthAndYear = employeePFService.getEmployeeAccountDetails(companyName, null, null, month, year);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(getPFForMonthAndYear), HttpStatus.OK);
     }
