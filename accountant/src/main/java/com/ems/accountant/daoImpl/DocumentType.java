@@ -1,6 +1,12 @@
 package com.ems.accountant.daoImpl;
 
 import com.ems.accountant.persistance.*;
+import com.ems.accountant.persistance.EmployeeAccountEntity;
+import com.ems.accountant.persistance.PFReceiptsEntity;
+import com.ems.accountant.persistance.PFResponseEntity;
+import com.ems.accountant.persistance.PTResponseEntity;
+import com.ems.accountant.persistance.TDSResponseEntity;
+import com.ems.accountant.persistance.PTReceiptEntity;
 import com.ems.accountant.persistance.model.Entity;
 import com.ems.accountant.persistance.model.IDEntity;
 import lombok.Getter;
@@ -33,6 +39,9 @@ public class DocumentType {
     public static final DocumentType PF_RECEIPT = new DocumentType("pf_receipt", PFReceiptsEntity.class);
     public static final DocumentType PT_RECEIPT = new DocumentType("pt_receipt", PTReceiptEntity.class);
     public static final DocumentType GST_RESPONSE = new DocumentType("gst_response", GSTResponseEntity.class);
+
+
+    public static final DocumentType PT_RESPONSE = new DocumentType("pt_response", PTResponseEntity.class);
 
 
 
