@@ -356,7 +356,7 @@ export const EmployeePFComparingAPI = (month, year, file) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  return microserviceAxiosInstance.post(`/${company}/employee`, formData, {
+  return microserviceAxiosInstance.post(`/${company}/pf/comparing`, formData, {
     params: {
       month: month,
       year: year
@@ -376,13 +376,25 @@ export const SubmitPFForProcessingAPI = (month, year, file) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  return microserviceAxiosInstance.post(`/${company}/employees/account`, formData, {
+  return microserviceAxiosInstance.post(`/${company}/employees/pf`, formData, {
     params: {
       month,
       year
     }
   });
 };
+
+export const GetPFForMonthAndYearAPI = (month, year) => {
+  const company = localStorage.getItem("companyName"); // Retrieve company name from storage
+
+  return microserviceAxiosInstance.get(`/${company}/employee/account`, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
 
 
 export const EmployeeNoAttendanceGetAPI = (month, year) => {

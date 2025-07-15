@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import LayOut from "../../LayOut/LayOut";
 import { 
-//   GetPFApprovalListAPI,
+  GetPFForMonthAndYearAPI,
 //   UploadPFAcknowledgementAPI 
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
@@ -19,6 +19,16 @@ const PFProcessing = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [acknowledgementFile, setAcknowledgementFile] = useState(null);
 
+  // Function to decode base64 strings
+  const decodeBase64 = (str) => {
+    try {
+      return str ? atob(str) : "N/A";
+    } catch (e) {
+      console.error("Error decoding base64:", e);
+      return "N/A";
+    }
+  };
+
   // Fetch approval list
   const fetchApprovalList = async () => {
     if (!approvalMonth || !approvalYear) {
@@ -28,11 +38,19 @@ const PFProcessing = () => {
     
     setIsFetching(true);
     try {
-      const response = await (approvalMonth, approvalYear);
-      setApprovalList(response.data.data || []);
-      toast.success("Approval list fetched successfully");
+      const response = await GetPFForMonthAndYearAPI(approvalMonth, approvalYear);
+      // Check if response exists and has data property
+      if (response && response.data) {
+        // The actual employee data is in response.data.data array
+        setApprovalList(response.data.data || []);
+        toast.success("Approval list fetched successfully");
+      } else {
+        toast.warning("No data found for the selected month and year");
+        setApprovalList([]);
+      }
     } catch (error) {
       handleApiError(error);
+      setApprovalList([]);
     } finally {
       setIsFetching(false);
     }
@@ -71,9 +89,12 @@ const PFProcessing = () => {
   };
 
   const handleApiError = (error) => {
-    const errorMsg = error.response?.data?.error?.message || "An error occurred";
+    const errorMsg = error.response?.data?.message || 
+                   error.response?.data?.error?.message || 
+                   error.message || 
+                   "An error occurred";
     toast.error(errorMsg);
-    console.error(error);
+    console.error("API Error:", error);
   };
 
   // Download Excel
@@ -84,13 +105,13 @@ const PFProcessing = () => {
     }
 
     const formattedData = approvalList.map(emp => ({
-      "Employee Name": `${emp.firstName} ${emp.lastName}`,
-      "Email": emp.emailId,
-      "UAN Number": emp.uanNumber || "Not Provided",
-      "PAN": emp.panNo,
-      "Salary": emp.employeeSalary,
-      "PF Amount": emp.pfAmount,
-      "Status": "Approved for Payment"
+      "Employee Name": emp.employeeName,
+      "UAN Number": decodeBase64(emp.uanNo),
+      "PAN": decodeBase64(emp.panNo),
+      "Provident Fund": emp.providentFund ? decodeBase64(emp.providentFund) : "N/A",
+      "Month": emp.month,
+      "Year": emp.year,
+      "Status": emp.providentFund ? "Approved for Payment" : "Pending"
     }));
 
     const ws = XLSX.utils.json_to_sheet(formattedData);
@@ -132,7 +153,7 @@ const PFProcessing = () => {
               <div className="card-body">
                 {/* Step 1: Fetch Approved List */}
                 <div className="mb-4">
-                  <h5>1. Fetch Approved Provident Fund List</h5>
+                  <h5 className="mb-3">1. Fetch Approved Provident Fund List</h5>
                   <div className="row g-3 align-items-end mb-3">
                     <div className="col-md-3">
                       <label className="form-label">Select Month</label>
@@ -181,8 +202,9 @@ const PFProcessing = () => {
                         <table className="table table-striped">
                           <thead>
                             <tr>
-                              <th>Employee</th>
+                              <th>Employee Name</th>
                               <th>UAN Number</th>
+                              <th>PAN</th>
                               <th>Provident Fund Amount</th>
                               <th>Status</th>
                             </tr>
@@ -190,10 +212,13 @@ const PFProcessing = () => {
                           <tbody>
                             {approvalList.map((emp, i) => (
                               <tr key={i}>
-                                <td>{`${emp.firstName} ${emp.lastName}`}</td>
-                                <td>{emp.uanNumber || 'Not Provided'}</td>
-                                <td>{emp.pfAmount}</td>
-                                <td className="text-success">Approved</td>
+                                <td>{emp.employeeName}</td>
+                                <td>{decodeBase64(emp.uanNo)}</td>
+                                <td>{decodeBase64(emp.panNo)}</td>
+                                <td>{emp.providentFund ? decodeBase64(emp.providentFund) : "N/A"}</td>
+                                <td className={emp.providentFund ? "text-success" : "text-warning"}>
+                                  {emp.providentFund ? "Approved" : "Pending"}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -205,7 +230,7 @@ const PFProcessing = () => {
                           className="btn btn-outline-primary"
                           onClick={downloadApprovalListExcel}
                         >
-                          <Download className="me-2" />
+                          <Download className="me-2 d-inline-flex align-items-center" />
                           Download Approval List
                         </button>
                         
@@ -225,7 +250,7 @@ const PFProcessing = () => {
                 {/* Step 2: Upload Acknowledgement */}
                 {approvalList.length > 0 && (
                   <div>
-                    <h5>2. Upload Payment Acknowledgement</h5>
+                    <h5 className="mb-3">2. Upload Payment Acknowledgement</h5>
                     <form onSubmit={handleSubmit(uploadAcknowledgement)}>
                       <div className="row g-3 align-items-end mb-3">
                         <div className="col-md-6">
@@ -252,7 +277,7 @@ const PFProcessing = () => {
                         <div className="col-md-3">
                           <button
                             type="submit"
-                            className="btn btn-success"
+                            className="btn btn-success mb-4"
                             disabled={isUploading || !acknowledgementFile}
                           >
                             {isUploading ? 'Uploading...' : 'Upload Acknowledgement'}
