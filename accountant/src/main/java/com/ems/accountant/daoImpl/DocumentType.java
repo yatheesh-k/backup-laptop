@@ -40,7 +40,7 @@ public class DocumentType {
     public static final DocumentType PT_RECEIPT = new DocumentType("pt_receipt", PTReceiptEntity.class);
     public static final DocumentType GST_RESPONSE = new DocumentType("gst_response", GSTResponseEntity.class);
 
-
+    public static final DocumentType GST_RECEIPT = new DocumentType("gst_receipt", GSTReceiptEntity.class);
     public static final DocumentType PT_RESPONSE = new DocumentType("pt_response", PTResponseEntity.class);
 
 
