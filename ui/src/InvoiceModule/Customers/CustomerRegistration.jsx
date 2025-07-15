@@ -625,7 +625,11 @@ const CustomersRegistration = () => {
                               : "State Code must match the first two characters of GST Number.";
                           }
                         })}
-                        onChange={handleStateCodeChange}
+                        onChange={(e) => {
+                          handleStateCodeChange(e);
+                          handleInputChange(e, "stateCode");
+                        }}
+                        onKeyPress={(e) => preventInvalidInput(e, "numeric")}
                       />
                       {errors.stateCode && (
                         <p className="errorMsg">
@@ -677,15 +681,15 @@ const CustomersRegistration = () => {
                           pattern: {
                             value: /^(?=.*[a-zA-Z])[a-zA-Z0-9\s!@#&()*/.,_+:;'"-]+$/,
                             message: "Invalid Address Format. Only letters, numbers, spaces, and !@#&()*/.,_- \" ' : ; are allowed."
-                          },                          
+                          },
                           maxLength: {
                             value: 250,
                             message:
                               "Address must be at most 250 characters long",
                           },
                         })}
-                      onChange={(e) => handleInputChange(e, "address")}
-                      onKeyPress={(e) => preventInvalidInput(e, "address")}
+                        onChange={(e) => handleInputChange(e, "address")}
+                        onKeyPress={(e) => preventInvalidInput(e, "address")}
                       />
                       {errors.address && (
                         <p className="errorMsg">
