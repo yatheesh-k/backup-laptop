@@ -41,7 +41,7 @@ public class GSTAccountRequest {
 
     @NotBlank(message = "{taxableValue.notnull.message}")
     @Size(max = 15, message = "{taxableValue.size.message}")
-    private String taxableValue;
+    private String subTotal;
 
     @NotBlank(message = "{cGst.notnull.message}")
     @Size(max = 15, message = "{cGst.size.message}")

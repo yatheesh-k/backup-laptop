@@ -22,7 +22,7 @@ public class GSTAccountEntity extends AbstractEntity {
     private String invoiceNumber;
     private String invoiceDate;
     private String totalAmount;
-    private String taxableValue;
+    private String subTotal;
     private String cGst;
     private String sGst;
     private String iGst;

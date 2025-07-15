@@ -246,15 +246,15 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             Row row = sheet.getRow(i);
             if (row == null) continue;
 
-            String customerName = getStringCellValue(row.getCell(0));
+            String invoiceDate = getStringCellValue(row.getCell(0));
             String invoiceNumber = getStringCellValue(row.getCell(1));
-            String customerGstNo = getStringCellValue(row.getCell(2));
-            String invoiceDate = getStringCellValue(row.getCell(3));
-            String taxableValue = getStringCellValue(row.getCell(4));
-            String totalAmount = getStringCellValue(row.getCell(5));
-            String cGst = getStringCellValue(row.getCell(6));
-            String sGst = getStringCellValue(row.getCell(7));
-            String iGst = getStringCellValue(row.getCell(8));
+            String customerName = getStringCellValue(row.getCell(2));
+            String customerGstNo = getStringCellValue(row.getCell(3));
+            String subTotal = getStringCellValue(row.getCell(4));
+            String cGst = getStringCellValue(row.getCell(5));
+            String sGst = getStringCellValue(row.getCell(6));
+            String iGst = getStringCellValue(row.getCell(7));
+            String totalAmount = getStringCellValue(row.getCell(8));
 
             if (customerGstNo == null || customerGstNo.isBlank()) continue;
             String customerEncode = base64Encode(customerGstNo);
@@ -278,7 +278,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             entity.setInvoiceNumber(invoiceNumber);
             entity.setInvoiceDate(base64Encode(invoiceDate));
             entity.setTotalAmount(base64Encode(totalAmount));
-            entity.setTaxableValue(base64Encode(taxableValue));
+            entity.setSubTotal(base64Encode(subTotal));
             entity.setCGst(base64Encode(cGst));
             entity.setSGst(base64Encode(sGst));
             entity.setIGst(base64Encode(iGst));
@@ -340,16 +340,15 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             Row row = sheet.getRow(i);
             if (row == null || isRowEmpty(row)) continue;
 
-            String customerName = getStringCellValue(row.getCell(0));
+            String invoiceDate = getStringCellValue(row.getCell(0));
             String invoiceNumber = getStringCellValue(row.getCell(1));
-            String customerGstNo = getStringCellValue(row.getCell(2));
-            String invoiceDate = getStringCellValue(row.getCell(3));
-            String totalAmount = getStringCellValue(row.getCell(4));
-            String taxableValue = getStringCellValue(row.getCell(5));
-            String cGst = getStringCellValue(row.getCell(6));
-            String sGst = getStringCellValue(row.getCell(7));
-            String iGst = getStringCellValue(row.getCell(8));
-            String status = getStringCellValue(row.getCell(9));
+            String customerName = getStringCellValue(row.getCell(2));
+            String customerGstNo = getStringCellValue(row.getCell(3));
+            String subTotal = getStringCellValue(row.getCell(4));
+            String cGst = getStringCellValue(row.getCell(5));
+            String sGst = getStringCellValue(row.getCell(6));
+            String iGst = getStringCellValue(row.getCell(7));
+            String totalAmount = getStringCellValue(row.getCell(8));
 
             if (customerGstNo == null || customerGstNo.isBlank()) continue;
 
@@ -363,11 +362,10 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                     .invoiceNumber(invoiceNumber)
                     .invoiceDate(invoiceDate)
                     .totalAmount(totalAmount)
-                    .taxableValue(taxableValue)
+                    .subTotal(subTotal)
                     .cGst(cGst)
                     .sGst(sGst)
                     .iGst(iGst)
-                    .status(status)
                     .build();
 
             excelGstData.computeIfAbsent(customerGstNo, k -> new ArrayList<>()).add(entity);
@@ -438,8 +436,8 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             if (!Objects.equals(excelEntity.getTotalAmount(), dbEntity.getTotalAmount()))
                 diffs.put(Constants.TOTAL_AMOUNT,Constants.EXCEL + excelEntity.getTotalAmount() +Constants.DB + dbEntity.getTotalAmount());
 
-            if (!Objects.equals(excelEntity.getTaxableValue(), dbEntity.getTaxableValue()))
-                diffs.put(Constants.TOTAL_VALUE, Constants.EXCEL + excelEntity.getTaxableValue() + Constants.DB+ dbEntity.getTaxableValue());
+            if (!Objects.equals(excelEntity.getSubTotal(), dbEntity.getSubTotal()))
+                diffs.put(Constants.SUB_TOTAL, Constants.EXCEL + excelEntity.getSubTotal() + Constants.DB+ dbEntity.getSubTotal());
 
             if (!Objects.equals(excelEntity.getCGst(), dbEntity.getCGst()))
                 diffs.put(Constants.C_GST, Constants.EXCEL + excelEntity.getCGst() + Constants.DB+ dbEntity.getCGst());

@@ -50,7 +50,7 @@ public class Constants {
     public static final String CUSTOMER_GST = "customerGstNo";
     public static final String COMPANY_NAME = "companyName";
     public static final String TOTAL_AMOUNT = "totalAmount";
-    public static final String TOTAL_VALUE = "totalValue";
+    public static final String SUB_TOTAL = "subTotal";
     public static final String C_GST = "cGst";
     public static final String S_GST = "sGst";
     public static final String I_GST = "iGst";
