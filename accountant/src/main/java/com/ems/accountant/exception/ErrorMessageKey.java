@@ -28,6 +28,12 @@ public enum ErrorMessageKey {
     NO_CHANGES_DETECTED("no.changes.detected"),
     UNABLE_UPDATE_PF_RESPONSE("unable.to.update.pf.response"),
     UNABLE_DELETE_PF_RESPONSE("unable.to.delete.pf.response"),
+    UNABLE_SAVE_PT_RESPONSE("unable.to.save.pt.response"),
+    PT_RESPONSE_ALREADY_EXISTS("pt.response.already.exists"),
+    PT_RESPONSE_NOT_FOUND("pt.response.not.found"),
+    UNABLE_DELETE_PT_RESPONSE("unable.delete.pt.response"),
+    UNABLE_UPDATE_PT_RESPONSE("unable.update.pt.response"),
+    UNABLE_FETCH_PT_RESPONSE("unable.fetch.pt.response"),
     TDS_RESPONSE_ALREADY_EXISTS("tds.response.already.exists"),
     UNABLE_SAVE_TDS_RESPONSE("unable.to.save.tds.response"),
     TDS_RESPONSE_NOT_FOUND("tds.response.not.found"),
@@ -43,9 +49,7 @@ public enum ErrorMessageKey {
     PT_RECEIPTS_FILE_EMPTY("pt.receipts.file.empty"),
     UNABLE_SAVE_PT_RECEIPTS("unable.to.save.pt.receipts"),
     PT_RECEIPTS_NOT_FOUND("pt.receipts.not.found"),
-    UNABLE_UPDATE_PT_RESPONSE("unable.to.update.pt.response"),
     UNABLE_DELETE_PT_RECEIPTS("unable.to.delete.pt.receipts"),;
-
 
     private final String key;
 
