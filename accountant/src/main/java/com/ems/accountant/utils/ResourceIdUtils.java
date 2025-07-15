@@ -46,6 +46,10 @@ public class ResourceIdUtils {
     public static String generatePTReceiptsResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.PT_RECEIPT, companyName, month, year);
     }
+
+    public static String generateGSTResponseResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.GST_RESPONSE, companyName, month, year);
+    }
     /**
      * Generate a global resource ID based on the resource type
      *
