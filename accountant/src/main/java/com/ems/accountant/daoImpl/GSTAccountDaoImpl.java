@@ -20,12 +20,9 @@ public class GSTAccountDaoImpl extends AbstractDao<GSTAccountEntity> implements 
     public GSTAccountDaoImpl(Repository repository) {super(repository);}
 
     @Override
-    public Collection<GSTAccountEntity> findByCompanyIdAndMonthAndYear(String companyName,String companyId, String year, String month,String customerId ,String accountId) throws AccountantException {
+    public Collection<GSTAccountEntity> findByCompanyIdAndMonthAndYear(String companyName, String year, String month,String customerId ,String accountId) throws AccountantException {
         Collection<Filter> filters = new ArrayList<>();
 
-        if (StringUtils.isNotBlank(companyId)) {
-            filters.add(new Filter(Constants.COMPANY_ID, Operator.EQ, companyId));
-        }
         if (StringUtils.isNotBlank(customerId)) {
             filters.add(new Filter(Constants.CUSTOMER_ID, Operator.EQ, customerId));
         }

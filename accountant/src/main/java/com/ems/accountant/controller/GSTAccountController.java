@@ -3,7 +3,6 @@ package com.ems.accountant.controller;
 
 import com.ems.accountant.common.ResponseBuilder;
 import com.ems.accountant.exception.AccountantException;
-import com.ems.accountant.persistance.EmployeeAccountEntity;
 import com.ems.accountant.persistance.GSTAccountEntity;
 import com.ems.accountant.request.GSTAccountRequest;
 import com.ems.accountant.service.GSTAccountService;
@@ -51,7 +50,7 @@ public class GSTAccountController {
         return gstAccountService.registerGSTAccount(companyName, month, year, file);
     }
 
-    @RequestMapping(value = "{companyName}/gst/account/{customerId}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "{companyName}/gst/account", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.addSingleGSTAccount.tag}", description = "${api.addSingleGSTAccount.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -59,13 +58,12 @@ public class GSTAccountController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String customerId,
             @RequestBody GSTAccountRequest gstAccountRequest) throws AccountantException {
-        return gstAccountService.addSingleGSTAccount(companyName,customerId,gstAccountRequest);
+        return gstAccountService.addSingleGSTAccount(companyName,gstAccountRequest);
 
     }
 
-    @RequestMapping(value = "{companyName}/customer/{customerId}/account/{Id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "{companyName}/account/{Id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.getGSTAccountById.tag}", description = "${api.getGSTAccountById.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -73,9 +71,8 @@ public class GSTAccountController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String customerId,
             @PathVariable String Id) throws AccountantException {
-        Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName, customerId, null, null, Id);
+        Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName, null, null, Id);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(account), HttpStatus.OK);
     }
 
@@ -89,22 +86,21 @@ public class GSTAccountController {
             @PathVariable String companyName,
             @RequestParam(required = true) String month,
             @RequestParam(required = true) String year) throws AccountantException {
-        Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName, null, month, year, null);
+        Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName, month, year, null);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(account), HttpStatus.OK);    }
 
-    @RequestMapping(value = "{companyName}/gst/accounts/{customerId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "{companyName}/gst/accounts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.getGSTAccountsByCustomer.tag}", description = "${api.getGSTAccountsByCustomer.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
     public ResponseEntity<?> getGSTAccountsByCustomer(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName,
-            @PathVariable String customerId) throws AccountantException {
-        Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName, customerId, null, null, null);
+            @PathVariable String companyName) throws AccountantException {
+        Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName,  null, null, null);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(account), HttpStatus.OK);    }
 
-    @RequestMapping(value = "{companyName}/customer/{customerId}/account/{Id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "{companyName}/account/{Id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.updateGSTAccount.tag}", description = "${api.updateGSTAccount.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -112,13 +108,12 @@ public class GSTAccountController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String customerId,
             @PathVariable String Id,
             @RequestBody GSTAccountRequest gstAccountRequest) throws AccountantException {
-        return gstAccountService.updateGSTAccount(companyName, customerId, Id, gstAccountRequest);
+        return gstAccountService.updateGSTAccount(companyName, Id, gstAccountRequest);
     }
 
-    @RequestMapping(value = "{companyName}/customer/{customerId}/account/{Id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "{companyName}/account/{Id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.deleteGSTAccount.tag}", description = "${api.deleteGSTAccount.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -126,9 +121,8 @@ public class GSTAccountController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String customerId,
             @PathVariable String Id) throws AccountantException {
-        return gstAccountService.deleteGSTAccount(companyName, customerId, Id);
+        return gstAccountService.deleteGSTAccount(companyName, Id);
     }
 
 }

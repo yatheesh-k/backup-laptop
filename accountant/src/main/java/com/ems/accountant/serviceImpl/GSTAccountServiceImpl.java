@@ -97,7 +97,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
     }
 
     @Override
-    public ResponseEntity<?> addSingleGSTAccount(String companyName,String customerId,GSTAccountRequest gstAccountRequest) throws AccountantException {
+    public ResponseEntity<?> addSingleGSTAccount(String companyName,GSTAccountRequest gstAccountRequest) throws AccountantException {
 
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
@@ -105,17 +105,13 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                 log.error("Company not found for name: {}", companyName);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
-            CustomerModel customerModel = customerRepository.findById(customerId)
-                    .orElseThrow(() -> new AccountantException(
-                            ErrorMessageHandler.getMessage(ErrorMessageKey.CUSTOMER_GST_NOT_FOUND, customerId),
-                            HttpStatus.NOT_FOUND));
            String resourceId = ResourceIdUtils.generateGSTAccountResourceId(gstAccountRequest.getInvoiceNumber());
-           Collection<GSTAccountEntity> existingAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(companyName, companyEntity.getId(), gstAccountRequest.getYear(),gstAccountRequest.getMonth(), customerModel.getCustomerId(), resourceId);
+           Collection<GSTAccountEntity> existingAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(companyName, companyEntity.getId(), gstAccountRequest.getYear(),gstAccountRequest.getMonth(), resourceId);
             if (existingAccounts != null && !existingAccounts.isEmpty()) {
                 log.error("GST accounts already exist for company: {}", companyName);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_ALREADY_EXIST), HttpStatus.BAD_REQUEST);
             }
-            GSTAccountEntity gstAccountEntity = GSTAccountUtils.maskGSTAccountEntity(gstAccountRequest,customerModel,companyEntity.getId(), customerId,resourceId);
+            GSTAccountEntity gstAccountEntity = GSTAccountUtils.maskGSTAccountEntity(gstAccountRequest,companyEntity.getId(),resourceId);
            log.info("Saving GST account entity: {}", gstAccountEntity);
             // Save the entity to OpenSearch
             gstAccountDao.save(gstAccountEntity, companyName);
@@ -132,7 +128,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
     }
 
     @Override
-    public Collection<GSTAccountEntity> getGSTAccount(String companyName, String customerId, String month, String year, String Id) throws AccountantException {
+    public Collection<GSTAccountEntity> getGSTAccount(String companyName, String month, String year, String Id) throws AccountantException {
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
@@ -140,7 +136,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
-            Collection<GSTAccountEntity> gstAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(companyEntity.getShortName(),companyEntity.getId(),year, month, customerId,Id);
+            Collection<GSTAccountEntity> gstAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(companyEntity.getShortName(),companyEntity.getId(),year, month,Id);
 
             Collection<GSTAccountEntity> unmaskedAccounts = gstAccounts.stream()
                     .map(GSTAccountUtils::ummaskGSTAccountEntity)
@@ -162,7 +158,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
     }
 
     @Override
-    public ResponseEntity<?> updateGSTAccount(String companyName, String customerId, String Id, GSTAccountRequest gstAccountRequest) throws AccountantException {
+    public ResponseEntity<?> updateGSTAccount(String companyName, String Id, GSTAccountRequest gstAccountRequest) throws AccountantException {
 
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
@@ -171,7 +167,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
-            Collection<GSTAccountEntity> existingAccounts = this.getGSTAccount(companyName, customerId, null,null, Id);
+            Collection<GSTAccountEntity> existingAccounts = this.getGSTAccount(companyName, null,null, Id);
             GSTAccountEntity accountEntity = existingAccounts.iterator().next();
             if (existingAccounts == null ) {
                 log.error("GST accounts already exist for company: {}", companyName);
@@ -194,7 +190,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
     }
 
     @Override
-    public ResponseEntity<?> deleteGSTAccount(String companyName, String customerId, String Id) throws AccountantException {
+    public ResponseEntity<?> deleteGSTAccount(String companyName, String Id) throws AccountantException {
 
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
@@ -203,7 +199,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
-            Collection<GSTAccountEntity> existingAccounts = this.getGSTAccount(companyName, customerId, null, null, Id);
+            Collection<GSTAccountEntity> existingAccounts = this.getGSTAccount(companyName, null, null, Id);
             if (existingAccounts.isEmpty()) {
                 log.error("GST account not found for ID: {}", Id);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
@@ -256,21 +252,9 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             String iGst = getStringCellValue(row.getCell(7));
             String totalAmount = getStringCellValue(row.getCell(8));
 
-            if (customerGstNo == null || customerGstNo.isBlank()) continue;
-            String customerEncode = base64Encode(customerGstNo);
-
-            CustomerModel customerModel = customerRepository.findByCompanyId(company.getId())
-                    .stream()
-                    .filter(customer -> customer.getCustomerGstNo().equalsIgnoreCase(customerEncode))
-                    .findFirst()
-                    .orElseThrow(() -> new AccountantException(
-                            ErrorMessageHandler.getMessage(ErrorMessageKey.CUSTOMER_GST_NOT_FOUND, customerEncode),
-                            HttpStatus.NOT_FOUND));
-
             GSTAccountEntity entity = new GSTAccountEntity();
 
             entity.setCompanyId(company.getId());
-            entity.setCustomerId(customerModel.getCustomerId());
             entity.setMonth(month);
             entity.setYear(year);
             entity.setCustomerGstNo(base64Encode(customerGstNo));
@@ -354,7 +338,6 @@ public class GSTAccountServiceImpl implements GSTAccountService {
 
             GSTAccountEntity entity = GSTAccountEntity.builder()
                     .companyId(company.getId())
-                    .customerId(null)
                     .month(month)
                     .year(year)
                     .customerGstNo(customerGstNo)
@@ -397,9 +380,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
         }
 
         // Step 5: Fetch existing GST data from OpenSearch (not from DB)
-        Collection<GSTAccountEntity> dbGstAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(company.getShortName(),
-                company.getId(),null, year, month, null
-        );
+        Collection<GSTAccountEntity> dbGstAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(company.getShortName(), company.getId(),year, month,  null);
 
         // Step 6: Create a map of existing GST accounts by customer GST number and invoice number
         List<GSTAccountEntity> dbGstList = new ArrayList<>();

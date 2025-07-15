@@ -14,7 +14,6 @@ import lombok.*;
 public class GSTAccountEntity extends AbstractEntity {
 
     private String companyId;
-    private String customerId;
     private String month;
     private String year;
     private String customerGstNo;
@@ -23,10 +22,10 @@ public class GSTAccountEntity extends AbstractEntity {
     private String invoiceDate;
     private String totalAmount;
     private String subTotal;
+    private String comment;
     private String cGst;
     private String sGst;
     private String iGst;
     private String status;
 
 }
-

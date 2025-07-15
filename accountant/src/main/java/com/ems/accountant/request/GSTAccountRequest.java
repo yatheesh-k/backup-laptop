@@ -3,6 +3,7 @@ package com.ems.accountant.request;
 import com.ems.accountant.validation.MonthValidation;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.micrometer.common.lang.Nullable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -17,6 +18,15 @@ import lombok.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GSTAccountRequest {
+
+
+    @NotBlank(message = "{customerName.notnull.message}")
+    @Size(min = 2, max = 100, message = "{customerName.size.message}")
+    private String customerName;
+
+    @Nullable
+    @Pattern(regexp = "^$|[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$", message = "{customerGstNo.invalid}")
+    private String customerGstNo;
 
     @MonthValidation
     private String month;
@@ -54,4 +64,7 @@ public class GSTAccountRequest {
     @NotBlank(message = "{iGst.notnull.message}")
     @Size(max = 15, message = "{iGst.size.message}")
     private String iGst;
+
+    @Size(max = 500, message = "{comment.size.message}")
+    private String comment;
 }

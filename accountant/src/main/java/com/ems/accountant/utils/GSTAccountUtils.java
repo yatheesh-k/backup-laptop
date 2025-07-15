@@ -9,19 +9,18 @@ import java.util.Base64;
 
 public class GSTAccountUtils {
 
-    public static GSTAccountEntity maskGSTAccountEntity(GSTAccountRequest request, CustomerModel customerModel, String companyId , String customerId, String resourceId) {
+    public static GSTAccountEntity maskGSTAccountEntity(GSTAccountRequest request, String companyId , String resourceId) {
         GSTAccountEntity entity = new GSTAccountEntity();
         entity.setId(resourceId);
         entity.setCompanyId(companyId);
-        entity.setCustomerId(customerId);
         entity.setMonth(request.getMonth());
         entity.setYear(request.getYear());
         entity.setInvoiceNumber(request.getInvoiceNumber());
-        entity.setCustomerName(base64Decode(customerModel.getCustomerName()));
-        entity.setCustomerGstNo(base64Encode(customerModel.getCustomerGstNo()));
+        entity.setCustomerName(base64Decode(request.getCustomerName()));
+        entity.setCustomerGstNo(base64Encode(request.getCustomerGstNo()));
         entity.setInvoiceDate(base64Encode(request.getInvoiceDate()));
         entity.setTotalAmount(base64Encode(request.getTotalAmount()));
-        entity.setGrandTotal(base64Encode(request.getGrandTotal()));
+        entity.setSubTotal(base64Encode(request.getSubTotal()));
         entity.setCGst(base64Encode(request.getCGst()));
         entity.setSGst(base64Encode(request.getSGst()));
         entity.setIGst(base64Encode(request.getIGst()));
@@ -38,13 +37,12 @@ public class GSTAccountUtils {
         GSTAccountEntity maskedEntity = new GSTAccountEntity();
         maskedEntity.setId(entity.getId());
         maskedEntity.setCompanyId(entity.getCompanyId());
-        maskedEntity.setCustomerId(entity.getCustomerId());
         maskedEntity.setYear(entity.getYear());
         maskedEntity.setMonth(entity.getMonth());
         maskedEntity.setCustomerName(entity.getCustomerName());
         maskedEntity.setCustomerGstNo(base64Decode(entity.getCustomerGstNo()));
         maskedEntity.setTotalAmount(base64Decode(entity.getTotalAmount()));
-        maskedEntity.setGrandTotal(base64Decode(entity.getGrandTotal()));
+        maskedEntity.setSubTotal(base64Decode(entity.getSubTotal()));
         maskedEntity.setCGst(base64Decode(entity.getCGst()));
         maskedEntity.setSGst(base64Decode(entity.getSGst()));
         maskedEntity.setIGst(base64Decode(entity.getIGst()));
@@ -60,10 +58,9 @@ public class GSTAccountUtils {
         GSTAccountEntity maskedEntity = new GSTAccountEntity();
         maskedEntity.setId(entity.getId());
         maskedEntity.setCompanyId(entity.getCompanyId());
-        maskedEntity.setCustomerId(entity.getCustomerId());
         maskedEntity.setCustomerGstNo(base64Encode(entity.getCustomerGstNo()));
         maskedEntity.setTotalAmount(base64Encode(entity.getTotalAmount()));
-        maskedEntity.setGrandTotal(base64Encode(entity.getGrandTotal()));
+        maskedEntity.setSubTotal(base64Encode(entity.getSubTotal()));
         maskedEntity.setCGst(base64Encode(entity.getCGst()));
         maskedEntity.setSGst(base64Encode(entity.getSGst()));
         maskedEntity.setIGst(base64Encode(entity.getIGst()));
