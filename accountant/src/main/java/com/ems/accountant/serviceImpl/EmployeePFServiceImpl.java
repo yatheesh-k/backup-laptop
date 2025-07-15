@@ -350,6 +350,13 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             log.debug("Getting employee accounts for company: {}, employeeId: {}, month: {}, year: {}",
                     companyName, accountId, month, year);
             Collection<EmployeeAccountEntity> employeeAccountEntities = accountDao.getEmployeeAccountByUanMonthYear(null, companyEntity.getId(), month, year, companyEntity.getShortName(), employeeId, accountId);
+            for (EmployeeAccountEntity entity : employeeAccountEntities) {
+                entity.setUanNo(base64getDecode(entity.getUanNo()));
+                entity.setProvidentFund(base64getDecode(entity.getProvidentFund()));
+                entity.setPanNo(base64getDecode(entity.getPanNo()));
+                entity.setTds(base64getDecode(entity.getTds()));
+                entity.setProfessionalTax(base64getDecode(entity.getProfessionalTax()));
+            }
             return employeeAccountEntities;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -372,13 +379,17 @@ public class EmployeePFServiceImpl implements EmployeePFService {
                 log.error("Employee not found for ID: {}", employeeId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
-            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeId, accountId, null, null);
-            if (employees == null && employees.isEmpty()) {
+            EmployeeAccountEntity employees = this.getEmployeeAccountDetails(companyName, employeeId, accountId, null, null)
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+            if (employees == null) {
                 log.error("Employee account not found for ID: {}", accountId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PF_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
             EmployeeAccountEntity entitySrc = objectMapper.convertValue(request, EmployeeAccountEntity.class);
             EmployeeAccountEntity entityTgt = objectMapper.convertValue(employees, EmployeeAccountEntity.class);
+
             BeanUtils.copyProperties(entitySrc, entityTgt, getNullPropertyNames(entitySrc));
             entityTgt.setProvidentFund(base64Encode(request.getProvidentFund()));
 
@@ -430,5 +441,13 @@ public class EmployeePFServiceImpl implements EmployeePFService {
         return emptyNames.toArray(new String[0]);
     }
 
+    private String base64getDecode(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        byte[] decodedBytes = Base64.getDecoder().decode(value);
+        return new String(decodedBytes, StandardCharsets.UTF_8);
+
+    }
 
 }

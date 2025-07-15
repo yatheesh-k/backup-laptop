@@ -55,7 +55,9 @@ public enum ErrorMessageKey {
     GST_RESPONSE_NOT_FOUND("gst.response.not.found"),
     UNABLE_FETCH_GST_RESPONSE("unable.to.fetch.gst.response"),
     UNABLE_UPDATE_GST_RESPONSE("unable.to.update.gst.response"),
-    UNABLE_DELETE_GST_RESPONSE("unable.to.delete.gst.response");
+    UNABLE_DELETE_GST_RESPONSE("unable.to.delete.gst.response"),
+    UNABLE_SAVE_EMPLOYEE_TDS("unable.to.save.employee.tds"),
+    EMPLOYEE_TDS_NOT_FOUND("employee.tds.not.found");
 
     private final String key;
 
