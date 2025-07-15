@@ -206,10 +206,12 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
         List<Object> tdsAlreadyUpdatedEmployees = new ArrayList<>();
 
         Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("Missed Company Employees", missedCompanyEmployees);
-        responseBody.put("Not Company Employees", notCompanyEmployees);
-        responseBody.put("TDS Mismatch Employees", tdsMismatchEmployees);
-        responseBody.put("TDS Already Updated Employees", tdsAlreadyUpdatedEmployees);
+        responseBody.put(Constants.MISSED_COMPANY_EMPLOYEES, missedCompanyEmployees);
+        responseBody.put(Constants.NOT_COMPANY_EMPLOYEES, notCompanyEmployees);
+        responseBody.put(Constants.TDS_MISMATCH_EMPLOYEES, tdsMismatchEmployees);
+        responseBody.put(Constants.TDS_ALREADY_UPDATED, tdsAlreadyUpdatedEmployees);
+
+
 
         YearMonth current = YearMonth.of(Integer.parseInt(year), Month.valueOf(month.toUpperCase()));
         YearMonth previous = current.minusMonths(1);
