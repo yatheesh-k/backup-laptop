@@ -28,6 +28,9 @@ public class ResourceIdUtils {
     public static String generatePFResponseResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.PF_RESPONSE, companyName, month, year);
     }
+    public static String generatePTResponseResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.PT_RESPONSE, companyName, month, year);
+    }
 
     /**
      * Generate a global resource ID based on the resource type

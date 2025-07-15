@@ -27,7 +27,13 @@ public enum ErrorMessageKey {
     UNABLE_FETCH_PF_RESPONSE("unable.to.fetch.pf.response"),
     NO_CHANGES_DETECTED("no.changes.detected"),
     UNABLE_UPDATE_PF_RESPONSE("unable.to.update.pf.response"),
-    UNABLE_DELETE_PF_RESPONSE("unable.to.delete.pf.response"),;
+    UNABLE_DELETE_PF_RESPONSE("unable.to.delete.pf.response"),
+    UNABLE_SAVE_PT_RESPONSE("unable.to.save.pt.response"),
+    PT_RESPONSE_ALREADY_EXISTS("pt.response.already.exists"),
+    PT_RESPONSE_NOT_FOUND("pt.response.not.found"),
+    UNABLE_DELETE_PT_RESPONSE("unable.delete.pt.response"),
+    UNABLE_UPDATE_PT_RESPONSE("unable.update.pt.response"),
+    UNABLE_FETCH_PT_RESPONSE("unable.fetch.pt.response");
 
 
     private final String key;
