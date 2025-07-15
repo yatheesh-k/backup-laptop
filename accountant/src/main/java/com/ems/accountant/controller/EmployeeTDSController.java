@@ -1,21 +1,17 @@
 package com.ems.accountant.controller;
 
-import com.ems.accountant.common.ResponseBuilder;
 import com.ems.accountant.exception.AccountantException;
-import com.ems.accountant.persistance.EmployeeAccountEntity;
-import com.ems.accountant.request.EmployeeTDSUpdate;
+import com.ems.accountant.request.EmployeeTDSRequest;
 import com.ems.accountant.service.EmployeeTdsService;
 import com.ems.accountant.utils.Constants;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Collection;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -59,7 +55,7 @@ public class EmployeeTDSController {
             @PathVariable String companyName,
             @PathVariable String employeeId,
             @PathVariable String id,
-            @RequestBody EmployeeTDSUpdate request) throws IOException, AccountantException {
+            @RequestBody EmployeeTDSRequest request) throws IOException, AccountantException {
         return employeeTDSService.updateEmployeeForTDS(companyName, employeeId, id, request);
     }
 }

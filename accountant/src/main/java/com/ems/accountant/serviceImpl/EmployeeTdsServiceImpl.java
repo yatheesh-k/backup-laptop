@@ -2,7 +2,7 @@ package com.ems.accountant.serviceImpl;
 
 import com.ems.accountant.common.ResponseBuilder;
 import com.ems.accountant.dao.EmployeeAccountDao;
-import com.ems.accountant.request.EmployeeTDSUpdate;
+import com.ems.accountant.request.EmployeeTDSRequest;
 import com.ems.accountant.service.EmployeePFService;
 import com.ems.accountant.service.EmployeeTdsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -336,7 +336,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
     }
 
     @Override
-    public ResponseEntity<?> updateEmployeeForTDS(String companyName, String employeeId, String accountId, EmployeeTDSUpdate request) throws AccountantException, IOException {
+    public ResponseEntity<?> updateEmployeeForTDS(String companyName, String employeeId, String accountId, EmployeeTDSRequest request) throws AccountantException, IOException {
         try {
             //  Validate company
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
@@ -356,7 +356,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             }
 
             //  Get employee account record for that month/year
-            EmployeeAccountEntity employees = pfService.getEmployeeAccountDetails(companyName, employeeId, accountId, request.getMonth(), request.getYear())
+            EmployeeAccountEntity employees = pfService.getEmployeeAccountDetails(companyName, employeeId, accountId, null,  null)
                     .stream()
                     .findFirst()
                     .orElse(null);
@@ -375,7 +375,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
 
             //  Save
             openSearchOperations.saveEntity(entityTgt, entityTgt.getId(), indexName);
-            log.info("Updated TDS for employee: {} for month: {}, year: {}", employeeId, request.getMonth(), request.getYear());
+            log.info("Updated TDS for employee: {} for month: {}, year: {}", employeeId);
 
         } catch (AccountantException e) {
             log.error("Exception while updating TDS: {}", e.getMessage());
