@@ -31,6 +31,11 @@ public class ResourceIdUtils {
         return generateGlobalResourceId(ResourceType.PF_RESPONSE, companyName, month, year);
     }
 
+    public static String generateTDSResponseResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.TDS_RESPONSE, companyName, month, year);
+
+    }
+
     public static String generatePFReceiptsResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.PF_RECEIPT, companyName, month, year);
 
