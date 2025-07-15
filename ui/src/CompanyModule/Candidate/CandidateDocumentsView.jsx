@@ -18,15 +18,14 @@ const CandidateDocumentsView = () => {
   const { userId } = useSelector(state => state.auth);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditMode, setIsEditMode] = useState(false);
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
 
   useEffect(() => {
     if (location.state?.documents) {
       setDocuments(transformDocuments(location.state.documents));
-      setLoading(false);
-      setIsEditMode(location.state.isEditMode || false);
-    } else {
-      fetchDocuments();
     }
   }, [location.state]);
 
@@ -35,7 +34,7 @@ const CandidateDocumentsView = () => {
       setLoading(true);
       const response = await getDocumentByIdAPI(userId, '');
 
-      if (response && response.data && response.data.documentEntities) {
+      if (response?.data?.documentEntities) {
         setDocuments(transformApiResponse(response.data));
       } else {
         setDocuments([]);
@@ -110,7 +109,7 @@ const CandidateDocumentsView = () => {
   };
 
   const transformApiResponse = (apiData) => {
-    if (!apiData || !apiData.documentEntities || apiData.documentEntities.length === 0) {
+    if (!apiData?.documentEntities || apiData.documentEntities.length === 0) {
       return [];
     }
 
@@ -146,6 +145,7 @@ const CandidateDocumentsView = () => {
       }
     });
   };
+
   return (
     <LayOut>
       <div className="container-fluid p-0">
@@ -251,16 +251,16 @@ const CandidateDocumentsView = () => {
       </div>
 
       <style jsx>{`
-                .custom-link {
-                    text-decoration: none;
-                    color: inherit;
-                    transition: color 0.2s;
-                }
-                
-                .custom-link:hover {
-                    color: #0d6efd;
-                }
-            `}</style>
+        .custom-link {
+          text-decoration: none;
+          color: inherit;
+          transition: color 0.2s;
+        }
+        
+        .custom-link:hover {
+          color: #0d6efd;
+        }
+      `}</style>
     </LayOut>
   );
 };

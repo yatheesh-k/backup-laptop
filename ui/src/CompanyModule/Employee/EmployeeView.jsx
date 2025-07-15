@@ -91,7 +91,7 @@ const salaryDetailFields = [
   const isPDF = (selectedEmployeeDownloadFormat === "pdf" || selectedBankDownloadFormat === "pdf");
   const maxFields = 8;
   const [showDownloadModal, setShowDownloadModal] = useState(false);
-  const [selectedColumns, setSelectedColumns] = useState([]);
+  const [selectedColumns, setSelectedColumns] = useState(["Name"]);
   const getColumnsByNames = (names) => allColumns.filter(col => names.includes(col.name));
 
 
@@ -424,7 +424,7 @@ const salaryDetailFields = [
                               if (!format) return;
                               setSelectedEmployeeDownloadFormat(format);
                               setSelectedBankDownloadFormat(""); // clear other
-                              setSelectedColumns([]); // default: no columns selected
+                               setSelectedColumns(["Name"]); // default: no columns selected
                               setShowDownloadModal(true);
                             }}
                             disabled={isDownloading}

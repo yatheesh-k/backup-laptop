@@ -466,11 +466,18 @@ const CandidateDocumentUpload = () => {
             navigate('/candidateDocumentsView', { state: { documents: data } });
 
         } catch (error) {
-            if (progressInterval) clearInterval(progressInterval);
-            setUploadProgress(0);
+        if (progressInterval) clearInterval(progressInterval);
+        setUploadProgress(0);
 
-            console.error('Submission error:', error.response?.data || error.message);
-            toast.error(error.response?.data?.message || 'Failed to update documents');
+        console.error('Submission error:', error.response?.data || error.message);
+        
+        // Handle the specific "document already exists" error
+        if (error.response?.data?.error?.message?.includes('Document already exists')) {
+            toast.error(error.response.data.error.message);
+        } else {
+            // Show generic error message for other errors
+            toast.error(error.response?.data?.message || 'An error occurred during submission');
+        }
         } finally {
             setIsSubmitting(false);
         }

@@ -8,6 +8,7 @@ import Loader from "../Utils/Loader";
 const EmployeeList = () => {
     const { status } = useParams(); // 'active' or 'Relieved'
     const employees = useSelector((state) => state.employees.data);
+    const employeesStatus = useSelector((state) => state.employees.status);
     const [search, setSearch] = useState("");
     const [filteredEmployees, setFilteredEmployees] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -27,9 +28,8 @@ const EmployeeList = () => {
         },
     };
 
-
     useEffect(() => {
-        if (status && employees.length > 0) {
+        if (employeesStatus === 'succeeded') {
             const filtered = employees.filter(
                 (emp) =>
                     emp.status?.toLowerCase() === status.toLowerCase() &&
@@ -37,7 +37,7 @@ const EmployeeList = () => {
             );
             setFilteredEmployees(filtered);
         }
-    }, [status, employees, search]);
+    }, [status, employees, search, employeesStatus]);
 
     const columns = [
         {
@@ -67,7 +67,8 @@ const EmployeeList = () => {
         },
     ];
 
-    if (!employees.length) return <Loader />;
+    if (employeesStatus === 'loading') return <Loader />;
+    if (employeesStatus === 'failed') return <LayOut><div className="alert alert-danger">Failed to load employees</div></LayOut>;
 
     return (
         <LayOut>
@@ -94,15 +95,24 @@ const EmployeeList = () => {
 
                 <div className="card">
                     <div className="card-body">
-                        <DataTable
-                            columns={columns}
-                            data={filteredEmployees}
-                            pagination
-                            paginationPerPage={rowsPerPage}
-                            onChangePage={(page) => setCurrentPage(page)}
-                            onChangeRowsPerPage={(perPage) => setRowsPerPage(perPage)}
-                            customStyles={customStyles}
-                        />
+                        {filteredEmployees.length > 0 ? (
+                            <DataTable
+                                columns={columns}
+                                data={filteredEmployees}
+                                pagination
+                                paginationPerPage={rowsPerPage}
+                                onChangePage={(page) => setCurrentPage(page)}
+                                onChangeRowsPerPage={(perPage) => setRowsPerPage(perPage)}
+                                customStyles={customStyles}
+                            />
+                        ) : (
+                            <div className="text-center py-5">
+                                <h4>No {status.toLowerCase()} employees found</h4>
+                                {search && (
+                                    <p>Try adjusting your search term</p>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
