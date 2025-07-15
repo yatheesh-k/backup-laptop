@@ -519,7 +519,7 @@ const ExperienceForm = () => {
                           pattern: {
                             value:
                               /^(?=.*[a-zA-Z])[a-zA-Z0-9\s,'#,-_&*.()^\-/]*$/,
-                            message: "Please enter valid Address",
+                            message: "Please enter a valid description",
                           },
                           minLength: {
                             value: 3,
