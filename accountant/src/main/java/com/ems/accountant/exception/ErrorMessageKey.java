@@ -57,7 +57,11 @@ public enum ErrorMessageKey {
     UNABLE_UPDATE_GST_RESPONSE("unable.to.update.gst.response"),
     UNABLE_DELETE_GST_RESPONSE("unable.to.delete.gst.response"),
     UNABLE_SAVE_EMPLOYEE_TDS("unable.to.save.employee.tds"),
-    EMPLOYEE_TDS_NOT_FOUND("employee.tds.not.found");
+    EMPLOYEE_TDS_NOT_FOUND("employee.tds.not.found"),
+    TDS_RECEIPT_ALREADY_EXISTS("tds.receipt.already.exists"),
+    TDS_RECEIPT_FILE_EMPTY("tds.receipt.file.empty"),
+    TDS_RECEIPTS_NOT_FOUND("tds.receipts.not.found"),
+    UNABLE_DELETE_TDS_RECEIPTS("unable.to.delete.tds.receipts");
 
     private final String key;
 
