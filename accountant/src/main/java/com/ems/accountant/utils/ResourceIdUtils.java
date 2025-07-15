@@ -1,6 +1,8 @@
 package com.ems.accountant.utils;
 
 import com.ems.accountant.model.ResourceType;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -31,7 +33,26 @@ public class ResourceIdUtils {
     public static String generateGSTAccountResourceId(String invoiceNumber) {
         return generateGlobalResourceId(ResourceType.GST_ACCOUNT, invoiceNumber);
     }
+    public static String generatePTResponseResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.PT_RESPONSE, companyName, month, year);
+    }
 
+    public static String generateTDSResponseResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.TDS_RESPONSE, companyName, month, year);
+
+    }
+
+    public static String generatePFReceiptsResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.PF_RECEIPT, companyName, month, year);
+
+    }
+    public static String generatePTReceiptsResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.PT_RECEIPT, companyName, month, year);
+    }
+
+    public static String generateGSTResponseResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.GST_RESPONSE, companyName, month, year);
+    }
     /**
      * Generate a global resource ID based on the resource type
      *
