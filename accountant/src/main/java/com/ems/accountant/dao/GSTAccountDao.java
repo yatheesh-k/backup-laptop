@@ -8,7 +8,7 @@ public interface GSTAccountDao extends Dao<GSTAccountEntity>{
 
     default Class<GSTAccountEntity> getEntityClass() {return GSTAccountEntity.class;}
 
-    Collection<GSTAccountEntity> findByCompanyIdAndMonthAndYear(String companyId,String customerId,String year, String month, String Id) throws AccountantException;
+    Collection<GSTAccountEntity> findByCompanyIdAndMonthAndYear(String companyName,String Id, String year, String month,String customerId,String accountId) throws AccountantException;
 
 
 }

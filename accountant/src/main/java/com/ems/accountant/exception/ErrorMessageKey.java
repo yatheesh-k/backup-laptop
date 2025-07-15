@@ -26,7 +26,10 @@ public enum ErrorMessageKey {
     UNABLE_FETCH_PF_RESPONSE("unable.to.fetch.pf.response"),
     NO_CHANGES_DETECTED("no.changes.detected"),
     UNABLE_UPDATE_PF_RESPONSE("unable.to.update.pf.response"),
-    UNABLE_DELETE_PF_RESPONSE("unable.to.delete.pf.response");
+    UNABLE_DELETE_PF_RESPONSE("unable.to.delete.pf.response"),
+    GST_ACCOUNT_ALREADY_EXIST("gst.account.already.exist"),
+    GST_ACCOUNT_NOT_FOUND("gst.account.not.found"),
+    UNABLE_DELETE("unable.to.delete"),;
 
     private final String key;
 
