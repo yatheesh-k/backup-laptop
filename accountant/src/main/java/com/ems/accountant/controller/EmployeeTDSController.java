@@ -62,16 +62,4 @@ public class EmployeeTDSController {
             @RequestBody EmployeeTDSUpdate request) throws IOException, AccountantException {
         return employeeTDSService.updateEmployeeForTDS(companyName, employeeId, id, request);
     }
-
-    @RequestMapping(value = "{companyName}/employee/{employeeId}/tds", method = RequestMethod.GET)
-    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
-            summary = "${api.getEmployeeTDS.tag}", description = "${api.getEmployeeTDS.description}")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
-    public ResponseEntity<?> getEmployeeAccountDetails(
-            @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
-            @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName, @PathVariable String employeeId) throws AccountantException, IOException {
-        Collection<EmployeeAccountEntity> employeeAccountEntities = employeeTDSService.getEmployeeAccountDetails(companyName, employeeId, null, null, null);
-        return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(employeeAccountEntities), HttpStatus.OK);
-    }
 }

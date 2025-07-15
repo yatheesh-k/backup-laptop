@@ -3,6 +3,7 @@ package com.ems.accountant.serviceImpl;
 import com.ems.accountant.common.ResponseBuilder;
 import com.ems.accountant.dao.EmployeeAccountDao;
 import com.ems.accountant.request.EmployeeTDSUpdate;
+import com.ems.accountant.service.EmployeePFService;
 import com.ems.accountant.service.EmployeeTdsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,9 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private EmployeePFService pfService;
 
     @Override
     public ResponseEntity<?> employeeTDSComparing(String companyName, String month, String year, MultipartFile file) throws AccountantException, IOException {
@@ -109,7 +113,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
                     }
 
                     // Update and save
-                    existingAccount.setTds(employee.getTds());
+                    existingAccount.setTds(base64Encode(employee.getTds()));
                     openSearchOperations.saveEntity(existingAccount, existingAccount.getId(), indexName);
                     log.info("Updated TDS for Employee: {} for month: {}, year: {}", existingAccount.getEmployeeId(), month, year);
                 } else {
@@ -352,17 +356,19 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             }
 
             //  Get employee account record for that month/year
-            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeId, accountId, request.getMonth(), request.getYear());
+            EmployeeAccountEntity employees = pfService.getEmployeeAccountDetails(companyName, employeeId, accountId, request.getMonth(), request.getYear())
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
 
-            if (employees == null || employees.isEmpty()) {
+            if (employees == null) {
                 log.error("Employee account not found for ID: {}", accountId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_TDS_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
             //  Convert request to source object
             EmployeeAccountEntity entitySrc = objectMapper.convertValue(request, EmployeeAccountEntity.class);
-            EmployeeAccountEntity entityTgt = objectMapper.convertValue(employees.iterator().next(), EmployeeAccountEntity.class);
-
+            EmployeeAccountEntity entityTgt = objectMapper.convertValue(employees, EmployeeAccountEntity.class);
             //  Copy non-null properties and set TDS
             BeanUtils.copyProperties(entitySrc, entityTgt, getNullPropertyNames(entitySrc));
             entityTgt.setTds(base64Encode(request.getTds()));
@@ -385,24 +391,6 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
         );
     }
 
-
-    public Collection<EmployeeAccountEntity> getEmployeeAccountDetails(String companyName, String employeeId, String accountId, String month, String year) throws AccountantException , IOException {
-        try {
-            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
-            if (companyEntity == null) {
-                log.error("Exception while fetching company details: Company not found for name: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
-            }
-            log.debug("Fetching TDS details for company: {}, employeeId: {}, month: {}, year: {}", companyName, employeeId, month, year);
-            Collection<EmployeeAccountEntity> employeeAccountEntities =accountDao.getEmployeeAccountByPanMonthYear(
-                    null, companyEntity.getId(), month, year, companyEntity.getShortName(), employeeId, accountId
-            );
-            return employeeAccountEntities;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private String[] getNullPropertyNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);
         Set<String> emptyNames = new HashSet<>();
@@ -413,6 +401,15 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             }
         }
         return emptyNames.toArray(new String[0]);
+    }
+
+    private String base64getDecode(String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        byte[] decodedBytes = Base64.getDecoder().decode(value);
+        return new String(decodedBytes, StandardCharsets.UTF_8);
+
     }
 
 

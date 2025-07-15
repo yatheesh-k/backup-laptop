@@ -16,6 +16,4 @@ public interface EmployeeTdsService {
 
     ResponseEntity<?> updateEmployeeForTDS(String companyName, String employeeId, String accountId, EmployeeTDSUpdate request) throws AccountantException, IOException;
 
-    Collection<EmployeeAccountEntity> getEmployeeAccountDetails(String companyName, String employeeId, String accountId, String month, String year) throws AccountantException, IOException;
-
     }

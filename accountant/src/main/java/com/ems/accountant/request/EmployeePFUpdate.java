@@ -21,9 +21,6 @@ public class EmployeePFUpdate {
     @Size(min = 2, max = 100, message = "{employee.size.message}")
     @Pattern(regexp = "^[A-Z][a-zA-Z]*(?:\\s[A-Z][a-zA-Z]*)*$", message = "{employee.name.message}")
     private String employeeName;
-    private String month;
-    private String year;
-    private String panNo;
 
     @Schema(example = "1800")
     @Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "{providentFund.message}")
