@@ -44,7 +44,13 @@ public enum ErrorMessageKey {
     UNABLE_SAVE_PT_RECEIPTS("unable.to.save.pt.receipts"),
     PT_RECEIPTS_NOT_FOUND("pt.receipts.not.found"),
     UNABLE_UPDATE_PT_RESPONSE("unable.to.update.pt.response"),
-    UNABLE_DELETE_PT_RECEIPTS("unable.to.delete.pt.receipts"),;
+    UNABLE_DELETE_PT_RECEIPTS("unable.to.delete.pt.receipts"),
+    GST_RESPONSE_ALREADY_EXISTS("gst.response.already.exists"),
+    UNABLE_SAVE_GST_RESPONSE("unable.to.save.gst.response"),
+    GST_RESPONSE_NOT_FOUND("gst.response.not.found"),
+    UNABLE_FETCH_GST_RESPONSE("unable.to.fetch.gst.response"),
+    UNABLE_UPDATE_GST_RESPONSE("unable.to.update.gst.response"),
+    UNABLE_DELETE_GST_RESPONSE("unable.to.delete.gst.response"),;
 
 
     private final String key;

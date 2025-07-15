@@ -53,4 +53,5 @@ public class Constants {
     public static final String PATH_PATTERN = "/var/www/ems/assets/img/**";
     public static final String FILE_STORED_PATH = "file:/var/www/ems/assets/img/";
     public static final String PT_RECEIPT = "pt_receipt";
+    public static final String GST_RESPONSE = "gst_response";
 }
