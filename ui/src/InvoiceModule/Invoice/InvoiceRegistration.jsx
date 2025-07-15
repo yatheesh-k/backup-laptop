@@ -35,13 +35,13 @@ const InvoiceRegistration = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [invoiceData, setInvoiceData] = useState(null);
   const [productColumns, setProductColumns] = useState([
-    { key: "items", title: "Item", type: "text" },
-    { key: "hsn", title: "HSN-no", type: "text" },
-    { key: "service", title: "Service", type: "text" },
-    { key: "quantity", title: "Quantity", type: "number" },
-    { key: "unitCost", title: "Unit Cost", type: "number" },
-    { key: "gstPercentage", title: "GST (%)", type: "number" },
-    { key: "totalCost", title: "Total Cost", type: "number" },
+    { key: "items", title: "Item", type: "text", required: true },
+    { key: "hsn", title: "HSN-no", type: "text", required: true },
+    { key: "service", title: "Service", type: "text", required: true },
+    { key: "quantity", title: "Quantity", type: "number", required: true },
+    { key: "unitCost", title: "Unit Cost", type: "number", required: true },
+    { key: "gstPercentage", title: "GST (%)", type: "percentage", required: true },
+    { key: "totalCost", title: "Total Cost", type: "number", required: false },
   ]);
   const authUser = useAuth();
   const company = authUser?.company || {};
@@ -73,6 +73,7 @@ const InvoiceRegistration = () => {
     showPaymentTerms: false,
     showDeliveryDate: false,
   });
+  const [showValidations, setShowValidations] = useState(false);
 
   useEffect(() => {
     dispatch(fetchCustomers(companyId));
@@ -93,6 +94,35 @@ const InvoiceRegistration = () => {
     if (type === "number") return /^\d+(\.\d{1,2})?$/.test(value);
     if (type === "percentage") return /^([0-9]{1,2}|100)%?$/.test(value); // 1-3 digits with %
     return true;
+  };
+  const getProductFieldValidation = (col) => {
+    switch (col.key) {
+      case "items":
+        return {
+          minLength: { value: 3, message: "Item Name must be at least 3 characters" },
+          maxLength: { value: 150, message: "Item Name cannot exceed 150 characters" },
+        };
+      case "hsn":
+        return {
+          minLength: { value: 2, message: "HSN No must be at least 2 characters" },
+          maxLength: { value: 8, message: "HSN No cannot exceed 8 characters" },
+        };
+      case "service":
+        return {
+          minLength: { value: 3, message: "Service must be at least 3 characters" },
+          maxLength: { value: 60, message: "Service cannot exceed 60 characters" },
+        };
+      case "quantity":
+        return {
+          maxLength: { value: 7, message: "Quantity cannot exceed 7 digits" },
+        };
+      case "unitCost":
+        return {
+          maxLength: { value: 10, message: "Unit Cost cannot exceed 10 digits" },
+        };
+      default:
+        return {};
+    }
   };
 
   useEffect(() => {
@@ -292,14 +322,23 @@ const InvoiceRegistration = () => {
 
   const onSubmit = (data) => {
     // Prevent submission if no product details are entered
-    if (
-      !productData ||
-      productData.length === 0 ||
-      productData.every(row => Object.values(row).every(val => !val))
-    ) {
-      setProductError("Please add at least one product detail before submitting.");
+    setShowValidations(true); // Show all errors at submission time
+
+    const isValid = productData.every(row =>
+      productColumns.every(col =>
+        col.key === "totalCost" || row[col.key]
+      )
+    );
+
+    if (productData.length === 0) {
+      setProductError("Please add at least one product detail before submitting");
       return;
     }
+    else if (!isValid) {
+      setProductError("Please fill all fields before submitting");
+      return;
+    }
+
     const selectedCustomer = customers.find(
       (cust) => cust.customerId === data.customerName.value
     );
@@ -462,20 +501,20 @@ const InvoiceRegistration = () => {
     setValue(fieldName, value);
     trigger(fieldName); // Trigger validation
   };
- 
- const noTrailingSpaces = (value, fieldName) => { 
-  // Check if the value ends with a space
-   if (value.endsWith(' ')) { 
-    return "Spaces are not allowed at the end"; 
-  }
-  // Check if the value is less than 3 characters long
-  if (value.length < 3) {
-     return "Minimum 3 characters Required"; 
+
+  const noTrailingSpaces = (value, fieldName) => {
+    // Check if the value ends with a space
+    if (value.endsWith(' ')) {
+      return "Spaces are not allowed at the end";
+    }
+    // Check if the value is less than 3 characters long
+    if (value.length < 3) {
+      return "Minimum 3 characters Required";
     }
     // If no error, return true
     return true;
   };
-  
+
   const handleError = (errors) => {
     if (errors.response) {
       const status = errors.response.status;
@@ -539,6 +578,7 @@ const InvoiceRegistration = () => {
     });
 
     setProductData([]); // Clear product rows
+    setProductError(null); // Clear product error message
     toast.info("Form cleared!", { position: "top-right", autoClose: 1000 });
   };
 
@@ -697,7 +737,10 @@ const InvoiceRegistration = () => {
     );
   };
 
-  const addRow = () => setProductData([...productData, {}]);
+  const addRow = () => {
+    setProductData([...productData, {}]);
+    setShowValidations(false); // Hide validation errors for new row
+  };
 
   // Render loading message or template not available message
   if (!templateAvailable) {
@@ -1193,17 +1236,16 @@ const InvoiceRegistration = () => {
                             placeholder="Enter Sales Person Name"
                             {...register("salesPerson", {
                               required: "Sales Person Name is required",
-                              minLength: {
-                                value: 3,
-                                message:
-                                  "Sales Person Name must be at least 3 characters long",
-                              },
+                              validate: (value) =>
+                                noTrailingSpaces(value, "salesPerson"),
                               maxLength: {
                                 value: 100,
                                 message:
                                   "Sales Person Name cannot exceed 100 characters",
                               },
                             })}
+                            onChange={(e) => handleInputChange(e, "salesPerson")}
+                            onKeyPress={(e) => preventInvalidInput(e, "alpha")}
                           />
                           {errors.salesPerson && (
                             <p
@@ -1234,17 +1276,16 @@ const InvoiceRegistration = () => {
                           placeholder="Enter Shipping Method"
                           {...register("shippingMethod", {
                             required: "Shipping Method is required",
-                            minLength: {
-                              value: 3,
-                              message:
-                                "Shipping Method must be at least 3 characters long",
-                            },
+                            validate: (value) =>
+                              noTrailingSpaces(value, "shippingMethod"),
                             maxLength: {
                               value: 100,
                               message:
                                 "Shipping Method cannot exceed 100 characters",
                             },
                           })}
+                          onChange={(e) => handleInputChange(e, "shippingMethod")}
+                          onKeyPress={(e) => preventInvalidInput(e, "alpha")}
                         />
                         {errors.shippingMethod && (
                           <p
@@ -1274,17 +1315,16 @@ const InvoiceRegistration = () => {
                           placeholder="Enter Shipping Terms"
                           {...register("shippingTerms", {
                             required: "Shipping Terms are required",
-                            minLength: {
-                              value: 3,
-                              message:
-                                "Shipping Terms must be at least 3 characters long",
-                            },
+                            validate: (value) =>
+                              noTrailingSpaces(value, "shippingTerms"),
                             maxLength: {
                               value: 100,
                               message:
                                 "Shipping Terms cannot exceed 100 characters",
                             },
                           })}
+                          onChange={(e) => handleInputChange(e, "shippingTerms")}
+                          onKeyPress={(e) => preventInvalidInput(e, "alpha")}
                         />
                         {errors.shippingTerms && (
                           <p
@@ -1314,17 +1354,16 @@ const InvoiceRegistration = () => {
                           placeholder="Enter Payment Terms"
                           {...register("paymentTerms", {
                             required: "Payment Terms are required",
-                            minLength: {
-                              value: 3,
-                              message:
-                                "Payment Terms must be at least 3 characters long",
-                            },
+                            validate: (value) =>
+                              noTrailingSpaces(value, "paymentTerms"),
                             maxLength: {
                               value: 100,
                               message:
                                 "Payment Terms cannot exceed 100 characters",
                             },
                           })}
+                          onChange={(e) => handleInputChange(e, "paymentTerms")}
+                          onKeyPress={(e) => preventInvalidInput(e, "alpha")}
                         />
                         {errors.paymentTerms && (
                           <p
@@ -1397,7 +1436,7 @@ const InvoiceRegistration = () => {
                         <tr>
                           {productColumns.map((col) => (
                             <th key={col.key} className="position-relative">
-                              {col.key !== "totalCost" && ( // Prevent deleting totalCost column
+                              {col.key !== "totalCost" && (
                                 <button
                                   type="button"
                                   className="btn btn-sm position-absolute top-0 end-0"
@@ -1411,17 +1450,13 @@ const InvoiceRegistration = () => {
                                 type="text"
                                 className="form-control mb-1"
                                 value={col.title}
-                                onChange={(e) =>
-                                  updateColumnTitle(col.key, e.target.value)
-                                }
-                                disabled={col.key === "totalCost"} // Prevent editing totalCost header
+                                onChange={(e) => updateColumnTitle(col.key, e.target.value)}
+                                disabled={col.key === "totalCost"}
                               />
                               <select
                                 className="form-select form-select-sm"
                                 value={col.type}
-                                onChange={(e) =>
-                                  updateColumnType(col.key, e.target.value)
-                                }
+                                onChange={(e) => updateColumnType(col.key, e.target.value)}
                               >
                                 <option value="text">Text</option>
                                 <option value="number">Number</option>
@@ -1435,38 +1470,42 @@ const InvoiceRegistration = () => {
                       <tbody>
                         {productData.map((row, rowIndex) => (
                           <tr key={rowIndex}>
-                            {productColumns.map((col) => (
-                              <td key={col.key}>
-                                <input
-                                  type={
-                                    col.type === "percentage"
-                                      ? "text"
-                                      : col.type
+                            {productColumns.map((col) => {
+                              const validation = getProductFieldValidation(col);
+                              const value = row[col.key] || "";
+                              let errorMsg = "";
+
+                              // Show min/max errors while typing, but required error only after submit
+                              if (col.key !== "totalCost") {
+                                const stringValue = value != null ? String(value) : "";
+
+                                if (stringValue.length > 0) {
+                                  if (validation.minLength && stringValue.length < validation.minLength.value) {
+                                    errorMsg = validation.minLength.message;
+                                  } else if (validation.maxLength && stringValue.length > validation.maxLength.value) {
+                                    errorMsg = validation.maxLength.message;
                                   }
-                                  className="form-control"
-                                  value={row[col.key] || ""}
-                                  onChange={(e) =>
-                                    updateData(
-                                      rowIndex,
-                                      col.key,
-                                      e.target.value
-                                    )
-                                  }
-                                />
-                                {fieldErrors[rowIndex] &&
-                                  fieldErrors[rowIndex][col.key] && (
-                                    <p
-                                      className="errorMsg"
-                                      style={{
-                                        color: "red",
-                                        fontSize: "0.8em",
-                                      }}
-                                    >
-                                      {fieldErrors[rowIndex][col.key]}
-                                    </p>
+                                } else if (showValidations) {
+                                  errorMsg = `${col.title} is required`;
+                                }
+                              }
+
+
+                              return (
+                                <td key={col.key}>
+                                  <input
+                                    type={col.type === "percentage" ? "text" : col.type}
+                                    className={`form-control ${errorMsg && col.key !== "totalCost" ? "is-invalid" : ""}`}
+                                    value={value}
+                                    onChange={(e) => updateData(rowIndex, col.key, e.target.value)}
+                                    disabled={col.key === "totalCost"}
+                                  />
+                                  {errorMsg && col.key !== "totalCost" && (
+                                    <div className="invalid-feedback">{errorMsg}</div>
                                   )}
-                              </td>
-                            ))}
+                                </td>
+                              );
+                            })}
                             <td>
                               <button
                                 type="button"
@@ -1481,19 +1520,14 @@ const InvoiceRegistration = () => {
                         {productError && (
                           <tr>
                             <td colSpan={productColumns.length + 1}>
-                              <span style={{ color: "red", fontWeight: "bold" }}>{productError}</span>
+                              <div className="alert alert-danger mb-0 py-2">
+                                {productError}
+                              </div>
                             </td>
                           </tr>
                         )}
-                        {/* SubTotal Row */}
                         <tr>
-
-
-
-                          <td
-                            colSpan={productColumns.length - 1}
-                            className="text-end"
-                          >
+                          <td colSpan={productColumns.length - 1} className="text-end">
                             <strong>Sub Total(₹):</strong>
                           </td>
                           <td>
@@ -1504,11 +1538,9 @@ const InvoiceRegistration = () => {
                               readOnly
                             />
                           </td>
-
                           <td></td>
                         </tr>
                       </tbody>
-
                     </table>
                     <DeletePopup
                       show={showDeleteModal}

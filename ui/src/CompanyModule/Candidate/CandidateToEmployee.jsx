@@ -549,6 +549,9 @@ export default function CandidateToEmployee() {
                                                 })}
                                                 disabled={useCandidateEmail && emailConfirmed}
                                                 readOnly={useCandidateEmail && emailConfirmed}
+                                                 onKeyPress={(e) => {
+                                                    if (e.key === ' ') e.preventDefault();
+                                                }}
                                             />
                                             {useCandidateEmail && emailConfirmed && (
                                                 <small className="text-success">

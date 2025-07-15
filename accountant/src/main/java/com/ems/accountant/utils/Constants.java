@@ -47,6 +47,14 @@ public class Constants {
     public static final String PT_MISSING_FOR_PF_EMPLOYEES = "Employees not in the PT sheet who are having PF";
     public static final String PT_EMPLOYEES_WITHOUT_PF = "Employees in PT sheet but not having PF";
     public static final String PF_RESPONSE = "pf_response";
+    public static final String PT_RESPONSE = "pt_response";
+    public static final String TDS_RESPONSE = "tds_response";
+    public static final String PF_RECEIPT = "pf_receipt";
+    public static final Object SLASH = "/";
+    public static final String PATH_PATTERN = "/var/www/ems/assets/img/**";
+    public static final String FILE_STORED_PATH = "file:/var/www/ems/assets/img/";
+    public static final String PT_RECEIPT = "pt_receipt";
+    public static final String GST_RESPONSE = "gst_response";
     public static final String TDS_MISMATCH_EMPLOYEES = "TDS Mismatch Employees";
     public static final String TDS_ALREADY_UPDATED = "TDS Already Updated Employees";
 }

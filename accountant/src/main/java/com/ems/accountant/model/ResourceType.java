@@ -17,8 +17,13 @@ public enum ResourceType {
     COMPANY("company"                                     , Constants.COMPANY),
     EMPLOYEE_ACCOUNT("employee_account", Constants.EMPLOYEE_ACCOUNT),
     PF_RESPONSE("pf_response",            Constants.PF_RESPONSE),
+    PT_RESPONSE("pt_response", Constants.PT_RESPONSE),
+    TDS_RESPONSE("tds_response",            Constants.TDS_RESPONSE),
+    PF_RECEIPT("pf_receipt",            Constants.PF_RECEIPT),
+    PT_RECEIPT("pt_receipt",            Constants.PT_RECEIPT),
+    GST_RESPONSE("gst_response",        Constants.GST_RESPONSE),
 
-    UNDEFINED(""                                    , "");
+    UNDEFINED(""                                    , ""),;
 
     private final String value;
     private final String persistValue;
