@@ -27,7 +27,9 @@ public enum ErrorMessageKey {
     UNABLE_FETCH_PF_RESPONSE("unable.to.fetch.pf.response"),
     NO_CHANGES_DETECTED("no.changes.detected"),
     UNABLE_UPDATE_PF_RESPONSE("unable.to.update.pf.response"),
-    UNABLE_DELETE_PF_RESPONSE("unable.to.delete.pf.response"),;
+    UNABLE_DELETE_PF_RESPONSE("unable.to.delete.pf.response"),
+    UNABLE_SAVE_EMPLOYEE_TDS("unable.to.save.employee.tds"),
+    EMPLOYEE_TDS_NOT_FOUND("employee.tds.not.found");
 
 
     private final String key;
