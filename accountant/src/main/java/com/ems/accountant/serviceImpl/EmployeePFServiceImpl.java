@@ -320,9 +320,9 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             employee.setId(resourceId);
             employee.setCompanyId(companyEntity.getId());
             employee.setType(Constants.EMPLOYEE_ACCOUNT);
+            employee.setPanNo(base64Encode(request.getPanNo()));
             employee.setUanNo(base64Encode(request.getUanNo()));
             employee.setProvidentFund(base64Encode(request.getProvidentFund()));
-            employee.setEmployeeName(request.getEmployeeName());
             employee.setEmployeeId(employeeEntity.getId());
 
             accountDao.save(employee, companyName);
