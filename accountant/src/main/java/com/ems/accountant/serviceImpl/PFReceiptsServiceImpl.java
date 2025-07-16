@@ -129,7 +129,7 @@ public class PFReceiptsServiceImpl implements PFReceiptsService {
             for (PFReceiptsEntity pfReceiptsEntity : pfReceiptsEntities) {
                 pfReceiptsEntity.setPfReceiptNumber(base64getDecode(pfReceiptsEntity.getPfReceiptNumber()));
                 pfReceiptsEntity.setPfTotalAmount(base64getDecode(pfReceiptsEntity.getPfTotalAmount()));
-                if (pfReceiptsEntity.getPfReceiptFileName() != null) {
+                if (pfReceiptsEntity.getPfReceiptFileName() != null && request!=null) {
                     String baseUrl = getBaseUrl(request);
                     String filePath = baseUrl+folderPath + pfReceiptsEntity.getPfReceiptFileName();
                     pfReceiptsEntity.setPfReceiptFileName(filePath);
@@ -181,7 +181,7 @@ public class PFReceiptsServiceImpl implements PFReceiptsService {
             throw ex;
         } catch (Exception e) {
             log.error("Unable to update PF Receipts with ID {} for company {} due to {}", pfReceiptId, companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_PF_RECEIPT), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
     }

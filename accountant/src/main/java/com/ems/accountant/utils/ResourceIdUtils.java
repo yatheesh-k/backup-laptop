@@ -30,6 +30,9 @@ public class ResourceIdUtils {
     public static String generatePFResponseResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.PF_RESPONSE, companyName, month, year);
     }
+    public static String generateGSTAccountResourceId(String invoiceNumber) {
+        return generateGlobalResourceId(ResourceType.GST_ACCOUNT, invoiceNumber);
+    }
     public static String generatePTResponseResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.PT_RESPONSE, companyName, month, year);
     }
@@ -53,6 +56,15 @@ public class ResourceIdUtils {
     public static String generateGSTResponseResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.GST_RESPONSE, companyName, month, year);
     }
+
+    public static String generateGSTReceiptsResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.GST_RECEIPT, companyName, month, year);
+
+    }
+    public static String generateTDSReceiptResourceId(String companyName, String month, String year) {
+        return generateGlobalResourceId(ResourceType.TDS_RECEIPT, companyName, month, year);
+    }
+
     /**
      * Generate a global resource ID based on the resource type
      *

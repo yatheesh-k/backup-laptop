@@ -2,6 +2,7 @@ package com.ems.accountant.daoImpl;
 
 import com.ems.accountant.persistance.*;
 import com.ems.accountant.persistance.EmployeeAccountEntity;
+import com.ems.accountant.persistance.GSTAccountEntity;
 import com.ems.accountant.persistance.PFReceiptsEntity;
 import com.ems.accountant.persistance.PFResponseEntity;
 import com.ems.accountant.persistance.PTResponseEntity;
@@ -40,10 +41,12 @@ public class DocumentType {
     public static final DocumentType PT_RECEIPT = new DocumentType("pt_receipt", PTReceiptEntity.class);
     public static final DocumentType GST_RESPONSE = new DocumentType("gst_response", GSTResponseEntity.class);
 
-
+    public static final DocumentType GST_RECEIPT = new DocumentType("gst_receipt", GSTReceiptEntity.class);
     public static final DocumentType PT_RESPONSE = new DocumentType("pt_response", PTResponseEntity.class);
     public static final DocumentType PORTAL_CREDENTIALS = new DocumentType("portal_credentials", PortalsCredEntity.class);
+    public static final DocumentType TDS_RECEIPT = new DocumentType("tds_receipt", TDSReceiptEntity.class);
 
+    public static final DocumentType GST_ACCOUNT = new DocumentType("gst_account", GSTAccountEntity.class); // Assuming GSTAccountEntity extends IDEntity
 
 
 }
