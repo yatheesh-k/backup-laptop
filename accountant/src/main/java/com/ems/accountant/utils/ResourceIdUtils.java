@@ -41,6 +41,9 @@ public class ResourceIdUtils {
         return generateGlobalResourceId(ResourceType.TDS_RESPONSE, companyName, month, year);
 
     }
+    public static String generatePortalCredResourceId(String id) {
+        return generateGlobalResourceId(ResourceType.PORTAL_CREDENTIALS, id);
+    }
 
     public static String generatePFReceiptsResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.PF_RECEIPT, companyName, month, year);

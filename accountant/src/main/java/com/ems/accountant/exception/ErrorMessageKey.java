@@ -63,6 +63,11 @@ public enum ErrorMessageKey {
     INVALID_SALARY_FORMAT("invalid.salary.format"),
     UNABLE_SAVE_EMPLOYEE_TDS("unable.to.save.employee.tds"),
     EMPLOYEE_TDS_NOT_FOUND("employee.tds.not.found"),
+    PORTAL_CREDENTIALS_ALREADY_EXIST("portal.credentials.already.exist"),
+    UNABLE_SAVE_PORTAL_CREDENTIALS("unable.to.save.portal.credentials"),
+    PORTALS_CREDENTIALS_NOT_FOUND("portals.credentials.not.found"),
+    UNABLE_UPDATE_PORTAL_CREDENTIALS("unable.to.update.portal.credentials"),
+    UNABLE_DELETE_PORTAL_CREDENTIALS("unable.to.delete.portal.credentials"),
     GST_RECEIPTS_NOT_FOUND("gst.receipts.not.found"),
     UNABLE_SAVE_GST_RECEIPTS("unable.save.gst.receipts"),
     GST_RECEIPTS_FILE_EMPTY("gst.receipts.file.empty"),
@@ -75,7 +80,6 @@ public enum ErrorMessageKey {
     TDS_RECEIPTS_NOT_FOUND("tds.receipts.not.found"),
     UNABLE_DELETE_TDS_RECEIPTS("unable.to.delete.tds.receipts"),
     UNABLE_SAVE_TDS_RECEIPTS("unable.to.save.tds.receipts"),;
-
 
     private final String key;
 
