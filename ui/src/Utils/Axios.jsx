@@ -474,7 +474,95 @@ export const AddPTReceiptsAPI = (data) => {
   });
 };
 
+export const AddPTResponseAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  
+  return microserviceAxiosInstance.post(`/${companyName}/pt/response`, data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
 
+export const GetPTResponsesAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/pt/response`, {
+    params: {
+      ...(month && { month }),
+      ...(year && { year })
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+};
+
+// TDS Api Files
+export const EmployeeTDSComparingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employee/tds`, formData, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
+export const SubmitTDSForProcessingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employees/tds`, formData, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+export const AddTDSReceiptsAPI = (data) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+
+  return microserviceAxiosInstance.post(`/${company}/tds/receipt`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const AddTDSResponseAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  
+  return microserviceAxiosInstance.post(`/${companyName}/tds/response`, data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export const GetTDSResponsesAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/pt/response`, {
+    params: {
+      ...(month && { month }),
+      ...(year && { year })
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+};
 
 
 export const EmployeeNoAttendanceGetAPI = (month, year) => {

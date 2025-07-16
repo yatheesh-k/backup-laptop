@@ -571,7 +571,7 @@ const CompanyPFSubmission = () => {
                         </div>
                         <div className="modal-body">
                           <div className="row">
-                            <div className="col-md-6 mb-3">
+                            <div className="mb-3">
                               <label className="form-label">First Name*</label>
                               <input
                                 type="text"
@@ -580,7 +580,7 @@ const CompanyPFSubmission = () => {
                                 onChange={(e) => setNewEmployee({ ...newEmployee, firstName: e.target.value })}
                               />
                             </div>
-                            <div className="col-md-6 mb-3">
+                            <div className="mb-3">
                               <label className="form-label">Last Name*</label>
                               <input
                                 type="text"

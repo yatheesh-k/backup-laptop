@@ -1,51 +1,18 @@
 import React, { useState, useRef } from "react";
 import LayOut from "../../LayOut/LayOut";
+import {
+  EmployeePFDetailsGetAPI,
+  EmployeePTComparingAPI,
+  RegisterPFEmployeeAPI,
+  SubmitPTForProcessingAPI,
+  AddPTResponseAPI
+} from "../../Utils/Axios";
 import { toast } from "react-toastify";
-import { Download, Upload, PlusCircle, CheckCircle, XCircle, ArrowClockwise } from "react-bootstrap-icons";
+import { Download, Upload, PlusCircle, CheckCircle, ArrowClockwise } from "react-bootstrap-icons";
 import * as XLSX from "xlsx";
 import { Link } from "react-router-dom";
 
 const CompanyPTSubmission = () => {
-  // Static data similar to the PF component's response but with PT fields
-  const staticEmployeeData = [
-    {
-      "firstName": "Rohit",
-      "lastName": "Sharma",
-      "emailId": "rohit@gmail.com",
-      "mobileNumber": "9876543210",
-      "panNo": "AACCV3797L",
-      "aadharNumber": "123456789012",
-      "ptNumber": "PTN12345",
-      "stateCode": "MH",
-      "employeeSalary": "20383.33",
-      "ptAmount": "200.00"
-    },
-    {
-      "firstName": "Sai",
-      "lastName": "Praveen",
-      "emailId": "saipraveensomepalli@gmail.com",
-      "mobileNumber": "8765432109",
-      "panNo": "ABCTY1234D",
-      "aadharNumber": "234567890123",
-      "ptNumber": "PTN67890",
-      "stateCode": "AP",
-      "employeeSalary": "69400.00",
-      "ptAmount": "300.00"
-    },
-    {
-      "firstName": "Teja",
-      "lastName": "K",
-      "emailId": "teja@gmail.com",
-      "mobileNumber": "7654321098",
-      "panNo": "HKSJL3489O",
-      "aadharNumber": "345678901234",
-      "ptNumber": "",
-      "stateCode": "KA",
-      "employeeSalary": "57800.00",
-      "ptAmount": "250.00"
-    }
-  ];
-
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [comparisonFile, setComparisonFile] = useState(null);
@@ -60,47 +27,46 @@ const CompanyPTSubmission = () => {
     mobileNumber: "",
     panNo: "",
     aadharNumber: "",
+    ptNumber: "",
+    ptAmount: ""
   });
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [showRemarksModal, setShowRemarksModal] = useState(false);
   const [currentRemarkItem, setCurrentRemarkItem] = useState(null);
   const [remarks, setRemarks] = useState("");
-  const [savedRemarks, setSavedRemarks] = useState({});
+  const [savedRemarks, setSavedRemarks] = useState({
+    "Company Employees Who are not in the Sheet": "",
+    "PT Mismatch Employees": ""
+  });
   const [fileName, setFileName] = useState("");
 
-  // Create a ref for the form section
   const formRef = useRef(null);
 
-  // Download Excel template
   const downloadPTDetailsExcel = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call with static data
-      setTimeout(() => {
-        const filteredData = staticEmployeeData.map(emp => ({
-          "Employee Name": `${emp.firstName} ${emp.lastName}`,
-          "PAN No": emp.panNo,
-          "PT Number": emp.ptNumber || "",
-          "PT Amount": emp.ptAmount
-        }));
+      const response = await EmployeePFDetailsGetAPI();
+      const filteredData = response.data.data.map(emp => ({
+        "Employee Name": `${emp.firstName} ${emp.lastName}`,
+        "PAN No": emp.panNo,
+        "PT Amount": emp.pfTax // Using pfTax as PT amount from the API response
+      }));
 
-        const ws = XLSX.utils.json_to_sheet(filteredData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "PT Details");
-        XLSX.writeFile(wb, `PT_Details_Template.xlsx`);
+      const ws = XLSX.utils.json_to_sheet(filteredData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "PT Details");
+      XLSX.writeFile(wb, `PT_Details_Template.xlsx`);
 
-        setEmployees(filteredData);
-        toast.success("Excel template downloaded successfully");
-        setIsLoading(false);
-      }, 1000);
+      setEmployees(filteredData);
+      toast.success("Excel template downloaded successfully");
     } catch (error) {
       handleApiError(error);
+    } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle comparison file upload
   const handleComparisonFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -112,11 +78,13 @@ const CompanyPTSubmission = () => {
 
     setComparisonFile(file);
     setFileName(file.name);
-    setComparisonResult(null); // Clear previous comparison results
-    setSavedRemarks({}); // Clear previous remarks
+    setComparisonResult(null);
+    setSavedRemarks({
+      "Company Employees Who are not in the Sheet": "",
+      "PT Mismatch Employees": ""
+    });
   };
 
-  // Compare PT data
   const comparePTData = async () => {
     if (!comparisonFile) {
       toast.error("Please upload an Excel file first");
@@ -130,57 +98,54 @@ const CompanyPTSubmission = () => {
 
     setIsComparing(true);
     try {
-      // Simulate comparison with static data
-      setTimeout(() => {
-        setComparisonResult({
-          data: {
-            "Company Employees Who are not in the Sheet": ["Ramesh", "Narendra"],
-            "Employees Not existed in company": ["John Deo"],
-            "PT Mismatch Employees": [
-              "Gopi (Expected: 200, Uploaded: 250)",
-              "Sai (Expected: 300, Uploaded: 350)"
-            ]
-          }
-        });
-        setSavedRemarks({}); // Clear previous remarks when new comparison is done
-        toast.success("Comparison completed");
-        setIsComparing(false);
-      }, 1500);
+      const response = await EmployeePTComparingAPI(
+        selectedMonth,
+        selectedYear,
+        comparisonFile
+      );
+
+      setComparisonResult(response.data);
+      toast.success("Comparison completed");
     } catch (error) {
       handleApiError(error);
+    } finally {
       setIsComparing(false);
     }
   };
 
-  // Register new employee
   const registerNewEmployee = async () => {
-    if (!newEmployee.firstName || !newEmployee.lastName || !newEmployee.emailId || 
-        !newEmployee.mobileNumber || !newEmployee.panNo || !newEmployee.aadharNumber) {
+    if (!newEmployee.firstName || !newEmployee.lastName || !newEmployee.panNo || !newEmployee.ptAmount) {
       toast.error("Please fill all required fields");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      setTimeout(() => {
+      const response = await RegisterPFEmployeeAPI({
+        firstName: newEmployee.firstName,
+        lastName: newEmployee.lastName,
+        emailId: newEmployee.emailId,
+        mobileNumber: newEmployee.mobileNumber,
+        panNo: newEmployee.panNo,
+        aadharNumber: newEmployee.aadharNumber,
+        ptNumber: newEmployee.ptNumber,
+        pfAmount: newEmployee.ptAmount // Using ptAmount for pfAmount as per API structure
+      });
+
+      if (response.data.success) {
         toast.success("Employee registered successfully");
-        // Add to employees list without updating Excel
         const newEmployeeData = {
           "Employee Name": `${newEmployee.firstName} ${newEmployee.lastName}`,
-          "Email": newEmployee.emailId,
-          "Mobile Number": newEmployee.mobileNumber,
           "PAN No": newEmployee.panNo,
-          "Aadhar Number": newEmployee.aadharNumber,
+          "PT Amount": newEmployee.ptAmount
         };
-        
+
         setEmployees(prevEmployees => [...prevEmployees, newEmployeeData]);
 
-        // Remove this employee from "Employees Not existed in company" list
         if (comparisonResult) {
           const updatedNotExisted = comparisonResult.data["Employees Not existed in company"]
             .filter(name => name !== `${newEmployee.firstName} ${newEmployee.lastName}`);
-          
+
           setComparisonResult(prev => ({
             ...prev,
             data: {
@@ -190,7 +155,6 @@ const CompanyPTSubmission = () => {
           }));
         }
 
-        // Reset form
         setNewEmployee({
           firstName: "",
           lastName: "",
@@ -198,17 +162,18 @@ const CompanyPTSubmission = () => {
           mobileNumber: "",
           panNo: "",
           aadharNumber: "",
+          ptNumber: "",
+          ptAmount: ""
         });
         setShowAddEmployee(false);
-        setIsSubmitting(false);
-      }, 1000);
+      }
     } catch (error) {
       handleApiError(error);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Submit PT for processing
   const submitPTForProcessing = async () => {
     if (!comparisonFile) {
       toast.error("Please upload an Excel file first");
@@ -222,74 +187,96 @@ const CompanyPTSubmission = () => {
 
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      setTimeout(() => {
+      // First save the remarks
+      if (savedRemarks["Company Employees Who are not in the Sheet"] ||
+        savedRemarks["PT Mismatch Employees"]) {
+        const responseData = {
+          month: selectedMonth,
+          year: selectedYear,
+          ignoredCompanyEmployees: savedRemarks["Company Employees Who are not in the Sheet"] || "N/A",
+          invalidPTAmounts: savedRemarks["PT Mismatch Employees"] || "N/A"
+        };
+
+        await AddPTResponseAPI(responseData);
+      }
+
+      // Then submit for processing
+      const response = await SubmitPTForProcessingAPI(
+        selectedMonth,
+        selectedYear,
+        comparisonFile
+      );
+
+      if (response.data && response.data.message === "Success") {
         toast.success("Professional Tax submitted for processing successfully");
-        // Reset form
         setComparisonFile(null);
         setComparisonResult(null);
         setSelectedMonth("");
         setSelectedYear("");
-        setSavedRemarks({});
+        setSavedRemarks({
+          "Company Employees Who are not in the Sheet": "",
+          "PT Mismatch Employees": ""
+        });
         setFileName("");
-        setIsSubmitting(false);
-      }, 1000);
+      }
     } catch (error) {
       handleApiError(error);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Open remarks modal
-  const openRemarksModal = (item, category) => {
-    setCurrentRemarkItem({ item, category });
-    setRemarks(savedRemarks[`${category}-${item}`] || "");
+  const openRemarksModal = (category) => {
+    setCurrentRemarkItem(category);
+    setRemarks(savedRemarks[category] || "");
     setShowRemarksModal(true);
   };
 
-  // Save remarks
   const saveRemarks = () => {
     if (!currentRemarkItem) return;
-    
-    const key = `${currentRemarkItem.category}-${currentRemarkItem.item}`;
+
     setSavedRemarks(prev => ({
       ...prev,
-      [key]: remarks
+      [currentRemarkItem]: remarks
     }));
-    
+
     setShowRemarksModal(false);
     toast.success("Remarks saved successfully");
   };
 
-  // Check if all issues have remarks
   const allIssuesHaveRemarks = () => {
     if (!comparisonResult) return false;
-    
-    // Check if there's a remark for each category (not each item)
-    const hasMissingRemark = comparisonResult.data["Company Employees Who are not in the Sheet"]?.length > 0 && 
-      !savedRemarks["Company Employees Who are not in the Sheet-remark"];
-    const hasNotExistedRemark = comparisonResult.data["Employees Not existed in company"]?.length > 0 && 
-      !savedRemarks["Employees Not existed in company-remark"];
-    const hasMismatchRemark = comparisonResult.data["PT Mismatch Employees"]?.length > 0 && 
-      !savedRemarks["PT Mismatch Employees-remark"];
-    
-    return !hasMissingRemark && !hasNotExistedRemark && !hasMismatchRemark;
+
+    const categoriesToCheck = [
+      "Company Employees Who are not in the Sheet",
+      "Employees not in the PT sheet who are having PF",
+      "Employees in PT sheet but not having PF",
+      "PT Mismatch Employees"
+    ];
+
+    return categoriesToCheck.every(category => {
+      if (comparisonResult.data[category]?.length > 0) {
+        return !!savedRemarks[category];
+      }
+      return true;
+    });
   };
 
   const handleApiError = (error) => {
-    const errorMsg = error?.message || "An error occurred";
+    const errorMsg = error.response?.data?.error?.message || "An error occurred";
     toast.error(errorMsg);
     console.error(error);
   };
 
-  // Handle reupload - scroll to form and clear comparison results
   const handleReupload = () => {
     setComparisonResult(null);
-    setSavedRemarks({});
+    setSavedRemarks({
+      "Company Employees Who are not in the Sheet": "",
+      "PT Mismatch Employees": ""
+    });
     setFileName("");
     setComparisonFile(null);
-    
-    // Scroll to the form section
+
     if (formRef.current) {
       formRef.current.scrollIntoView({ behavior: 'smooth' });
     }
@@ -328,7 +315,7 @@ const CompanyPTSubmission = () => {
               <div className="card-body">
                 {/* Step 1: Download Template */}
                 <div className="mb-4">
-                  <h5>1. Download Employee Professional Tax Details</h5>
+                  <h5 className="mb-3">1. Download Employee Professional Tax Details</h5>
                   <div className="mb-3">
                     <button
                       className="btn btn-primary"
@@ -336,7 +323,7 @@ const CompanyPTSubmission = () => {
                       disabled={isLoading}
                     >
                       <Download className="me-2 d-inline-flex align-items-center" />
-                      {isLoading ? 'Preparing...' : 'Download Professional Tax Details'}
+                      {isLoading ? 'Preparing...' : 'Download PT Details'}
                     </button>
                   </div>
                   <div className="alert alert-info">
@@ -389,8 +376,8 @@ const CompanyPTSubmission = () => {
                           id="ptFileUpload"
                           style={{ display: 'none' }}
                         />
-                        <label 
-                          htmlFor="ptFileUpload" 
+                        <label
+                          htmlFor="ptFileUpload"
                           className="btn btn-outline-secondary"
                         >
                           <Upload className="me-2 d-inline-flex align-items-center" />
@@ -432,12 +419,12 @@ const CompanyPTSubmission = () => {
                       {comparisonResult.data["Company Employees Who are not in the Sheet"]?.length > 0 && (
                         <div className="card mb-3 border-danger">
                           <div className="card-header bg-danger text-white d-flex justify-content-between align-items-center">
-                            <span>Employees Missing from Uploaded Sheet ({comparisonResult.data["Company Employees Who are not in the Sheet"].length})</span>
+                            <span>Employees Missing from PT Sheet ({comparisonResult.data["Company Employees Who are not in the Sheet"].length})</span>
                             <button
                               className="btn btn-sm btn-light"
-                              onClick={() => openRemarksModal("remark", "Company Employees Who are not in the Sheet")}
+                              onClick={() => openRemarksModal("Company Employees Who are not in the Sheet")}
                             >
-                              {savedRemarks["Company Employees Who are not in the Sheet-remark"] ? (
+                              {savedRemarks["Company Employees Who are not in the Sheet"] ? (
                                 <span>Edit Remarks</span>
                               ) : (
                                 <span>Add Remarks</span>
@@ -445,17 +432,143 @@ const CompanyPTSubmission = () => {
                             </button>
                           </div>
                           <div className="card-body">
-                            <ul className="list-group">
-                              {comparisonResult.data["Company Employees Who are not in the Sheet"].map((emp, i) => (
-                                <li key={i} className="list-group-item">
-                                  <span>{emp}</span>
-                                </li>
-                              ))}
-                            </ul>
-                            {savedRemarks["Company Employees Who are not in the Sheet-remark"] && (
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>Employee Name</th>
+                                    <th>PAN Number</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {comparisonResult.data["Company Employees Who are not in the Sheet"].map((emp, i) => {
+                                    const match = emp.match(/(.*?) \(PAN: (.*?)\)/);
+                                    return match ? (
+                                      <tr key={i}>
+                                        <td>{match[1]}</td>
+                                        <td>{match[2]}</td>
+                                      </tr>
+                                    ) : (
+                                      <tr key={i}>
+                                        <td colSpan="2">{emp}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                            {savedRemarks["Company Employees Who are not in the Sheet"] && (
                               <div className="mt-3">
                                 <strong className="me-2">Remarks:</strong>
-                                <span>{savedRemarks["Company Employees Who are not in the Sheet-remark"]}</span>
+                                <span>{savedRemarks["Company Employees Who are not in the Sheet"]}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Employees not in PT sheet but having PF */}
+                      {comparisonResult.data["Employees not in the PT sheet who are having PF"]?.length > 0 && (
+                        <div className="card mb-3 border-warning">
+                          <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                            <span>Employees Not in PT Sheet But Having PF ({comparisonResult.data["Employees not in the PT sheet who are having PF"].length})</span>
+                            <button
+                              className="btn btn-sm btn-light"
+                              onClick={() => openRemarksModal("Employees not in the PT sheet who are having PF")}
+                            >
+                              {savedRemarks["Employees not in the PT sheet who are having PF"] ? (
+                                <span>Edit Remarks</span>
+                              ) : (
+                                <span>Add Remarks</span>
+                              )}
+                            </button>
+                          </div>
+                          <div className="card-body">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>Employee Name</th>
+                                    <th>PAN Number</th>
+                                    <th>UAN Number</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {comparisonResult.data["Employees not in the PT sheet who are having PF"].map((emp, i) => {
+                                    const match = emp.match(/(.*?) \(PAN: (.*?), UAN: (.*?)\)/);
+                                    return match ? (
+                                      <tr key={i}>
+                                        <td>{match[1]}</td>
+                                        <td>{match[2]}</td>
+                                        <td>{match[3]}</td>
+                                      </tr>
+                                    ) : (
+                                      <tr key={i}>
+                                        <td colSpan="3">{emp}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                            {savedRemarks["Employees not in the PT sheet who are having PF"] && (
+                              <div className="mt-3">
+                                <strong className="me-2">Remarks:</strong>
+                                <span>{savedRemarks["Employees not in the PT sheet who are having PF"]}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Employees in PT sheet but not having PF */}
+                      {comparisonResult.data["Employees in PT sheet but not having PF"]?.length > 0 && (
+                        <div className="card mb-3 border-warning">
+                          <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                            <span>Employees in PT Sheet Without PF ({comparisonResult.data["Employees in PT sheet but not having PF"].length})</span>
+                            <button
+                              className="btn btn-sm btn-light"
+                              onClick={() => openRemarksModal("Employees in PT sheet but not having PF")}
+                            >
+                              {savedRemarks["Employees in PT sheet but not having PF"] ? (
+                                <span>Edit Remarks</span>
+                              ) : (
+                                <span>Add Remarks</span>
+                              )}
+                            </button>
+                          </div>
+                          <div className="card-body">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>Employee Name</th>
+                                    <th>PAN Number</th>
+                                    <th>Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {comparisonResult.data["Employees in PT sheet but not having PF"].map((emp, i) => {
+                                    const match = emp.match(/(.*?) \(PAN: (.*?)\) has no PF \(UAN\)/);
+                                    return match ? (
+                                      <tr key={i}>
+                                        <td>{match[1]}</td>
+                                        <td>{match[2]}</td>
+                                        <td>No PF (UAN)</td>
+                                      </tr>
+                                    ) : (
+                                      <tr key={i}>
+                                        <td colSpan="3">{emp}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                            {savedRemarks["Employees in PT sheet but not having PF"] && (
+                              <div className="mt-3">
+                                <strong className="me-2">Remarks:</strong>
+                                <span>{savedRemarks["Employees in PT sheet but not having PF"]}</span>
                               </div>
                             )}
                           </div>
@@ -467,25 +580,13 @@ const CompanyPTSubmission = () => {
                         <div className="card mb-3 border-warning">
                           <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                             <span>Employees Not Found in Company Records ({comparisonResult.data["Employees Not existed in company"].length})</span>
-                            <div>
-                              <button
-                                className="btn btn-sm btn-light me-2"
-                                onClick={() => setShowAddEmployee(true)}
-                              >
-                                <PlusCircle className="me-1 d-inline-flex align-items-center" />
-                                Add Employee
-                              </button>
-                              <button
-                                className="btn btn-sm btn-light"
-                                onClick={() => openRemarksModal("remark", "Employees Not existed in company")}
-                              >
-                                {savedRemarks["Employees Not existed in company-remark"] ? (
-                                  <span>Edit Remarks</span>
-                                ) : (
-                                  <span>Add Remarks</span>
-                                )}
-                              </button>
-                            </div>
+                            <button
+                              className="btn btn-sm btn-light me-2"
+                              onClick={() => setShowAddEmployee(true)}
+                            >
+                              <PlusCircle className="me-1 d-inline-flex align-items-center" />
+                              Add Employee
+                            </button>
                           </div>
                           <div className="card-body">
                             <ul className="list-group">
@@ -495,12 +596,6 @@ const CompanyPTSubmission = () => {
                                 </li>
                               ))}
                             </ul>
-                            {savedRemarks["Employees Not existed in company-remark"] && (
-                              <div className="mt-3">
-                                <strong className="me-2">Remarks:</strong>
-                                <span>{savedRemarks["Employees Not existed in company-remark"]}</span>
-                              </div>
-                            )}
                           </div>
                         </div>
                       )}
@@ -512,9 +607,9 @@ const CompanyPTSubmission = () => {
                             <span>PT Amount Mismatches ({comparisonResult.data["PT Mismatch Employees"].length})</span>
                             <button
                               className="btn btn-sm btn-light"
-                              onClick={() => openRemarksModal("remark", "PT Mismatch Employees")}
+                              onClick={() => openRemarksModal("PT Mismatch Employees")}
                             >
-                              {savedRemarks["PT Mismatch Employees-remark"] ? (
+                              {savedRemarks["PT Mismatch Employees"] ? (
                                 <span>Edit Remarks</span>
                               ) : (
                                 <span>Add Remarks</span>
@@ -522,20 +617,37 @@ const CompanyPTSubmission = () => {
                             </button>
                           </div>
                           <div className="card-body">
-                            <ul className="list-group">
-                              {comparisonResult.data["PT Mismatch Employees"].map((mismatch, i) => (
-                                <li key={i} className="list-group-item">
-                                  <div>
-                                    <strong>{mismatch.split(' (')[0]}</strong>
-                                    <div className="text-muted small">{mismatch.match(/\((.*?)\)/)?.[1]}</div>
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                            {savedRemarks["PT Mismatch Employees-remark"] && (
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>Employee</th>
+                                    <th>Expected PT Amount</th>
+                                    <th>Uploaded PT Amount</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {comparisonResult.data["PT Mismatch Employees"].map((mismatch, i) => {
+                                    const match = mismatch.match(/(.*?) \(Expected: (.*?), Uploaded: (.*?)\)/);
+                                    return match ? (
+                                      <tr key={i}>
+                                        <td>{match[1]}</td>
+                                        <td>{match[2]}</td>
+                                        <td>{match[3]}</td>
+                                      </tr>
+                                    ) : (
+                                      <tr key={i}>
+                                        <td colSpan="3">{mismatch}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                            {savedRemarks["PT Mismatch Employees"] && (
                               <div className="mt-3">
                                 <strong className="me-2">Remarks:</strong>
-                                <span>{savedRemarks["PT Mismatch Employees-remark"]}</span>
+                                <span>{savedRemarks["PT Mismatch Employees"]}</span>
                               </div>
                             )}
                           </div>
@@ -548,8 +660,8 @@ const CompanyPTSubmission = () => {
                           className="btn btn-outline-primary"
                           onClick={handleReupload}
                         >
-                          <ArrowClockwise className="me-2" />
-                          Update & Reupload
+                          <ArrowClockwise className="me-2 d-inline-flex align-items-center" />
+                          Reupload
                         </button>
                       </div>
 
@@ -568,7 +680,7 @@ const CompanyPTSubmission = () => {
                             onClick={submitPTForProcessing}
                             disabled={isSubmitting || !allIssuesHaveRemarks()}
                           >
-                            <CheckCircle className="me-2" />
+                            <CheckCircle className="me-2 d-inline-flex align-items-center" />
                             {isSubmitting ? 'Submitting...' : 'Submit for Processing'}
                           </button>
                         </div>
@@ -592,7 +704,7 @@ const CompanyPTSubmission = () => {
                         </div>
                         <div className="modal-body">
                           <div className="row">
-                            <div className="col-md-6 mb-3">
+                            <div className="mb-3">
                               <label className="form-label">First Name*</label>
                               <input
                                 type="text"
@@ -601,7 +713,7 @@ const CompanyPTSubmission = () => {
                                 onChange={(e) => setNewEmployee({ ...newEmployee, firstName: e.target.value })}
                               />
                             </div>
-                            <div className="col-md-6 mb-3">
+                            <div className="mb-3">
                               <label className="form-label">Last Name*</label>
                               <input
                                 type="text"
@@ -612,7 +724,7 @@ const CompanyPTSubmission = () => {
                             </div>
                           </div>
                           <div className="mb-3">
-                            <label className="form-label">Email ID*</label>
+                            <label className="form-label">Email ID</label>
                             <input
                               type="email"
                               className="form-control"
@@ -621,7 +733,7 @@ const CompanyPTSubmission = () => {
                             />
                           </div>
                           <div className="mb-3">
-                            <label className="form-label">Mobile Number*</label>
+                            <label className="form-label">Mobile Number</label>
                             <input
                               type="tel"
                               className="form-control"
@@ -641,22 +753,12 @@ const CompanyPTSubmission = () => {
                             />
                           </div>
                           <div className="mb-3">
-                            <label className="form-label">Aadhar Number*</label>
+                            <label className="form-label">Aadhar Number</label>
                             <input
                               type="text"
                               className="form-control"
                               value={newEmployee.aadharNumber}
                               onChange={(e) => setNewEmployee({ ...newEmployee, aadharNumber: e.target.value })}
-                              maxLength="12"
-                            />
-                          </div>
-                          <div className="mb-3">
-                            <label className="form-label">PT Number</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={newEmployee.ptNumber}
-                              onChange={(e) => setNewEmployee({ ...newEmployee, ptNumber: e.target.value })}
                             />
                           </div>
                           <div className="mb-3">
@@ -697,7 +799,7 @@ const CompanyPTSubmission = () => {
                     <div className="modal-dialog modal-dialog-centered">
                       <div className="modal-content">
                         <div className="modal-header">
-                          <h5 className="modal-title">Add Remarks</h5>
+                          <h5 className="modal-title">Add Remarks for {currentRemarkItem}</h5>
                           <button
                             type="button"
                             className="btn-close"
@@ -706,15 +808,12 @@ const CompanyPTSubmission = () => {
                         </div>
                         <div className="modal-body">
                           <div className="mb-3">
-                            <label className="form-label">
-                              <strong>{currentRemarkItem.category}</strong>
-                            </label>
                             <textarea
                               className="form-control"
                               rows="4"
                               value={remarks}
                               onChange={(e) => setRemarks(e.target.value)}
-                              placeholder="Enter your remarks here..."
+                              placeholder={`Enter remarks for ${currentRemarkItem}...`}
                             />
                           </div>
                         </div>

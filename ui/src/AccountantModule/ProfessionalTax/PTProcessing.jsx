@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import LayOut from "../../LayOut/LayOut";
 import { 
-//   GetPTApprovalListAPI,
-//   UploadPTAcknowledgementAPI 
+  GetPFForMonthAndYearAPI,
+  AddPTReceiptsAPI 
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
-import { Download} from "react-bootstrap-icons";
+import { Download, Upload } from "react-bootstrap-icons";
 import * as XLSX from "xlsx";
 import { Link } from "react-router-dom";
 
@@ -19,6 +19,7 @@ const PTProcessing = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [acknowledgementFile, setAcknowledgementFile] = useState(null);
 
+  // Fetch approval list
   const fetchApprovalList = async () => {
     if (!approvalMonth || !approvalYear) {
       toast.error("Please select both month and year");
@@ -27,34 +28,47 @@ const PTProcessing = () => {
     
     setIsFetching(true);
     try {
-      const response = await (approvalMonth, approvalYear);
-      setApprovalList(response.data.data || []);
-      toast.success("Approval list fetched successfully");
+      const response = await GetPFForMonthAndYearAPI(approvalMonth, approvalYear);
+      if (response && response.data) {
+        setApprovalList(response.data.data || []);
+        toast.success("Approval list fetched successfully");
+      } else {
+        toast.warning("No data found for the selected month and year");
+        setApprovalList([]);
+      }
     } catch (error) {
       handleApiError(error);
+      setApprovalList([]);
     } finally {
       setIsFetching(false);
     }
   };
 
+  // Upload acknowledgement with all required PT receipt fields
   const uploadAcknowledgement = async (data) => {
     if (!approvalMonth || !approvalYear) {
       toast.error("Please select month and year first");
       return;
     }
-    
+
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", data.acknowledgementFile[0]);
-      formData.append("month", approvalMonth);
-      formData.append("year", approvalYear);
-      
-      const response = await (formData);
-      
+      const response = await AddPTReceiptsAPI({
+        month: approvalMonth,
+        year: approvalYear,
+        ptTotalAmount: data.ptTotalAmount,
+        ptReceiptNumber: data.ptReceiptNumber,
+        ptReceiptDate: data.ptReceiptDate,
+        file: data.file[0], // pass File object
+      });
+
       if (response.data.success) {
-        toast.success("Acknowledgement uploaded successfully");
-        resetForm();
+        toast.success("Professional Tax acknowledgement uploaded successfully");
+        reset();
+        setAcknowledgementFile(null);
+        setApprovalList([]);
+        setApprovalMonth("");
+        setApprovalYear("");
       }
     } catch (error) {
       handleApiError(error);
@@ -63,20 +77,16 @@ const PTProcessing = () => {
     }
   };
 
-  const resetForm = () => {
-    reset();
-    setAcknowledgementFile(null);
-    setApprovalList([]);
-    setApprovalMonth("");
-    setApprovalYear("");
-  };
-
   const handleApiError = (error) => {
-    const errorMsg = error.response?.data?.error?.message || "An error occurred";
+    const errorMsg = error.response?.data?.message || 
+                   error.response?.data?.error?.message || 
+                   error.message || 
+                   "An error occurred";
     toast.error(errorMsg);
-    console.error(error);
+    console.error("API Error:", error);
   };
 
+  // Download Excel
   const downloadApprovalListExcel = () => {
     if (approvalList.length === 0) {
       toast.warning("No data to export");
@@ -84,11 +94,11 @@ const PTProcessing = () => {
     }
 
     const formattedData = approvalList.map(emp => ({
-      "Employee Name": `${emp.firstName} ${emp.lastName}`,
-      "PT Number": emp.ptNumber || "Not Provided",
-      "State": emp.stateCode,
-      "PT Amount": emp.ptAmount,
-      "Status": "Approved for Payment"
+      "Employee Name": emp.employeeName,
+      "PAN": (emp.panNo),
+      "Professional Tax": emp.professionalTax ? (emp.professionalTax) : "N/A",
+      "Month": emp.month,
+      "Year": emp.year,
     }));
 
     const ws = XLSX.utils.json_to_sheet(formattedData);
@@ -118,7 +128,6 @@ const PTProcessing = () => {
             </nav>
           </div>
         </div>
-
         <div className="row">
           <div className="col-12">
             <div className="card">
@@ -128,8 +137,9 @@ const PTProcessing = () => {
                 </h5>
               </div>
               <div className="card-body">
+                {/* Step 1: Fetch Approved List */}
                 <div className="mb-4">
-                  <h5>1. Fetch Approved Professional Tax List</h5>
+                  <h5 className="mb-3">1. Fetch Approved Professional Tax List</h5>
                   <div className="row g-3 align-items-end mb-3">
                     <div className="col-md-3">
                       <label className="form-label">Select Month</label>
@@ -178,21 +188,19 @@ const PTProcessing = () => {
                         <table className="table table-striped">
                           <thead>
                             <tr>
-                              <th>Employee</th>
-                              <th>Professional Tax Number</th>
-                              <th>State</th>
+                              <th>Employee Name</th>
+                              <th>PAN</th>
+                              <th>UAN Number</th>
                               <th>Professional Tax Amount</th>
-                              <th>Status</th>
                             </tr>
                           </thead>
                           <tbody>
                             {approvalList.map((emp, i) => (
                               <tr key={i}>
-                                <td>{`${emp.firstName} ${emp.lastName}`}</td>
-                                <td>{emp.ptNumber || 'Not Provided'}</td>
-                                <td>{emp.stateCode}</td>
-                                <td>{emp.ptAmount}</td>
-                                <td className="text-success">Approved</td>
+                                <td>{emp.employeeName}</td>
+                                <td>{(emp.panNo)}</td>
+                                <td>{(emp.uanNo) || "N/A"}</td>
+                                <td>{emp.professionalTax ? (emp.professionalTax) : "N/A"}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -204,8 +212,8 @@ const PTProcessing = () => {
                           className="btn btn-outline-primary"
                           onClick={downloadApprovalListExcel}
                         >
-                          <Download className="me-2" />
-                          Download Professional Tax List
+                          <Download className="me-2 d-inline-flex align-items-center" />
+                          Download Approval List
                         </button>
                         
                         <a 
@@ -221,33 +229,85 @@ const PTProcessing = () => {
                   )}
                 </div>
                 
+                {/* Step 2: Updated Acknowledgement Upload Form */}
                 {approvalList.length > 0 && (
                   <div>
-                    <h5>2. Upload Payment Acknowledgement</h5>
+                    <h5 className="mb-3">2. Upload Payment Acknowledgement</h5>
                     <form onSubmit={handleSubmit(uploadAcknowledgement)}>
-                      <div className="row g-3 align-items-end mb-3">
+                      <div className="row g-3 mb-3">
+                        <div className="col-md-6">
+                          <label className="form-label">Professional Tax Total Amount</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            {...register("ptTotalAmount", {
+                              required: "PT Total Amount is required",
+                              pattern: {
+                                value: /^[0-9]+(\.[0-9]{1,2})?$/,
+                                message: "Enter a valid amount"
+                              }
+                            })}
+                          />
+                          {errors.ptTotalAmount && (
+                            <div className="text-danger small mt-1">
+                              {errors.ptTotalAmount.message}
+                            </div>
+                          )}
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label">Professional Tax Receipt Number</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            {...register("ptReceiptNumber", {
+                              required: "Professional Tax Receipt Number is required"
+                            })}
+                          />
+                          {errors.ptReceiptNumber && (
+                            <div className="text-danger small mt-1">
+                              {errors.ptReceiptNumber.message}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="col-md-6">
+                          <label className="form-label">Professional Tax Receipt Date</label>
+                          <input
+                            type="date"
+                            className="form-control"
+                            {...register("ptReceiptDate", {
+                              required: "Professional Tax Receipt Date is required"
+                            })}
+                          />
+                          {errors.ptReceiptDate && (
+                            <div className="text-danger small mt-1">
+                              {errors.ptReceiptDate.message}
+                            </div>
+                          )}
+                        </div>
+
                         <div className="col-md-6">
                           <label className="form-label">Acknowledgement File</label>
                           <input
                             type="file"
                             className="form-control"
                             accept=".pdf,.jpg,.png"
-                            {...register("acknowledgementFile", {
+                            {...register("file", {
                               required: "Please upload acknowledgement file"
                             })}
                             onChange={(e) => setAcknowledgementFile(e.target.files[0])}
                           />
-                          {errors.acknowledgementFile && (
+                          {errors.file && (
                             <div className="text-danger small mt-1">
-                              {errors.acknowledgementFile.message}
+                              {errors.file.message}
                             </div>
                           )}
                           <div className="form-text">
-                            Upload the payment confirmation from Professional Tax portal (PDF or image)
+                            Upload the payment acknowledgement from Professional Tax portal (PDF or image)
                           </div>
                         </div>
                         
-                        <div className="col-md-3">
+                        <div className="col-md-12 mt-3">
                           <button
                             type="submit"
                             className="btn btn-success"

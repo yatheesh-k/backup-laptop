@@ -19,15 +19,6 @@ const PFProcessing = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [acknowledgementFile, setAcknowledgementFile] = useState(null);
 
-  // Function to decode base64 strings
-  const decodeBase64 = (str) => {
-    try {
-      return str ? atob(str) : "N/A";
-    } catch (e) {
-      console.error("Error decoding base64:", e);
-      return "N/A";
-    }
-  };
 
   // Fetch approval list
   const fetchApprovalList = async () => {
@@ -106,12 +97,11 @@ const PFProcessing = () => {
 
     const formattedData = approvalList.map(emp => ({
       "Employee Name": emp.employeeName,
-      "UAN Number": decodeBase64(emp.uanNo),
-      "PAN": decodeBase64(emp.panNo),
-      "Provident Fund": emp.providentFund ? decodeBase64(emp.providentFund) : "N/A",
+      "UAN Number": (emp.uanNo),
+      "PAN": (emp.panNo),
+      "Provident Fund": emp.providentFund ? (emp.providentFund) : "N/A",
       "Month": emp.month,
       "Year": emp.year,
-      "Status": emp.providentFund ? "Approved for Payment" : "Pending"
     }));
 
     const ws = XLSX.utils.json_to_sheet(formattedData);
@@ -205,19 +195,15 @@ const PFProcessing = () => {
                               <th>UAN Number</th>
                               <th>PAN</th>
                               <th>Provident Fund Amount</th>
-                              <th>Status</th>
                             </tr>
                           </thead>
                           <tbody>
                             {approvalList.map((emp, i) => (
                               <tr key={i}>
                                 <td>{emp.employeeName}</td>
-                                <td>{decodeBase64(emp.uanNo)}</td>
-                                <td>{decodeBase64(emp.panNo)}</td>
-                                <td>{emp.providentFund ? decodeBase64(emp.providentFund) : "N/A"}</td>
-                                <td className={emp.providentFund ? "text-success" : "text-warning"}>
-                                  {emp.providentFund ? "Approved" : "Pending"}
-                                </td>
+                                <td>{(emp.uanNo)}</td>
+                                <td>{(emp.panNo)}</td>
+                                <td>{emp.providentFund ? (emp.providentFund) : "N/A"}</td>
                               </tr>
                             ))}
                           </tbody>
