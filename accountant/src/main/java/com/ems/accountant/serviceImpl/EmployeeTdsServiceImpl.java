@@ -391,6 +391,59 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
         );
     }
 
+    @Override
+    public ResponseEntity<?> addSingleEmployeeForTDS(String companyName, EmployeeTDSRequest employeeTDSRequest) throws AccountantException {
+        try {
+
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Company not found for ID: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+
+            if (employeeTDSRequest.getPan() == null || employeeTDSRequest.getPan().isBlank()) {
+                log.warn("PAN is blank, Pan Is required for TDS");
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PAN_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+            Collection<EmployeeAccountEntity> existingRecords = accountDao.getEmployeeAccountByPanMonthYear(base64Encode(employeeTDSRequest.getPan()), companyEntity.getId(),
+                    employeeTDSRequest.getMonth(), employeeTDSRequest.getYear(), companyEntity.getShortName(), null, null);
+            if (existingRecords != null && !existingRecords.isEmpty()) {
+                log.warn("TDS record already exists for PAN: {}", employeeTDSRequest.getPan());
+                throw new AccountantException("TDS already exists for this PAN and month/year", HttpStatus.CONFLICT);
+            }
+
+
+            String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
+
+            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(employeeTDSRequest.getPan(), employeeTDSRequest.getMonth(), employeeTDSRequest.getYear());
+
+            EmployeeAccountEntity accountEntity = new EmployeeAccountEntity();
+            accountEntity.setId(resourceId);
+            accountEntity.setEmployeeName(employeeTDSRequest.getEmployeeName());
+            accountEntity.setPanNo(base64Encode( employeeTDSRequest.getPan()));
+            accountEntity.setMonth(employeeTDSRequest.getMonth());
+            accountEntity.setYear(employeeTDSRequest.getYear());
+            accountEntity.setCompanyId(companyEntity.getId());
+            accountEntity.setTds(base64Encode(employeeTDSRequest.getTds()));
+            accountEntity.setType(Constants.EMPLOYEE_ACCOUNT);
+
+            openSearchOperations.saveEntity(accountEntity, accountEntity.getId(), indexName);
+            log.info("Stored TDS for employee with PAN: {}", employeeTDSRequest.getPan());
+
+            return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+
+        }catch (AccountantException e) {
+            log.error("Exception while Adding Employee TDS: {}", e.getMessage());
+            throw e;
+        }
+        catch (Exception e) {
+            log.error("Error while storing TDS for employee", e);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
     private String[] getNullPropertyNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);
         Set<String> emptyNames = new HashSet<>();

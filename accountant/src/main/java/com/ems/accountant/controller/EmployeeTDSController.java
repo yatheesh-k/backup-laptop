@@ -1,6 +1,7 @@
 package com.ems.accountant.controller;
 
 import com.ems.accountant.exception.AccountantException;
+import com.ems.accountant.request.EmployeePFRequest;
 import com.ems.accountant.request.EmployeeTDSRequest;
 import com.ems.accountant.service.EmployeeTdsService;
 import com.ems.accountant.utils.Constants;
@@ -57,5 +58,16 @@ public class EmployeeTDSController {
             @PathVariable String id,
             @RequestBody EmployeeTDSRequest request) throws IOException, AccountantException {
         return employeeTDSService.updateEmployeeForTDS(companyName, employeeId, id, request);
+    }
+
+    @RequestMapping(value = "{companyName}/singleEmployee/tds", method = RequestMethod.POST)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.addSingleEmployeeForTDS.tag}", description = "${api.addSingleEmployeeForTDS.description}")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
+    public ResponseEntity<?> addSingleEmployeeForTDS(
+            @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+            @RequestHeader(Constants.AUTH_KEY) String authToken,
+            @PathVariable String companyName, @RequestBody EmployeeTDSRequest request) throws  IOException, AccountantException {
+        return employeeTDSService.addSingleEmployeeForTDS(companyName, request);
     }
 }
