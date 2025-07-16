@@ -267,7 +267,6 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             entity.setCGst(base64Encode(cGst));
             entity.setSGst(base64Encode(sGst));
             entity.setIGst(base64Encode(iGst));
-            entity.setComment((comment));
             entity.setStatus(Constants.FILED);
             entity.setType(Constants.GST_ACCOUNT);
 
@@ -352,7 +351,6 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                     .cGst(cGst)
                     .sGst(sGst)
                     .iGst(iGst)
-                    .comment(comment)
                     .build();
 
             excelGstData.computeIfAbsent(customerGstNo, k -> new ArrayList<>()).add(entity);
