@@ -16,6 +16,7 @@ public enum ResourceType {
 
     COMPANY("company"                                     , Constants.COMPANY),
     EMPLOYEE_ACCOUNT("employee_account", Constants.EMPLOYEE_ACCOUNT),
+    GST_ACCOUNT("gst_account"                             , Constants.GST_ACCOUNT),
     PF_RESPONSE("pf_response",            Constants.PF_RESPONSE),
     PT_RESPONSE("pt_response", Constants.PT_RESPONSE),
     TDS_RESPONSE("tds_response",            Constants.TDS_RESPONSE),
@@ -23,6 +24,7 @@ public enum ResourceType {
     PT_RECEIPT("pt_receipt",            Constants.PT_RECEIPT),
     GST_RESPONSE("gst_response",        Constants.GST_RESPONSE),
     GST_RECEIPT("gst_receipt",          Constants.GST_RECEIPT),
+    TDS_RECEIPT("tds_receipt",             Constants.TDS_RECEIPT),
 
     UNDEFINED(""                                    , ""),;
 
