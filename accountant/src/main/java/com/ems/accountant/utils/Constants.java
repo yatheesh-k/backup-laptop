@@ -57,4 +57,5 @@ public class Constants {
     public static final String GST_RESPONSE = "gst_response";
     public static final String TDS_MISMATCH_EMPLOYEES = "TDS Mismatch Employees";
     public static final String TDS_ALREADY_UPDATED = "TDS Already Updated Employees";
+    public static final String PORTAL_CREDENTIALS = "portal_credentials";
 }

@@ -57,7 +57,12 @@ public enum ErrorMessageKey {
     UNABLE_UPDATE_GST_RESPONSE("unable.to.update.gst.response"),
     UNABLE_DELETE_GST_RESPONSE("unable.to.delete.gst.response"),
     UNABLE_SAVE_EMPLOYEE_TDS("unable.to.save.employee.tds"),
-    EMPLOYEE_TDS_NOT_FOUND("employee.tds.not.found");
+    EMPLOYEE_TDS_NOT_FOUND("employee.tds.not.found"),
+    PORTAL_CREDENTIALS_ALREADY_EXIST("portal.credentials.already.exist"),
+    UNABLE_SAVE_PORTAL_CREDENTIALS("unable.to.save.portal.credentials"),
+    PORTALS_CREDENTIALS_NOT_FOUND("portals.credentials.not.found"),
+    UNABLE_UPDATE_PORTAL_CREDENTIALS("unable.to.update.portal.credentials"),
+    UNABLE_DELETE_PORTAL_CREDENTIALS("unable.to.delete.portal.credentials"),;
 
     private final String key;
 

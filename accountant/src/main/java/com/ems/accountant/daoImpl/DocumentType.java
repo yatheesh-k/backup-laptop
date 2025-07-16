@@ -42,6 +42,7 @@ public class DocumentType {
 
 
     public static final DocumentType PT_RESPONSE = new DocumentType("pt_response", PTResponseEntity.class);
+    public static final DocumentType PORTAL_CREDENTIALS = new DocumentType("portal_credentials", PortalsCredEntity.class);
 
 
 

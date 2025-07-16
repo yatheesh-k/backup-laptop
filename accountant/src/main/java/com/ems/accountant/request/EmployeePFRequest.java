@@ -33,7 +33,7 @@ public class EmployeePFRequest {
 
     @Schema(example = "ABCDE1234F")
     @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]$", message = "{pan.message}")
-    private String pan;
+    private String panNo;
 
     @Schema(example = "100456789012")
     @Pattern(regexp = "^\\d{12}$", message = "{uan.message}")
