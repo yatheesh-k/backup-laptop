@@ -350,7 +350,7 @@ export const EmployeePFDetailsGetAPI = () => {
   return axiosInstance.get(`/${company}/employee/accounts`);
 };
 
-// Compare PF Excel
+// PF Api Files
 export const EmployeePFComparingAPI = (month, year, file) => {
   const company = localStorage.getItem("companyName");
   const formData = new FormData();
@@ -364,8 +364,6 @@ export const EmployeePFComparingAPI = (month, year, file) => {
   });
 };
 
-
-// Register new employee
 export const RegisterPFEmployeeAPI = (employeeData) => {
   const company = localStorage.getItem("companyName");
   return microserviceAxiosInstance.post(`/${company}/employees/pf/register`, employeeData);
@@ -433,6 +431,49 @@ export const GetPFResponsesAPI = (month, year) => {
     }
   });
 };
+
+// PT Api Files
+export const EmployeePTComparingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employee/pt`, formData, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
+export const SubmitPTForProcessingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employees/pt`, formData, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+export const AddPTReceiptsAPI = (data) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+
+  return microserviceAxiosInstance.post(`/${company}/pt/receipt`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
 
 
 
