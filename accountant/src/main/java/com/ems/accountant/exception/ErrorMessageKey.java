@@ -65,7 +65,13 @@ public enum ErrorMessageKey {
     GST_RECEIPTS_ALREADY_EXISTS("gst.receipts.already.exists"),
     UNABLE_UPDATE_PF_RECEIPT("unable.update.pf.receipt"),
     UNABLE_UPDATE_GST_RECEIPT("unable.update.gst.receipt"),
-    UNABLE_DELETE_GST_RECEIPTS("unable.delete.gst.receipts");
+    UNABLE_DELETE_GST_RECEIPTS("unable.delete.gst.receipts"),
+    TDS_RECEIPT_ALREADY_EXISTS("tds.receipt.already.exists"),
+    TDS_RECEIPT_FILE_EMPTY("tds.receipt.file.empty"),
+    TDS_RECEIPTS_NOT_FOUND("tds.receipts.not.found"),
+    UNABLE_DELETE_TDS_RECEIPTS("unable.to.delete.tds.receipts"),
+    UNABLE_SAVE_TDS_RECEIPTS("unable.to.save.tds.receipts"),;
+
 
     private final String key;
 
