@@ -24,6 +24,7 @@ public class GSTAccountUtils {
         entity.setCGst(base64Encode(request.getCGst()));
         entity.setSGst(base64Encode(request.getSGst()));
         entity.setIGst(base64Encode(request.getIGst()));
+        entity.setComment(request.getComment());
         entity.setStatus(Constants.FILED);
         entity.setType(Constants.GST_ACCOUNT);
 
@@ -45,6 +46,7 @@ public class GSTAccountUtils {
         maskedEntity.setSubTotal(base64Decode(entity.getSubTotal()));
         maskedEntity.setCGst(base64Decode(entity.getCGst()));
         maskedEntity.setSGst(base64Decode(entity.getSGst()));
+        maskedEntity.setComment(entity.getComment());
         maskedEntity.setIGst(base64Decode(entity.getIGst()));
 
         return maskedEntity;
@@ -68,6 +70,7 @@ public class GSTAccountUtils {
         maskedEntity.setType(Constants.GST_ACCOUNT);
         maskedEntity.setYear(entity.getYear());
         maskedEntity.setMonth(entity.getMonth());
+        maskedEntity.setComment(entity.getComment());
         maskedEntity.setInvoiceNumber(entity.getInvoiceNumber());
         maskedEntity.setInvoiceDate(entity.getInvoiceDate());
         maskedEntity.setCustomerName(entity.getCustomerName());
