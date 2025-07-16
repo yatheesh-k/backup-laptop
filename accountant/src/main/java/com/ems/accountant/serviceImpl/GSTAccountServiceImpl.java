@@ -148,7 +148,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while retrieving GST accounts: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_GST_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

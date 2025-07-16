@@ -16,7 +16,7 @@ public class GSTAccountUtils {
         entity.setMonth(request.getMonth());
         entity.setYear(request.getYear());
         entity.setInvoiceNumber(request.getInvoiceNumber());
-        entity.setCustomerName(base64Decode(request.getCustomerName()));
+        entity.setCustomerName(request.getCustomerName());
         entity.setCustomerGstNo(base64Encode(request.getCustomerGstNo()));
         entity.setInvoiceDate(base64Encode(request.getInvoiceDate()));
         entity.setTotalAmount(base64Encode(request.getTotalAmount()));
