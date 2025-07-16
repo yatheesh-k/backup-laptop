@@ -22,6 +22,7 @@ public enum ResourceType {
     PF_RECEIPT("pf_receipt",            Constants.PF_RECEIPT),
     PT_RECEIPT("pt_receipt",            Constants.PT_RECEIPT),
     GST_RESPONSE("gst_response",        Constants.GST_RESPONSE),
+    GST_RECEIPT("gst_receipt",          Constants.GST_RECEIPT),
 
     UNDEFINED(""                                    , ""),;
 
