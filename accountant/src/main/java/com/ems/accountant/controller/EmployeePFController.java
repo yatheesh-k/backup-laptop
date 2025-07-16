@@ -27,7 +27,7 @@ public class EmployeePFController {
     @Autowired
     private EmployeePFService employeePFService;
 
-    @RequestMapping(value = "{companyName}/employee", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "{companyName}/pf/comparing", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.employeePFComparing.tag}", description = "${api.employeePFComparing.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -40,7 +40,7 @@ public class EmployeePFController {
     }
 
 
-    @RequestMapping(value = "{companyName}/employees/account", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "{companyName}/employees/pf", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.registerEmployeeForPF.tag}", description = "${api.registerEmployeeForPF.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -53,7 +53,7 @@ public class EmployeePFController {
     }
 
 
-    @RequestMapping(value = "{companyName}/employee/account", method = RequestMethod.POST)
+    @RequestMapping(value = "{companyName}/employee/pf", method = RequestMethod.POST)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.addSingleEmployeeForPF.tag}", description = "${api.addSingleEmployeeForPF.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -83,7 +83,7 @@ public class EmployeePFController {
     public ResponseEntity<?> getPFForMonthAndYear(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName, @RequestParam String month, @RequestParam(required = false) String year) {
+            @PathVariable String companyName, @RequestParam(required = false) String month, @RequestParam(required = false) String year) {
         Collection<EmployeeAccountEntity> getPFForMonthAndYear = employeePFService.getEmployeeAccountDetails(companyName, null, null, month, year);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(getPFForMonthAndYear), HttpStatus.OK);
     }
@@ -101,17 +101,17 @@ public class EmployeePFController {
     }
 
 
-    @RequestMapping(value = "{companyName}/employee/{employeeId}/account/{accountId}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "{companyName}/employee/{employeeId}/pf/{id}", method = RequestMethod.PATCH)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.updateEmployeeForPf.tag}", description = "${api.updateEmployeeForPf.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
     public ResponseEntity<?> updateEmployeeForAccounts(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName, @PathVariable String employeeId, @PathVariable String accountId, @RequestBody EmployeePFUpdate request
+            @PathVariable String companyName, @PathVariable String employeeId, @PathVariable String id, @RequestBody EmployeePFUpdate request
     ) throws  IOException, AccountantException {
 
-        return employeePFService.updateEmployeeForPf(companyName, employeeId, accountId, request);
+        return employeePFService.updateEmployeeForPf(companyName, employeeId, id, request);
     }
 
     @RequestMapping(value = "{companyName}/employee/{employeeId}/account/{accountId}", method = RequestMethod.DELETE)
