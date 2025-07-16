@@ -416,18 +416,17 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
 
             String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(employeeTDSRequest.getPan(), employeeTDSRequest.getMonth(), employeeTDSRequest.getYear());
+            EmployeeAccountEntity employee = new EmployeeAccountEntity();
+            employee.setId(resourceId);
+            employee.setEmployeeName(employeeTDSRequest.getEmployeeName());
+            employee.setPanNo(base64Encode( employeeTDSRequest.getPan()));
+            employee.setMonth(employeeTDSRequest.getMonth());
+            employee.setYear(employeeTDSRequest.getYear());
+            employee.setCompanyId(companyEntity.getId());
+            employee.setTds(base64Encode(employeeTDSRequest.getTds()));
+            employee.setType(Constants.EMPLOYEE_ACCOUNT);
 
-            EmployeeAccountEntity accountEntity = new EmployeeAccountEntity();
-            accountEntity.setId(resourceId);
-            accountEntity.setEmployeeName(employeeTDSRequest.getEmployeeName());
-            accountEntity.setPanNo(base64Encode( employeeTDSRequest.getPan()));
-            accountEntity.setMonth(employeeTDSRequest.getMonth());
-            accountEntity.setYear(employeeTDSRequest.getYear());
-            accountEntity.setCompanyId(companyEntity.getId());
-            accountEntity.setTds(base64Encode(employeeTDSRequest.getTds()));
-            accountEntity.setType(Constants.EMPLOYEE_ACCOUNT);
-
-            openSearchOperations.saveEntity(accountEntity, accountEntity.getId(), indexName);
+            openSearchOperations.saveEntity(employee, employee.getId(), indexName);
             log.info("Stored TDS for employee with PAN: {}", employeeTDSRequest.getPan());
 
             return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
