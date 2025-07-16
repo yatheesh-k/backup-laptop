@@ -1,13 +1,14 @@
 package com.ems.accountant.request;
 
-
 import com.ems.accountant.validation.MonthValidation;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -16,12 +17,7 @@ import lombok.*;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EmployeePFRequest {
-
-    @Schema(example = "xxx yyy")
-    @Size(min = 2, max = 100, message = "{employee.size.message}")
-    @Pattern(regexp = "^[A-Z][a-zA-Z]*(?:\\s[A-Z][a-zA-Z]*)*$", message = "{employee.name.message}")
-    private String employeeName;
+public class TDSReceiptRequest {
 
     @MonthValidation
     private String month;
@@ -31,16 +27,18 @@ public class EmployeePFRequest {
     @Pattern(regexp = "^(19|20)\\d{2}$", message = "{year.message}")
     private String year;
 
-    @Schema(example = "ABCDE1234F")
-    @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]$", message = "{pan.message}")
-    private String pan;
+    @Schema(example = "1800")
+    @Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "{tdsTotalAmount.message}")
+    private String tdsTotalAmount;
 
     @Schema(example = "100456789012")
-    @Pattern(regexp = "^\\d{12}$", message = "{uan.message}")
-    private String uanNo;
+    @Pattern(regexp = "^\\d{1,30}$", message = "{tdsReceiptNumber.message}")
+    private String tdsReceiptNumber;
 
-    @Schema(example = "1800")
-    @Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "{providentFund.message}")
-    private String providentFund;
+    @Schema(example = "yyyy-mm-dd")
+    @Pattern(regexp =  "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$", message = "{tdsReceiptDate.format}")
+    @NotBlank(message = "{tdsReceiptDate.notnull.message}")
+    private String tdsReceiptDate;
 
+    private MultipartFile file;
 }
