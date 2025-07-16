@@ -69,7 +69,8 @@ public enum ErrorMessageKey {
     TDS_RECEIPT_ALREADY_EXISTS("tds.receipt.already.exists"),
     TDS_RECEIPT_FILE_EMPTY("tds.receipt.file.empty"),
     TDS_RECEIPTS_NOT_FOUND("tds.receipts.not.found"),
-    UNABLE_DELETE_TDS_RECEIPTS("unable.to.delete.tds.receipts");
+    UNABLE_DELETE_TDS_RECEIPTS("unable.to.delete.tds.receipts"),
+    UNABLE_SAVE_TDS_RECEIPTS("unable.to.save.tds.receipts"),;
 
 
     private final String key;

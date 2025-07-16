@@ -89,7 +89,7 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
             throw accountantException;
         } catch (Exception e) {
             log.error("Unable to save TDS Receipts for company {} due to {}", companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_PT_RECEIPTS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_TDS_RECEIPTS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
     }
@@ -209,7 +209,7 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
             String path = folderPath + companyName;
             String filePath = path + Constants.SLASH + companyName + "_" + receipt.getMonth() + "_" + receipt.getYear() + "_" + file.getOriginalFilename();
             file.transferTo(new File(filePath));
-            receipt.setTdsReceiptFileName(companyName + Constants.SLASH + "tds_receipt_" + receipt.getMonth() + "_" + receipt.getYear() + "_" + file.getOriginalFilename());
+            receipt.setTdsReceiptFileName(companyName + Constants.SLASH+Constants.TDS_RECEIPT+"_"+receipt.getMonth() + "_" + receipt.getYear() + "_" + "_" +file.getOriginalFilename());
         } catch (IOException e) {
             log.error("Failed to store TDS receipt file: {}", e.getMessage());
             throw new AccountantException("Unable to store TDS receipt file", HttpStatus.INTERNAL_SERVER_ERROR);

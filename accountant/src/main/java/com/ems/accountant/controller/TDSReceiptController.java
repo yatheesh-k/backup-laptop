@@ -67,7 +67,7 @@ public class TDSReceiptController {
         Collection<TDSReceiptEntity> receipts = tdsReceiptsService.getTDSReceipts(companyName, tdsReceiptsId, null, null, request);
         if (receipts.isEmpty()) {
             log.error("Professional tax Receipts not found for company: {}, receiptId: {}", companyName, tdsReceiptsId);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_RECEIPTS_NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RECEIPTS_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(receipts), HttpStatus.OK);
     }
