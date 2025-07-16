@@ -105,6 +105,7 @@ import PTProcessing from '../AccountantModule/ProfessionalTax/PTProcessing';
 import CompanyGSTSubmission from '../AccountantModule/GST/CompanyGSTSubmission';
 import EmployeeManager from '../CompanyModule/Employee/EmployeeManager/EmployeeManager';
 import EmployeeSummary from '../CompanyModule/Employee/EmployeeManager/EmployeeSummary';
+import GSTCustomerRegistration from '../AccountantModule/GST/GSTCustomerRegistration';
 
 
 
@@ -592,6 +593,10 @@ const Routing = () => {
       <Route
         path="/employeeSummary"
         element={<ProtectedRoute element={<EmployeeSummary/>} allowedTypes={['company_admin']} />} 
+      />
+      <Route 
+      path='/CustomerAccountsManagment'
+      element={<ProtectedRoute element={<GSTCustomerRegistration/>} allowedTypes={['company_admin']}/>}
       />
     </Routes>
   );

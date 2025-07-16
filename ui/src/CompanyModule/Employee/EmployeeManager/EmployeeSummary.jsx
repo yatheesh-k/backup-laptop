@@ -134,7 +134,7 @@ const salaryDetailFields = [
   };
 
   const handleEdit = (id) => {
-    navigate(`/employeeRegister`, { state: { id } });
+    navigate(`/employeeMangement`, { state: { id } });
   };
 
   const handleViewDocuments = async (employee) => {
@@ -410,7 +410,7 @@ const salaryDetailFields = [
                     <div className="row">
                       <div className="row">
                         <div className="col-auto">
-                          <Link to="/employeeManagement">
+                          <Link to="/employeeMangement">
                             <button className="btn btn-primary">Add Employee</button>
                           </Link>
                         </div>

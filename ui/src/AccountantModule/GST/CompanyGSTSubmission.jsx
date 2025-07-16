@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowClockwise, Download, Upload } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
-import { GstPostApi, getGstResponse, GstPostResponse } from '../../Api/GstApis';
+import { getGstResponse, GstPostApi, GstPostResponse } from '../../Utils/Axios';
 
 const CompanyGSTSubmission = () => {
   const [fileName, setFileName] = useState('');

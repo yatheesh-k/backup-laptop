@@ -1536,6 +1536,90 @@ export const updateCandidateDocument = (candidateId, documentId, documentNumbers
     );
 };
 
+//gst Account
+export const PostGstAccountExcel = async (formData, month, year) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.post(
+      `/${companyName}/gst/account/register/${month}/${year}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating GST receipt:", error);
+    throw error;
+  }
+};
+
+export const postGstAccountRegistration=async(data)=>{
+ const companyName = localStorage.getItem("companyName");  
+  try {
+    const response = await axiosInstance.post(`/${companyName}/gst/account`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating GST:', error);
+    throw error;
+  } 
+} 
+
+export const GstAccountGetAPI=async()=>{
+   const companyName = localStorage.getItem("companyName");  
+  try {
+    const response = await axiosInstance.get(`/${companyName}/gst`);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating GST:', error);
+    throw error;
+  }
+}
+export const GetGstAccountByMonthYear=async(month, year)=>{
+ const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.post(`/${companyName}/gst/accounts`,
+      {
+    params: { month, year }, // Passing month and year as query params
+  });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating GST receipt:', error);
+    throw error;
+  }
+}
+export const getGstAccountById = async (id) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.get(`/${companyName}/gst/account/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching GST response by ID:', error);
+    throw error;
+  }
+}
+export const deleteGstAccountById = async (id) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.delete(`/${companyName}/account/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting GST response by ID:', error);
+    throw error;
+  }
+}
+export const putGstAccountById = async (id, data) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.put(`/${companyName}/gst/account/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating GST response by ID:', error);
+    throw error;
+  }
+}
 //gst post API
 export const GstPostApi = async (data) => {
   const companyName = localStorage.getItem("companyName");  
@@ -1590,22 +1674,16 @@ export const deleteGstResponseById = async (id) => {
     throw error;
   }
 }
-
 export const patchGstResponseById = async (id, data) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.patch(`/${companyName}/gst/response/${id}`, data, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await axiosInstance.patch(`/${companyName}/gst/response/${id}`, data);
     return response.data;
   } catch (error) {
     console.error('Error updating GST response by ID:', error);
     throw error;
   }
 }
-
 // gst Reciept
 export const GstReceiptResponse = async (month,year) => { 
   const companyName = localStorage.getItem("companyName");
