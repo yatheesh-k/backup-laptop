@@ -19,6 +19,7 @@ public enum ErrorMessageKey {
     EMPLOYEE_NOT_FOUND("employee.not.found"),
     EMPLOYEE_PF_ALREADY_EXISTS("employee.pf.already.exists"),
     EMPLOYEE_PF_NOT_FOUND("employee.pf.not.found"),
+    CUSTOMER_GST_NOT_FOUND("customer.gst.not.found"),
     UNABLE_SAVE_EMPLOYEE_PT("unable.to.save.employee.pt"),
     EMPLOYEE_PT_NOT_FOUND("employee.pt.not.found"),
     PF_RESPONSE_ALREADY_EXISTS("pf.response.already.exists"),
@@ -28,6 +29,9 @@ public enum ErrorMessageKey {
     NO_CHANGES_DETECTED("no.changes.detected"),
     UNABLE_UPDATE_PF_RESPONSE("unable.to.update.pf.response"),
     UNABLE_DELETE_PF_RESPONSE("unable.to.delete.pf.response"),
+    GST_ACCOUNT_ALREADY_EXIST("gst.account.already.exist"),
+    GST_ACCOUNT_NOT_FOUND("gst.account.not.found"),
+    UNABLE_DELETE("unable.to.delete"),
     UNABLE_SAVE_PT_RESPONSE("unable.to.save.pt.response"),
     PT_RESPONSE_ALREADY_EXISTS("pt.response.already.exists"),
     PT_RESPONSE_NOT_FOUND("pt.response.not.found"),
@@ -59,13 +63,23 @@ public enum ErrorMessageKey {
     INVALID_SALARY_FORMAT("invalid.salary.format"),
     UNABLE_SAVE_EMPLOYEE_TDS("unable.to.save.employee.tds"),
     EMPLOYEE_TDS_NOT_FOUND("employee.tds.not.found"),
+    PORTAL_CREDENTIALS_ALREADY_EXIST("portal.credentials.already.exist"),
+    UNABLE_SAVE_PORTAL_CREDENTIALS("unable.to.save.portal.credentials"),
+    PORTALS_CREDENTIALS_NOT_FOUND("portals.credentials.not.found"),
+    UNABLE_UPDATE_PORTAL_CREDENTIALS("unable.to.update.portal.credentials"),
+    UNABLE_DELETE_PORTAL_CREDENTIALS("unable.to.delete.portal.credentials"),
     GST_RECEIPTS_NOT_FOUND("gst.receipts.not.found"),
     UNABLE_SAVE_GST_RECEIPTS("unable.save.gst.receipts"),
     GST_RECEIPTS_FILE_EMPTY("gst.receipts.file.empty"),
     GST_RECEIPTS_ALREADY_EXISTS("gst.receipts.already.exists"),
     UNABLE_UPDATE_PF_RECEIPT("unable.update.pf.receipt"),
     UNABLE_UPDATE_GST_RECEIPT("unable.update.gst.receipt"),
-    UNABLE_DELETE_GST_RECEIPTS("unable.delete.gst.receipts");
+    UNABLE_DELETE_GST_RECEIPTS("unable.delete.gst.receipts"),
+    TDS_RECEIPT_ALREADY_EXISTS("tds.receipt.already.exists"),
+    TDS_RECEIPT_FILE_EMPTY("tds.receipt.file.empty"),
+    TDS_RECEIPTS_NOT_FOUND("tds.receipts.not.found"),
+    UNABLE_DELETE_TDS_RECEIPTS("unable.to.delete.tds.receipts"),
+    UNABLE_SAVE_TDS_RECEIPTS("unable.to.save.tds.receipts"),;
 
     private final String key;
 
