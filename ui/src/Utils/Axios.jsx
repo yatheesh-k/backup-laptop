@@ -1535,3 +1535,140 @@ export const updateCandidateDocument = (candidateId, documentId, documentNumbers
         }
     );
 };
+
+//gst post API
+export const GstPostApi = async (data) => {
+  const companyName = localStorage.getItem("companyName");  
+  try {
+    const response = await axiosInstance.post(`/${companyName}/gst`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating GST:', error);
+    throw error;
+  }
+}
+//gst response
+export const getGstResponse = async (month,year) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.get(`/${companyName}/gst/response`, {
+    params: { month, year }, // Passing month and year as query params
+  });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching GST response:', error);
+    throw error;
+  }
+}
+export const GstPostResponse = async (data) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.post(`/${companyName}/gst/response`,data);  
+    return response.data;
+  } catch (error) {
+    console.error('Error creating product:', error);
+    throw error;
+  } 
+}
+export const getGstResponseById = async (id) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.get(`/${companyName}/gst/response/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching GST response by ID:', error);
+    throw error;
+  }
+}
+export const deleteGstResponseById = async (id) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.delete(`/${companyName}/gst/response/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting GST response by ID:', error);
+    throw error;
+  }
+}
+
+export const patchGstResponseById = async (id, data) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.patch(`/${companyName}/gst/response/${id}`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating GST response by ID:', error);
+    throw error;
+  }
+}
+
+// gst Reciept
+export const GstReceiptResponse = async (month,year) => { 
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.post(`/${companyName}/gst/receipt`,
+      {
+    params: { month, year }, // Passing month and year as query params
+  });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating GST receipt:', error);
+    throw error;
+  }
+}
+
+export const postGstReceipt = async (formData) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.post(`/${companyName}/gst/receipt`, formData, {
+      headers: {  
+        'Content-Type': 'multipart/form-data', // Ensure the correct content type for file uploads
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating GST receipt:', error);
+    throw error;
+  }
+}
+
+export const getGstReciptById = async (id) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.get(`/${companyName}/gst/receipt/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching GST receipt by ID:', error);
+    throw error;
+  }
+}
+
+export const deleteGstReciptById = async (id) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.delete(`/${companyName}/gst/receipt/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting GST receipt by ID:', error);
+    throw error;
+  }
+}
+
+export const patchGstReciptById = async (id, data) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.patch(`/${companyName}/gst/receipt/${id}`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating GST receipt by ID:', error);
+    throw error;
+  }
+}
