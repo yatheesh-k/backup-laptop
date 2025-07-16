@@ -71,7 +71,7 @@ const CompanyLogin = () => {
           localStorage.setItem("token", token);
           const decodedToken = jwtDecode(token);
           console.log("decoded token from company login",decodedToken);
-          const { sub: userId, roles: userRole, company, employeeId } = decodedToken;
+          const { sub: userId, roles: userRole, company, employeeId, } = decodedToken;
           dispatch(setAuthDetails({
             userId,
             userRole,

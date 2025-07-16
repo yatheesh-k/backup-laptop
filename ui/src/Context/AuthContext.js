@@ -35,7 +35,8 @@ export const AuthProvider = ({ children }) => {
         roles: decoded.roles || [],
         companyId: decoded.companyId,
         employeeId: decoded.employee,
-        company: decoded.company
+        company: decoded.company,
+        resourceType: decoded.resourceType // Add resourceType if available
       });
     } catch (err) {
       console.error("Invalid token", err);
@@ -113,7 +114,7 @@ useEffect(() => {
       const companyId = decoded.companyId;
       const company = decoded.company;
       const employeeId = decoded.employee;
-
+      const resourceType = decoded.resourceType; // Add resourceType if available
       console.log("roles", roles);
 
       // Set authUser object (triggers fetch effect above)
@@ -122,7 +123,8 @@ useEffect(() => {
         roles,
         companyId,
         company,
-        employeeId
+        employeeId,
+        resourceType // Add resourceType to authUser
       });
 
       setIsInitialized(false); // Reset while loading fresh data
@@ -156,6 +158,5 @@ useEffect(() => {
     </AuthContext.Provider>
   );
 };
-
 // Custom hook to use auth context
 export const useAuth = () => useContext(AuthContext);

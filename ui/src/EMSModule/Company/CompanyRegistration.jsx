@@ -47,9 +47,9 @@ const CompanyRegistration = () => {
     const { value, checked } = e.target;
 
     if (checked) {
-      setUserType([value]); // ✅ set the array with only one selected value
+      setUserType(value); // ✅ set the array with only one selected value
     } else {
-      setUserType([]); // ❌ if unchecked, clear all
+      setUserType(""); // ❌ if unchecked, clear all
     }
   };
 

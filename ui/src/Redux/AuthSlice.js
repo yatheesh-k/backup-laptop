@@ -20,6 +20,7 @@ const initialState = {
   company: decodedToken?.company || null,
   employee: decodedToken?.employee || null,
   source: decodedToken ? "company" : null, // or 'ems' based on context
+  resourceType: decodedToken?.resourceType || null, // Add resourceType if available
 };
 
 const authSlice = createSlice({
@@ -33,6 +34,7 @@ const authSlice = createSlice({
       state.company = action.payload.company;
       state.employee = action.payload.employee;
       state.source = action.payload.source;
+      state.resourceType = action.payload.resourceType || null; // Add resourceType if available
     },
     clearAuthDetails: (state) => {
       state.userId = null;
@@ -40,6 +42,7 @@ const authSlice = createSlice({
       state.company = null;
       state.employee = null;
       state.source = null;
+      state.resourceType = null; // Clear resourceType as well
     },
   },
 });

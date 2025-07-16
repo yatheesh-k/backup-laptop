@@ -4,8 +4,7 @@ import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ element, allowedTypes }) => {
 
-  const { userId, userRole, company, source } = useSelector((state) => state.auth);
-  console.log("Redux State in ProtectedRoute:", { userId, userRole, company, source });
+  const {userRole,} = useSelector((state) => state.auth);
   const role = userRole?.[0];
   
   if (!allowedTypes.includes(role)) {

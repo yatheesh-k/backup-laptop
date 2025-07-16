@@ -1394,15 +1394,6 @@ export const CandidateDeleteApi = (id) => {  // Changed parameter name to be mor
  export const uploadDocumentAPI = async (candidateId, docNames, files) => {
   const companyName = localStorage.getItem("companyName");
   const formData = new FormData();
-  
-  // Log the data being sent
-  console.log("Uploading to:", `/${companyName}/candidate/${candidateId}/upload`);
-  console.log("Document names:", docNames);
-  console.log("Files:", files.map(f => ({
-    name: f.name,
-    type: f.type,
-    size: f.size
-  })));
 
   // Add data to FormData
   docNames.forEach((name, index) => {

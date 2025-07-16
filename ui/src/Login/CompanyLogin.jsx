@@ -72,15 +72,16 @@ const CompanyLogin = () => {
         if (token) {
           localStorage.setItem("token", token);
           const decodedToken = jwtDecode(token);
-          const { sub: userId, roles: userRole, company, employeeId } = decodedToken;
+          const { sub: userId, roles: userRole, company, employeeId,resourceType } = decodedToken;
           dispatch(setAuthDetails({
             userId,
             userRole,
+            resourceType,
             company,
             employeeId,
             source: 'company',
           }));
-          setAuthUser({ userId, userRole, company, employeeId });
+          setAuthUser({ userId, userRole, company, employeeId,resourceType });
           toast.success("OTP Sent Successfully");
           setOtpSent(true);
           setOtpExpired(false);

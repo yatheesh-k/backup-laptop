@@ -23,9 +23,14 @@ import AttendanceList from '../CompanyModule/Attendance/AttendanceList';
 import AttendanceReport from '../CompanyModule/Attendance/AttendanceReport';
 import EmployeePayslips from '../EmployeeModule/EmployeePayslips';
 import OfferLetter from '../EmployeeModule/OfferLetter';
+import PaySlipLetter from '../EmployeeModule/PaySlipLetter';
+import HikeLetter from '../EmployeeModule/HikeLetter';
+import ExistingLetter from '../EmployeeModule/ExistingLetter';
 import CompanySalaryStructure from '../CompanyModule/Settings/CompanySalaryStructure';
 import EmployeeSalaryList from '../CompanyModule/PayRoll/EmployeeSalaryList';
 import Profile from '../LayOut/Profile';
+import Message from '../LayOut/Message';
+import PaySlipDoc from '../Login/PayslipDoc';
 import EmployeeSalaryById from '../EmployeeModule/EmployeeSalaryById';
 import Reset from '../LayOut/Reset';
 import ForgotPassword from '../Login/ForgotPassword'
@@ -63,6 +68,7 @@ import InvoiceView from '../InvoiceModule/Invoice/InvoiceView';
 import InvoicePdf from '../InvoiceModule/Invoice/InvoicePdf';
 import ProductView from '../InvoiceModule/Products/ProductsView';
 import ProductRegistration from '../InvoiceModule/Products/ProductRegistration'
+import CreatePassword from '../Login/CreatePassword';
 import EmployeeRegister from '../CompanyModule/Employee/EmployeeRegister';
 import EmployeeSalaryStructureView from '../CompanyModule/PayRoll/EmployeeSalaryStructureView';
 import InternOfferLetter from '../CompanyModule/Settings/Internship/InternOfferLetter/InternOfferLetter';
@@ -94,10 +100,13 @@ import EmployeeDocumentUpload from '../CompanyModule/Employee/EmployeeDocumentUp
 import EmployeeDocumentView from '../CompanyModule/Employee/EmployeeDocumentView';
 import InvoiceTemplates from '../CompanyModule/Settings/InvoiceTemplates/InvoiceTemplates';
 import CandidateToEmployee from '../CompanyModule/Candidate/CandidateToEmployee';
-import PFEmployeesDocUpload from '../AccountantModule/PF/PFEmployeesDocUpload';
+import CompanyPTSubmission from '../AccountantModule/ProfessionalTax/CompanyPTSubmission';
+import PTProcessing from '../AccountantModule/ProfessionalTax/PTProcessing';
+import CompanyGSTSubmission from '../AccountantModule/GST/CompanyGSTSubmission';
 import EmployeeManager from '../CompanyModule/Employee/EmployeeManager/EmployeeManager';
 import EmployeeSummary from '../CompanyModule/Employee/EmployeeManager/EmployeeSummary';
-import TimelineDates from '../CompanyModule/Settings/TimeLine/TimeLineDates';
+
+
 
 export const allAvailableRoutes = [
   {path: '/main', allowedTypes: ['ems_admin', 'company_admin', 'Admin', 'HR', 'employee']},
@@ -189,11 +198,15 @@ export const allAvailableRoutes = [
   {path: '/invoiceTemplate2', allowedTypes: ['company_admin', 'Admin' , 'Accountant'] },
   {path: '/employeeDocumentUpload', allowedTypes: ['employee'] },
   {path: '/employeeDocumentView', allowedTypes: ['company_admin', 'Admin','HR','employee'] },
-  // Accountant-specific routes
-  {path: '/pfsubmission', allowedTypes: ['company_admin', 'Admin', 'Accountant'] },
-  {path: '/employeeManagement', allowedTypes: ['company_admin', 'Admin', 'Accountant'] },
-  {path: '/employeeSummary', allowedTypes: ['company_admin', 'Admin', 'Accountant'] },
-  {path: '/timelineDates', allowedTypes: ['company_admin'] },
+  {path: '/companyPFSubmission', allowedTypes: ['company_admin'] },
+  {path: '/pfProcessing', allowedTypes: ['company_admin'] },
+  {path: '/companyPTSubmission', allowedTypes: ['company_admin'] },
+  {path: '/ptProcessing', allowedTypes: ['company_admin'] },
+  {path: '/companyTDSSubmission', allowedTypes: ['company_admin'] },
+  {path: '/tdsProcessing', allowedTypes: ['company_admin'] },
+  {path: '/companyGSTSubmission', allowedTypes: ['company_admin','Admin','Accountant'] },
+  {path: '/employeeMangement', allowedTypes: ['company_admin'] },
+  {path: '/employeeSummary', allowedTypes: ['company_admin'] },
 ];
 
 const Routing = () => {
@@ -559,22 +572,26 @@ const Routing = () => {
         path="/employeeDocumentView"
         element={<ProtectedRoute element={<EmployeeDocumentView/>} allowedTypes={['employee']} />}
       />
-      {/* Accountant Specific Roles */}
+
       <Route
-        path="/pfsubmission"
-        element={<ProtectedRoute element={<PFEmployeesDocUpload/>} allowedTypes={['company_admin', 'Admin', 'Accountant']} />}    
+        path="/companyPTSubmission"
+        element={<ProtectedRoute element={<CompanyPTSubmission/>} allowedTypes={['company_admin']} />}
       />
-      <Route 
-      path='/employeeManagement'
-      element={<ProtectedRoute element={<EmployeeManager/>} allowedTypes={['company_admin','Admin','Accountant']} />}
+      <Route
+        path="/ptProcessing"
+        element={<ProtectedRoute element={<PTProcessing/>} allowedTypes={['company_admin']} />}
+      />
+      <Route
+        path="/companyGSTSubmission"
+        element={<ProtectedRoute element={<CompanyGSTSubmission/>} allowedTypes={['company_admin']} />}
+      />
+      <Route
+        path="/employeeMangement"
+        element={<ProtectedRoute element={<EmployeeManager/>} allowedTypes={['company_admin', 'Admin','HR','employee', 'Accountant']} />}
       />
       <Route
         path="/employeeSummary"
-        element={<ProtectedRoute element={<EmployeeSummary/>} allowedTypes={['company_admin', 'Admin', 'Accountant']} />}
-      />
-      <Route
-        path="/timelineDates"
-        element={<ProtectedRoute element={<TimelineDates/>} allowedTypes={['company_admin']} />} 
+        element={<ProtectedRoute element={<EmployeeSummary/>} allowedTypes={['company_admin']} />} 
       />
     </Routes>
   );
