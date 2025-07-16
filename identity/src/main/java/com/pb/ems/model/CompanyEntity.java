@@ -20,7 +20,7 @@ public class CompanyEntity {
     private String companyAddress;
     private String companyRegNo;
     private String mobileNo;
-    private String landNo;
+    private String alternateNo;
     private String gstNo;
     private String panNo;
     private String name;
