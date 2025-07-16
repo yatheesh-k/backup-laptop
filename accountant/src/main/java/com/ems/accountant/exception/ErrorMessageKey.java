@@ -56,12 +56,21 @@ public enum ErrorMessageKey {
     UNABLE_FETCH_GST_RESPONSE("unable.to.fetch.gst.response"),
     UNABLE_UPDATE_GST_RESPONSE("unable.to.update.gst.response"),
     UNABLE_DELETE_GST_RESPONSE("unable.to.delete.gst.response"),
+    INVALID_SALARY_FORMAT("invalid.salary.format"),
     UNABLE_SAVE_EMPLOYEE_TDS("unable.to.save.employee.tds"),
     EMPLOYEE_TDS_NOT_FOUND("employee.tds.not.found"),
+    GST_RECEIPTS_NOT_FOUND("gst.receipts.not.found"),
+    UNABLE_SAVE_GST_RECEIPTS("unable.save.gst.receipts"),
+    GST_RECEIPTS_FILE_EMPTY("gst.receipts.file.empty"),
+    GST_RECEIPTS_ALREADY_EXISTS("gst.receipts.already.exists"),
+    UNABLE_UPDATE_PF_RECEIPT("unable.update.pf.receipt"),
+    UNABLE_UPDATE_GST_RECEIPT("unable.update.gst.receipt"),
+    UNABLE_DELETE_GST_RECEIPTS("unable.delete.gst.receipts"),
     TDS_RECEIPT_ALREADY_EXISTS("tds.receipt.already.exists"),
     TDS_RECEIPT_FILE_EMPTY("tds.receipt.file.empty"),
     TDS_RECEIPTS_NOT_FOUND("tds.receipts.not.found"),
     UNABLE_DELETE_TDS_RECEIPTS("unable.to.delete.tds.receipts");
+
 
     private final String key;
 
