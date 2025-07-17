@@ -61,21 +61,39 @@ export const NAV_CONFIG = {
             ]
         },
         {
-            title: 'Finance',
+            title: 'Tax Consultant',
             icon: 'briefcase',
             items: [
-                // Provident Fund (PF)
-                { title: 'Manage Provident Fund Submission', path: '/companyPFSubmission' },
-                { title: 'Provident Fund Processing', path: '/pfProcessing' },
-                { title: 'Provident Fund Response View', path: '/pfResponsesView' },
-
-                // Professional Tax (PT)
-                { title: 'Manage Professional Tax Submission', path: '/companyPTSubmission' },
-                { title: 'Professional Tax Processing', path: '/ptProcessing' },
-
-                // Tax Deducted at Source (TDS)
-                { title: 'Manage Tax Deducted at Source Submission', path: '/companyTDSSubmission' },
-                { title: 'Tax Deducted at Source Processing', path: '/tdsProcessing' }
+                {
+                    title: 'Provident Fund',
+                    icon: 'file-earmark-lock',
+                    items: [
+                        { title: 'Manage Provident Fund Submission', path: '/companyPFSubmission' },
+                        { title: 'Provident Fund Processing', path: '/pfProcessing' },
+                        { title: 'Provident Fund Response View', path: '/pfResponsesView' },
+                        { title: 'Provident Fund Receipts View', path: '/pfReceiptsView' }
+                    ]
+                },
+                {
+                    title: 'Professional Tax',
+                    icon: 'file-earmark-text',
+                    items: [
+                        { title: 'Manage Professional Tax Submission', path: '/companyPTSubmission' },
+                        { title: 'Professional Tax Processing', path: '/ptProcessing' },
+                        { title: 'Professional Tax Response View', path: '/ptResponsesView' },
+                        { title: 'Professional Tax Receipts View', path: '/ptReceiptsView' }
+                    ]
+                },
+                {
+                    title: 'Tax Deducted at Source',
+                    icon: 'file-earmark-binary',
+                    items: [
+                        { title: 'Manage Tax Deducted at Source Submission', path: '/companyTDSSubmission' },
+                        { title: 'Tax Deducted at Source Processing', path: '/tdsProcessing' },
+                        { title: 'Tax Deducted at Source Response View', path: '/tdsResponsesView' },
+                        { title: 'Tax Deducted at Source Receipts View', path: '/tdsReceiptsView' }
+                    ]
+                }
             ]
         },
         {

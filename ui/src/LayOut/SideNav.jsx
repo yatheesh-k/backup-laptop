@@ -12,18 +12,42 @@ const SideNav = () => {
   const { company = {} } = useAuth();
   const navigate = useNavigate();
 
-  // Auto-expand parent when child is active
+  // Auto-expand parent when child is active (now supports two levels)
   useEffect(() => {
-    const parentPaths = Object.keys(NAV_CONFIG).flatMap(role =>
-      NAV_CONFIG[role].flatMap(item =>
-        item.items ? item.items.map(child => ({ parent: item.path || item.title, child: child.path })) : []
-      )
-    );
+    const newExpandedItems = { ...expandedItems };
+    
+    Object.keys(NAV_CONFIG).forEach(role => {
+      NAV_CONFIG[role].forEach(item => {
+        if (item.items) {
+          // Check first level items
+          const hasActiveChild = item.items.some(child => {
+            if (child.items) {
+              // Check second level items
+              return child.items.some(subChild => pathname.startsWith(subChild.path));
+            }
+            return pathname.startsWith(child.path);
+          });
+          
+          if (hasActiveChild) {
+            newExpandedItems[item.path || item.title] = true;
+          }
 
-    const parentToExpand = parentPaths.find(({ child }) => pathname.startsWith(child))?.parent;
-    if (parentToExpand) {
-      setExpandedItems(prev => ({ ...prev, [parentToExpand]: true }));
-    }
+          // Also expand second level parents if their children are active
+          item.items.forEach(child => {
+            if (child.items) {
+              const hasActiveSubChild = child.items.some(subChild => 
+                pathname.startsWith(subChild.path)
+              );
+              if (hasActiveSubChild) {
+                newExpandedItems[child.path || child.title] = true;
+              }
+            }
+          });
+        }
+      });
+    });
+
+    setExpandedItems(newExpandedItems);
   }, [pathname]);
 
   const handleToggleExpand = (path) => {
@@ -35,14 +59,15 @@ const SideNav = () => {
 
   const isActive = (path) => pathname === path || pathname.startsWith(`${path}/`);
 
-  const renderNavItem = (item) => {
+  const renderNavItem = (item, level = 0) => {
     const hasChildren = item.items && item.items.length > 0;
     const isExpanded = expandedItems[item.path || item.title];
     const active = isActive(item.path);
+    const isSecondLevel = level === 1;
 
     return (
       <React.Fragment key={item.path || item.title}>
-        <li className={`nav-item ${hasChildren ? 'has-children' : ''}`}>
+        <li className={`nav-item ${hasChildren ? 'has-children' : ''} ${isSecondLevel ? 'second-level' : ''}`}>
           {hasChildren ? (
             <button
               className={`nav-link ${active ? 'active' : ''}`}
@@ -50,7 +75,7 @@ const SideNav = () => {
               aria-expanded={isExpanded}
             >
               <div className="nav-link-content">
-                <i className={`bi bi-${item.icon || 'file'}`}></i>
+                {item.icon && <i className={`bi bi-${item.icon}`}></i>}
                 <span>{item.title}</span>
               </div>
               <i className={`bi ${isExpanded ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
@@ -61,7 +86,7 @@ const SideNav = () => {
               className={`nav-link ${active ? 'active' : ''}`}
             >
               <div className="nav-link-content">
-                <i className={`bi bi-${item.icon || 'file'}`}></i>
+                {item.icon && <i className={`bi bi-${item.icon}`}></i>}
                 <span>{item.title}</span>
               </div>
             </Link>
@@ -70,21 +95,17 @@ const SideNav = () => {
 
         {hasChildren && (
           <div
-            className={`submenu-container ${isExpanded ? 'expanded' : ''}`}
+            className={`submenu-container ${isExpanded ? 'expanded' : ''} ${isSecondLevel ? 'second-level' : ''}`}
             style={{
-              maxHeight: isExpanded ? '250px' : '0',
+              maxHeight: isExpanded ? '1000px' : '0',
               overflowY: isExpanded ? 'auto' : 'hidden'
             }}
           >
             <div className="submenu-inner">
               {item.items.map((child) => (
-                <Link
-                  key={child.path}
-                  to={child.path}
-                  className={`submenu-item ${isActive(child.path) ? 'active' : ''}`}
-                >
-                  {child.title}
-                </Link>
+                <React.Fragment key={child.path || child.title}>
+                  {renderNavItem(child, level + 1)}
+                </React.Fragment>
               ))}
             </div>
           </div>
@@ -101,13 +122,21 @@ const SideNav = () => {
 
     if (!userRole) return roleItems;
 
+    const filterAllowedItems = (items) => {
+      return items.filter(item => {
+        if (item.items) {
+          const filteredChildren = filterAllowedItems(item.items);
+          return filteredChildren.length > 0;
+        }
+        return allowedPaths.includes(item.path);
+      });
+    };
+
     userRole.forEach(role => {
       if (NAV_CONFIG[role]) {
         NAV_CONFIG[role].forEach(item => {
           if (item.items) {
-            const allowedChildren = item.items.filter(child =>
-              allowedPaths.includes(child.path)
-            );
+            const allowedChildren = filterAllowedItems(item.items);
             if (allowedChildren.length > 0) {
               roleItems.push({
                 ...item,

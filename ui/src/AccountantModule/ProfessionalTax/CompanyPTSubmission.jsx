@@ -50,7 +50,7 @@ const CompanyPTSubmission = () => {
       const filteredData = response.data.data.map(emp => ({
         "Employee Name": `${emp.firstName} ${emp.lastName}`,
         "PAN No": emp.panNo,
-        "PT Amount": emp.pfTax // Using pfTax as PT amount from the API response
+        "Employee Salary": emp.employeeSalary
       }));
 
       const ws = XLSX.utils.json_to_sheet(filteredData);

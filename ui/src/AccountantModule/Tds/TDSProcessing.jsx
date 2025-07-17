@@ -1,60 +1,81 @@
 import React, { useState } from "react";
 import LayOut from "../../LayOut/LayOut";
-import { 
-//   GetTDSApprovalListAPI,
-//   UploadTDSAcknowledgementAPI 
+import {
+  GetPFForMonthAndYearAPI,
+  AddTDSReceiptsAPI
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
-import { Download} from "react-bootstrap-icons";
+import { Download, Upload } from "react-bootstrap-icons";
 import * as XLSX from "xlsx";
 import { Link } from "react-router-dom";
 
-const CATDSProcessing = () => {
+const TDSProcessing = () => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
-  const [approvalQuarter, setApprovalQuarter] = useState("");
+  const [approvalMonth, setApprovalMonth] = useState("");
   const [approvalYear, setApprovalYear] = useState("");
   const [approvalList, setApprovalList] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [acknowledgementFile, setAcknowledgementFile] = useState(null);
 
+  // Calculate total TDS amount
+  const calculateTotalTDS = () => {
+    return approvalList.reduce((total, emp) => {
+      const tdsAmount = parseFloat(emp.tdsAmount) || 0;
+      return total + tdsAmount;
+    }, 0);
+  };
+  // Fetch approval list
   const fetchApprovalList = async () => {
-    if (!approvalQuarter || !approvalYear) {
-      toast.error("Please select both quarter and year");
+    if (!approvalMonth || !approvalYear) {
+      toast.error("Please select both month and year");
       return;
     }
-    
+
     setIsFetching(true);
     try {
-      const response = await (approvalQuarter, approvalYear);
-      setApprovalList(response.data.data || []);
-      toast.success("Approval list fetched successfully");
+      const response = await GetPFForMonthAndYearAPI(approvalMonth, approvalYear);
+      if (response && response.data) {
+        setApprovalList(response.data.data || []);
+        toast.success("Approval list fetched successfully");
+      } else {
+        toast.warning("No data found for the selected month and year");
+        setApprovalList([]);
+      }
     } catch (error) {
       handleApiError(error);
+      setApprovalList([]);
     } finally {
       setIsFetching(false);
     }
   };
 
+  // Upload acknowledgement with all required TDS receipt fields
   const uploadAcknowledgement = async (data) => {
-    if (!approvalQuarter || !approvalYear) {
-      toast.error("Please select quarter and year first");
+    if (!approvalMonth || !approvalYear) {
+      toast.error("Please select month and year first");
       return;
     }
-    
+
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", data.acknowledgementFile[0]);
-      formData.append("quarter", approvalQuarter);
-      formData.append("year", approvalYear);
-      
-      const response = await (formData);
-      
+      const response = await AddTDSReceiptsAPI({
+        month: approvalMonth,
+        year: approvalYear,
+        tdsTotalAmount: data.tdsTotalAmount,
+        tdsReceiptNumber: data.tdsReceiptNumber,
+        tdsReceiptDate: data.tdsReceiptDate,
+        file: data.file[0], // pass File object
+      });
+
       if (response.data.success) {
-        toast.success("Acknowledgement uploaded successfully");
-        resetForm();
+        toast.success("TDS acknowledgement uploaded successfully");
+        reset();
+        setAcknowledgementFile(null);
+        setApprovalList([]);
+        setApprovalMonth("");
+        setApprovalYear("");
       }
     } catch (error) {
       handleApiError(error);
@@ -63,20 +84,16 @@ const CATDSProcessing = () => {
     }
   };
 
-  const resetForm = () => {
-    reset();
-    setAcknowledgementFile(null);
-    setApprovalList([]);
-    setApprovalQuarter("");
-    setApprovalYear("");
-  };
-
   const handleApiError = (error) => {
-    const errorMsg = error.response?.data?.error?.message || "An error occurred";
+    const errorMsg = error.response?.data?.message ||
+      error.response?.data?.error?.message ||
+      error.message ||
+      "An error occurred";
     toast.error(errorMsg);
-    console.error(error);
+    console.error("API Error:", error);
   };
 
+  // Download Excel
   const downloadApprovalListExcel = () => {
     if (approvalList.length === 0) {
       toast.warning("No data to export");
@@ -84,18 +101,17 @@ const CATDSProcessing = () => {
     }
 
     const formattedData = approvalList.map(emp => ({
-      "Employee Name": `${emp.firstName} ${emp.lastName}`,
-      "PAN": emp.panNo,
-      "Financial Year": emp.financialYear,
-      "TDS Amount": emp.tdsAmount,
-      "TDS Section": emp.tdsSection,
-      "Status": "Approved for Payment"
+      "Employee Name": emp.employeeName,
+      "PAN": (emp.panNo),
+      "TDS Amount": emp.tdsAmount ? (emp.tdsAmount) : "N/A",
+      "Month": emp.month,
+      "Year": emp.year,
     }));
 
     const ws = XLSX.utils.json_to_sheet(formattedData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "TDS Approval List");
-    XLSX.writeFile(wb, `TDS_Approval_Q${approvalQuarter}_${approvalYear}.xlsx`);
+    XLSX.writeFile(wb, `TDS_Approval_${approvalMonth}_${approvalYear}.xlsx`);
   };
 
   return (
@@ -119,7 +135,6 @@ const CATDSProcessing = () => {
             </nav>
           </div>
         </div>
-
         <div className="row">
           <div className="col-12">
             <div className="card">
@@ -129,27 +144,28 @@ const CATDSProcessing = () => {
                 </h5>
               </div>
               <div className="card-body">
+                {/* Step 1: Fetch Approved List */}
                 <div className="mb-4">
-                  <h5>1. Fetch Approved TDS List</h5>
+                  <h5 className="mb-3">1. Fetch Approved TDS List</h5>
                   <div className="row g-3 align-items-end mb-3">
                     <div className="col-md-3">
-                      <label className="form-label">Select Quarter</label>
-                      <select 
+                      <label className="form-label">Select Month</label>
+                      <select
                         className="form-select"
-                        value={approvalQuarter}
-                        onChange={(e) => setApprovalQuarter(e.target.value)}
+                        value={approvalMonth}
+                        onChange={(e) => setApprovalMonth(e.target.value)}
                       >
-                        <option value="">Select Quarter</option>
-                        <option value="1">Q1 (Apr-Jun)</option>
-                        <option value="2">Q2 (Jul-Sep)</option>
-                        <option value="3">Q3 (Oct-Dec)</option>
-                        <option value="4">Q4 (Jan-Mar)</option>
+                        <option value="">Select Month</option>
+                        {Array.from({ length: 12 }, (_, i) => {
+                          const month = new Date(0, i).toLocaleString('default', { month: 'long' });
+                          return <option key={month} value={month}>{month}</option>;
+                        })}
                       </select>
                     </div>
-                    
+
                     <div className="col-md-3">
                       <label className="form-label">Select Year</label>
-                      <select 
+                      <select
                         className="form-select"
                         value={approvalYear}
                         onChange={(e) => setApprovalYear(e.target.value)}
@@ -161,94 +177,148 @@ const CATDSProcessing = () => {
                         })}
                       </select>
                     </div>
-                    
+
                     <div className="col-md-3">
-                      <button 
+                      <button
                         className="btn btn-primary"
                         onClick={fetchApprovalList}
-                        disabled={!approvalQuarter || !approvalYear || isFetching}
+                        disabled={!approvalMonth || !approvalYear || isFetching}
                       >
                         {isFetching ? 'Fetching...' : 'Fetch List'}
                       </button>
                     </div>
                   </div>
-                  
+
                   {approvalList.length > 0 && (
                     <>
                       <div className="table-responsive mb-3">
                         <table className="table table-striped">
                           <thead>
                             <tr>
-                              <th>Employee</th>
+                              <th>Employee Name</th>
                               <th>PAN</th>
-                              <th>Financial Year</th>
                               <th>TDS Amount</th>
-                              <th>Status</th>
                             </tr>
                           </thead>
                           <tbody>
                             {approvalList.map((emp, i) => (
                               <tr key={i}>
-                                <td>{`${emp.firstName} ${emp.lastName}`}</td>
-                                <td>{emp.panNo}</td>
-                                <td>{emp.financialYear}</td>
-                                <td>{emp.tdsAmount}</td>
-                                <td className="text-success">Approved</td>
+                                <td>{emp.employeeName}</td>
+                                <td>{(emp.panNo)}</td>
+                                <td>{emp.tdsAmount ? (emp.tdsAmount) : "N/A"}</td>
                               </tr>
                             ))}
+                            {approvalList.length > 0 && (
+                              <tr className="fw-bold">
+                                <td colSpan="2" className="text-end">Total TDS Amount</td>
+                                <td>{calculateTotalTDS().toFixed(2)}</td>
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>
-                      
+
                       <div className="d-flex justify-content-between mb-4">
-                        <button 
+                        <button
                           className="btn btn-outline-primary"
                           onClick={downloadApprovalListExcel}
                         >
-                          <Download className="me-2" />
+                          <Download className="me-2 d-inline-flex align-items-center" />
                           Download TDS List
                         </button>
-                        
-                        <a 
-                          href="https://tdspro.gov.in" 
-                          target="_blank" 
+
+                        {/* <a
+                          href="https://tdspro.gov.in"
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-info"
                         >
                           Proceed to TDS Portal
-                        </a>
+                        </a> */}
                       </div>
                     </>
                   )}
                 </div>
-                
+
+                {/* Step 2: Updated Acknowledgement Upload Form */}
                 {approvalList.length > 0 && (
                   <div>
-                    <h5>2. Upload Payment Acknowledgement</h5>
+                    <h5 className="mb-3">2. Upload Payment Acknowledgement</h5>
                     <form onSubmit={handleSubmit(uploadAcknowledgement)}>
-                      <div className="row g-3 align-items-end mb-3">
+                      <div className="row g-3 mb-3">
+                        <div className="col-md-6">
+                          <label className="form-label">TDS Total Amount</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            {...register("tdsTotalAmount", {
+                              required: "TDS Total Amount is required",
+                              pattern: {
+                                value: /^[0-9]+(\.[0-9]{1,2})?$/,
+                                message: "Enter a valid amount"
+                              }
+                            })}
+                          />
+                          {errors.tdsTotalAmount && (
+                            <div className="text-danger small mt-1">
+                              {errors.tdsTotalAmount.message}
+                            </div>
+                          )}
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label">TDS Receipt Number</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            {...register("tdsReceiptNumber", {
+                              required: "TDS Receipt Number is required"
+                            })}
+                          />
+                          {errors.tdsReceiptNumber && (
+                            <div className="text-danger small mt-1">
+                              {errors.tdsReceiptNumber.message}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="col-md-6">
+                          <label className="form-label">TDS Receipt Date</label>
+                          <input
+                            type="date"
+                            className="form-control"
+                            {...register("tdsReceiptDate", {
+                              required: "TDS Receipt Date is required"
+                            })}
+                          />
+                          {errors.tdsReceiptDate && (
+                            <div className="text-danger small mt-1">
+                              {errors.tdsReceiptDate.message}
+                            </div>
+                          )}
+                        </div>
+
                         <div className="col-md-6">
                           <label className="form-label">Acknowledgement File</label>
                           <input
                             type="file"
                             className="form-control"
                             accept=".pdf,.jpg,.png"
-                            {...register("acknowledgementFile", {
+                            {...register("file", {
                               required: "Please upload acknowledgement file"
                             })}
                             onChange={(e) => setAcknowledgementFile(e.target.files[0])}
                           />
-                          {errors.acknowledgementFile && (
+                          {errors.file && (
                             <div className="text-danger small mt-1">
-                              {errors.acknowledgementFile.message}
+                              {errors.file.message}
                             </div>
                           )}
                           <div className="form-text">
-                            Upload the payment confirmation from TDS portal (PDF or image)
+                            Upload the payment acknowledgement from TDS portal (PDF or image)
                           </div>
                         </div>
-                        
-                        <div className="col-md-3">
+
+                        <div className="col-md-12 mt-3">
                           <button
                             type="submit"
                             className="btn btn-success"
@@ -270,4 +340,4 @@ const CATDSProcessing = () => {
   );
 };
 
-export default CATDSProcessing;
+export default TDSProcessing;

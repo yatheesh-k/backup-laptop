@@ -408,6 +408,18 @@ export const AddPFReceiptsAPI = (data) => {
   });
 };
 
+export const GetPFReceiptsAPI = (params) => {
+  const company = localStorage.getItem("companyName");
+  const { month, year } = params;
+  
+  return microserviceAxiosInstance.get(`/${company}/pf/receipt`, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
 export const AddPFResponseAPI = (data) => {
   const companyName = localStorage.getItem("companyName");
   
@@ -473,6 +485,19 @@ export const AddPTReceiptsAPI = (data) => {
     },
   });
 };
+
+export const GetPTReceiptsAPI = (params) => {
+  const company = localStorage.getItem("companyName");
+  const { month, year } = params;
+  
+  return microserviceAxiosInstance.get(`/${company}/pt/receipt`, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
 
 export const AddPTResponseAPI = (data) => {
   const companyName = localStorage.getItem("companyName");
@@ -540,6 +565,19 @@ export const AddTDSReceiptsAPI = (data) => {
   });
 };
 
+export const GetTDSReceiptsAPI = (params) => {
+  const company = localStorage.getItem("companyName");
+  const { month, year } = params;
+  
+  return microserviceAxiosInstance.get(`/${company}/tds/receipt`, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+
 export const AddTDSResponseAPI = (data) => {
   const companyName = localStorage.getItem("companyName");
   
@@ -553,7 +591,7 @@ export const AddTDSResponseAPI = (data) => {
 export const GetTDSResponsesAPI = (month, year) => {
   const companyName = localStorage.getItem("companyName");
 
-  return microserviceAxiosInstance.get(`/${companyName}/pt/response`, {
+  return microserviceAxiosInstance.get(`/${companyName}/tds/response`, {
     params: {
       ...(month && { month }),
       ...(year && { year })

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import LayOut from "../../LayOut/LayOut";
-import { 
+import {
   GetPFForMonthAndYearAPI,
-  AddPFReceiptsAPI  
+  AddPFReceiptsAPI
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
@@ -20,13 +20,19 @@ const PFProcessing = () => {
   const [acknowledgementFile, setAcknowledgementFile] = useState(null);
 
 
+  const calculateTotalPF = () => {
+    return approvalList.reduce((total, emp) => {
+      const pfAmount = parseFloat(emp.providentFund) || 0;
+      return total + pfAmount;
+    }, 0);
+  };
   // Fetch approval list
   const fetchApprovalList = async () => {
     if (!approvalMonth || !approvalYear) {
       toast.error("Please select both month and year");
       return;
     }
-    
+
     setIsFetching(true);
     try {
       const response = await GetPFForMonthAndYearAPI(approvalMonth, approvalYear);
@@ -47,43 +53,43 @@ const PFProcessing = () => {
 
   // Upload acknowledgement with all required PF receipt fields
   const uploadAcknowledgement = async (data) => {
-  if (!approvalMonth || !approvalYear) {
-    toast.error("Please select month and year first");
-    return;
-  }
-
-  setIsUploading(true);
-  try {
-    const response = await AddPFReceiptsAPI({
-      month: approvalMonth,
-      year: approvalYear,
-      pfTotalAmount: data.pfTotalAmount,
-      pfReceiptNumber: data.pfReceiptNumber,
-      pfReceiptDate: data.pfReceiptDate,
-      file: data.file[0], // pass File object
-    });
-
-    if (response.data.success) {
-      toast.success("Provident Fund acknowledgement uploaded successfully");
-      reset();
-      setAcknowledgementFile(null);
-      setApprovalList([]);
-      setApprovalMonth("");
-      setApprovalYear("");
+    if (!approvalMonth || !approvalYear) {
+      toast.error("Please select month and year first");
+      return;
     }
-  } catch (error) {
-    handleApiError(error);
-  } finally {
-    setIsUploading(false);
-  }
-};
+
+    setIsUploading(true);
+    try {
+      const response = await AddPFReceiptsAPI({
+        month: approvalMonth,
+        year: approvalYear,
+        pfTotalAmount: data.pfTotalAmount,
+        pfReceiptNumber: data.pfReceiptNumber,
+        pfReceiptDate: data.pfReceiptDate,
+        file: data.file[0], // pass File object
+      });
+
+      if (response.data.success) {
+        toast.success("Provident Fund acknowledgement uploaded successfully");
+        reset();
+        setAcknowledgementFile(null);
+        setApprovalList([]);
+        setApprovalMonth("");
+        setApprovalYear("");
+      }
+    } catch (error) {
+      handleApiError(error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
 
   const handleApiError = (error) => {
-    const errorMsg = error.response?.data?.message || 
-                   error.response?.data?.error?.message || 
-                   error.message || 
-                   "An error occurred";
+    const errorMsg = error.response?.data?.message ||
+      error.response?.data?.error?.message ||
+      error.message ||
+      "An error occurred";
     toast.error(errorMsg);
     console.error("API Error:", error);
   };
@@ -146,7 +152,7 @@ const PFProcessing = () => {
                   <div className="row g-3 align-items-end mb-3">
                     <div className="col-md-3">
                       <label className="form-label">Select Month</label>
-                      <select 
+                      <select
                         className="form-select"
                         value={approvalMonth}
                         onChange={(e) => setApprovalMonth(e.target.value)}
@@ -158,10 +164,10 @@ const PFProcessing = () => {
                         })}
                       </select>
                     </div>
-                    
+
                     <div className="col-md-3">
                       <label className="form-label">Select Year</label>
-                      <select 
+                      <select
                         className="form-select"
                         value={approvalYear}
                         onChange={(e) => setApprovalYear(e.target.value)}
@@ -173,9 +179,9 @@ const PFProcessing = () => {
                         })}
                       </select>
                     </div>
-                    
+
                     <div className="col-md-3">
-                      <button 
+                      <button
                         className="btn btn-primary"
                         onClick={fetchApprovalList}
                         disabled={!approvalMonth || !approvalYear || isFetching}
@@ -184,7 +190,7 @@ const PFProcessing = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   {approvalList.length > 0 && (
                     <>
                       <div className="table-responsive mb-3">
@@ -206,22 +212,28 @@ const PFProcessing = () => {
                                 <td>{emp.providentFund ? (emp.providentFund) : "N/A"}</td>
                               </tr>
                             ))}
+                            {approvalList.length > 0 && (
+                              <tr className="fw-bold">
+                                <td colSpan="3" className="text-end">Total Provident Fund Amount</td>
+                                <td>{calculateTotalPF().toFixed(2)}</td>
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>
-                      
+
                       <div className="d-flex justify-content-between mb-4">
-                        <button 
+                        <button
                           className="btn btn-outline-primary"
                           onClick={downloadApprovalListExcel}
                         >
                           <Download className="me-2 d-inline-flex align-items-center" />
                           Download Approval List
                         </button>
-                        
-                        <a 
-                          href="https://unifiedportal-epfo.epfindia.gov.in" 
-                          target="_blank" 
+
+                        <a
+                          href="https://unifiedportal-epfo.epfindia.gov.in"
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-info"
                         >
@@ -231,7 +243,7 @@ const PFProcessing = () => {
                     </>
                   )}
                 </div>
-                
+
                 {/* Step 2: Updated Acknowledgement Upload Form */}
                 {approvalList.length > 0 && (
                   <div>
@@ -309,7 +321,7 @@ const PFProcessing = () => {
                             Upload the payment acknowledgement from EPFO portal (PDF or image)
                           </div>
                         </div>
-                        
+
                         <div className="col-md-12 mt-3">
                           <button
                             type="submit"

@@ -103,10 +103,16 @@ import CandidateToEmployee from '../CompanyModule/Candidate/CandidateToEmployee'
 import CompanyPFSubmission from '../AccountantModule/PF/CompanyPFSubmission';
 import PFProcessing from '../AccountantModule/PF/PFProcessing';
 import PFResponsesView from '../AccountantModule/PF/PFResponsesView';
+import PFReceiptsView from '../AccountantModule/PF/PFReceiptsView';
 import CompanyPTSubmission from '../AccountantModule/ProfessionalTax/CompanyPTSubmission';
 import PTProcessing from '../AccountantModule/ProfessionalTax/PTProcessing';
+import PTResponsesView from '../AccountantModule/ProfessionalTax/PTResponsesView';
+import PTReceiptsView from '../AccountantModule/ProfessionalTax/PTReceiptsView';
 import CompanyTDSSubmission from '../AccountantModule/Tds/CompanyTDSSubmission';
 import TDSProcessing from '../AccountantModule/Tds/TDSProcessing'
+import TDSResponsesView from '../AccountantModule/Tds/TDSResponsesView';
+import TDSReceiptsView from '../AccountantModule/Tds/TDSReceiptsView';
+
 
 
 export const allAvailableRoutes = [
@@ -202,10 +208,15 @@ export const allAvailableRoutes = [
   {path: '/companyPFSubmission', allowedTypes: ['company_admin'] },
   {path: '/pfProcessing', allowedTypes: ['company_admin'] },
   {path: '/pfResponsesView', allowedTypes: ['company_admin'] },
+  {path: '/pfReceiptsView', allowedTypes: ['company_admin'] },
   {path: '/companyPTSubmission', allowedTypes: ['company_admin'] },
   {path: '/ptProcessing', allowedTypes: ['company_admin'] },
+  {path: '/ptResponsesView', allowedTypes: ['company_admin'] },
+  {path: '/ptReceiptsView', allowedTypes: ['company_admin'] },
   {path: '/companyTDSSubmission', allowedTypes: ['company_admin'] },
   {path: '/tdsProcessing', allowedTypes: ['company_admin'] },
+  {path: '/tdsResponsesView', allowedTypes: ['company_admin'] },
+  {path: '/tdsReceiptsView', allowedTypes: ['company_admin'] },
 ];
 
 const Routing = () => {
@@ -584,6 +595,10 @@ const Routing = () => {
         element={<ProtectedRoute element={<PFResponsesView/>} allowedTypes={['company_admin']} />}
       />
       <Route
+        path="/pfReceiptsView"
+        element={<ProtectedRoute element={<PFReceiptsView/>} allowedTypes={['company_admin']} />}
+      />
+      <Route
         path="/companyPTSubmission"
         element={<ProtectedRoute element={<CompanyPTSubmission/>} allowedTypes={['company_admin']} />}
       />
@@ -592,12 +607,28 @@ const Routing = () => {
         element={<ProtectedRoute element={<PTProcessing/>} allowedTypes={['company_admin']} />}
       />
       <Route
+        path="/ptResponsesView"
+        element={<ProtectedRoute element={<PTResponsesView/>} allowedTypes={['company_admin']} />}
+      />
+      <Route
+        path="/ptReceiptsView"
+        element={<ProtectedRoute element={<PTReceiptsView/>} allowedTypes={['company_admin']} />}
+      />
+      <Route
         path="/companyTDSSubmission"
         element={<ProtectedRoute element={<CompanyTDSSubmission/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/tdsProcessing"
         element={<ProtectedRoute element={<TDSProcessing/>} allowedTypes={['company_admin']} />}
+      />
+      <Route
+        path="/tdsResponsesView"
+        element={<ProtectedRoute element={<TDSResponsesView/>} allowedTypes={['company_admin']} />}
+      />
+      <Route
+        path="/tdsReceiptsView"
+        element={<ProtectedRoute element={<TDSReceiptsView/>} allowedTypes={['company_admin']} />}
       />
     </Routes>
   );

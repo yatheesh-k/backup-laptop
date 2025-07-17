@@ -49,7 +49,6 @@ const CompanyTDSSubmission = () => {
       const filteredData = response.data.data.map(emp => ({
         "Employee Name": `${emp.firstName} ${emp.lastName}`,
         "PAN No": emp.panNo,
-        "Salary": emp.employeeSalary,
         "TDS Amount": emp.tds
       }));
 

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import LayOut from "../../LayOut/LayOut";
-import { 
+import {
   GetPFForMonthAndYearAPI,
-  AddPTReceiptsAPI 
+  AddPTReceiptsAPI
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
@@ -19,13 +19,21 @@ const PTProcessing = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [acknowledgementFile, setAcknowledgementFile] = useState(null);
 
+
+  // Calculate total PT amount
+  const calculateTotalPT = () => {
+    return approvalList.reduce((total, emp) => {
+      const ptAmount = parseFloat(emp.professionalTax) || 0;
+      return total + ptAmount;
+    }, 0);
+  };
   // Fetch approval list
   const fetchApprovalList = async () => {
     if (!approvalMonth || !approvalYear) {
       toast.error("Please select both month and year");
       return;
     }
-    
+
     setIsFetching(true);
     try {
       const response = await GetPFForMonthAndYearAPI(approvalMonth, approvalYear);
@@ -78,10 +86,10 @@ const PTProcessing = () => {
   };
 
   const handleApiError = (error) => {
-    const errorMsg = error.response?.data?.message || 
-                   error.response?.data?.error?.message || 
-                   error.message || 
-                   "An error occurred";
+    const errorMsg = error.response?.data?.message ||
+      error.response?.data?.error?.message ||
+      error.message ||
+      "An error occurred";
     toast.error(errorMsg);
     console.error("API Error:", error);
   };
@@ -143,7 +151,7 @@ const PTProcessing = () => {
                   <div className="row g-3 align-items-end mb-3">
                     <div className="col-md-3">
                       <label className="form-label">Select Month</label>
-                      <select 
+                      <select
                         className="form-select"
                         value={approvalMonth}
                         onChange={(e) => setApprovalMonth(e.target.value)}
@@ -155,10 +163,10 @@ const PTProcessing = () => {
                         })}
                       </select>
                     </div>
-                    
+
                     <div className="col-md-3">
                       <label className="form-label">Select Year</label>
-                      <select 
+                      <select
                         className="form-select"
                         value={approvalYear}
                         onChange={(e) => setApprovalYear(e.target.value)}
@@ -170,9 +178,9 @@ const PTProcessing = () => {
                         })}
                       </select>
                     </div>
-                    
+
                     <div className="col-md-3">
-                      <button 
+                      <button
                         className="btn btn-primary"
                         onClick={fetchApprovalList}
                         disabled={!approvalMonth || !approvalYear || isFetching}
@@ -181,7 +189,7 @@ const PTProcessing = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   {approvalList.length > 0 && (
                     <>
                       <div className="table-responsive mb-3">
@@ -203,32 +211,38 @@ const PTProcessing = () => {
                                 <td>{emp.professionalTax ? (emp.professionalTax) : "N/A"}</td>
                               </tr>
                             ))}
+                            {approvalList.length > 0 && (
+                              <tr className="fw-bold">
+                                <td colSpan="3" className="text-end">Total Professional Tax Amount</td>
+                                <td>{calculateTotalPT().toFixed(2)}</td>
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>
-                      
+
                       <div className="d-flex justify-content-between mb-4">
-                        <button 
+                        <button
                           className="btn btn-outline-primary"
                           onClick={downloadApprovalListExcel}
                         >
                           <Download className="me-2 d-inline-flex align-items-center" />
                           Download Approval List
                         </button>
-                        
-                        <a 
-                          href="https://stateptportal.example.com" 
+
+                        {/* <a 
+                          href="https://www.tgct.gov.in/tgportal/" 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="btn btn-info"
                         >
                           Proceed to Professional Tax Portal
-                        </a>
+                        </a> */}
                       </div>
                     </>
                   )}
                 </div>
-                
+
                 {/* Step 2: Updated Acknowledgement Upload Form */}
                 {approvalList.length > 0 && (
                   <div>
@@ -306,7 +320,7 @@ const PTProcessing = () => {
                             Upload the payment acknowledgement from Professional Tax portal (PDF or image)
                           </div>
                         </div>
-                        
+
                         <div className="col-md-12 mt-3">
                           <button
                             type="submit"
