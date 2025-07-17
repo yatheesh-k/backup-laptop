@@ -1,6 +1,7 @@
 package com.ems.accountant.service;
 
 import com.ems.accountant.exception.AccountantException;
+import com.ems.accountant.request.EmployeePTRequest;
 import com.ems.accountant.request.EmployeePTUpdate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,4 +17,5 @@ public interface EmployeePTService {
     ResponseEntity<?> updateEmployeeForPT(String companyName, String employeeId, String accountId, EmployeePTUpdate request) throws AccountantException, IOException;
 
 
+    ResponseEntity<?> addSingleEmployeeForPT(String companyName, EmployeePTRequest request) throws AccountantException,IOException;
 }

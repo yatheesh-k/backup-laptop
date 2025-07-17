@@ -2,6 +2,8 @@ package com.ems.accountant.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 @Getter
@@ -17,6 +19,9 @@ public class EmployeePTRequest {
     private String month;
     private String year;
     private String panNo;
-    private String professionalTax;
+
+    @Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$",  message = "{invalid.salaryAmount}")
+    @Schema(example = "salary")
+    private String salaryAmount;
 
 }
