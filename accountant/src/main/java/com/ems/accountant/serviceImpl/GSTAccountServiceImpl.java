@@ -142,18 +142,13 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                     .map(GSTAccountUtils::ummaskGSTAccountEntity)
                     .collect(Collectors.toList());
 
-            if (gstAccounts.isEmpty()) {
-                log.error("No GST accounts found for company: {}, month: {}, year: {}", companyName, month, year);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
-            }
-
             return unmaskedAccounts;
         } catch (AccountantException e) {
             log.error("Error retrieving GST accounts: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while retrieving GST accounts: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_GST_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
