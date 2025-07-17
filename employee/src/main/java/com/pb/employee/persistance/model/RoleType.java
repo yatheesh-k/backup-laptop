@@ -11,10 +11,13 @@ import org.springframework.http.HttpStatus;
 
 @AllArgsConstructor
 @Getter
-public enum UserType {
+public enum RoleType {
 
     HRM(APIConstants.HRM),
-    ACCOUNTANT(APIConstants.ACCOUNTANT),;
+    TAX_CONSULTANT(APIConstants.TAX_CONSULTANT),
+    HR_MANAGEMENT(APIConstants.HR_MANAGEMENT),
+    INVOICE_MANAGEMENT(APIConstants.INVOICE_MANAGEMENT),
+    CA(APIConstants.CA),;
 
 
     private final String value;
@@ -23,18 +26,18 @@ public enum UserType {
         return value;
     }
 
-    public static UserType value(String value) throws Exception {
+    public static RoleType value(String value) throws Exception {
         if(!StringUtils.isNotEmpty(value))
             throw new EmployeeException(ErrorMessageHandler
-                    .getMessage(EmployeeErrorMessageKey.INVALID_USER_TYPE), HttpStatus.BAD_REQUEST);
+                    .getMessage(EmployeeErrorMessageKey.INVALID_ROLE), HttpStatus.BAD_REQUEST);
 
-        for (UserType type : values()) {
+        for (RoleType type : values()) {
             if (type.value().equalsIgnoreCase(value)) {
                 return type;
             }
         }
         throw new EmployeeException(String.format(ErrorMessageHandler
-                .getMessage(EmployeeErrorMessageKey.INVALID_USER_TYPE), value), HttpStatus.BAD_REQUEST);
+                .getMessage(EmployeeErrorMessageKey.INVALID_ROLE), value), HttpStatus.BAD_REQUEST);
     }
 
     public static boolean exists(String value) {

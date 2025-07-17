@@ -116,7 +116,7 @@ public class LoginServiceImpl implements LoginService {
                 List<String> roles = new ArrayList<>();
                 openSearchOperations.saveOtpToCandidate(candidate, otp, request.getCompany());
                 roles.add(candidate.getType());
-                token = JwtTokenUtil.generateEmployeeToken(candidate.getId(), roles, request.getCompany(), request.getUsername(), null);
+                token = JwtTokenUtil.generateEmployeeToken(candidate.getId(), roles, request.getCompany(), request.getUsername(), candidate.getType());
 
             } else {
                 log.error("Invalid credentials");
@@ -189,20 +189,21 @@ public class LoginServiceImpl implements LoginService {
         List<String> roles = new ArrayList<>();
         String token = "";
         if(userEntity==null) {
+            String resourceType = "";
             openSearchOperations.saveOtpToEmployee(employee, otp, request.getCompany());
             if (employee.getEmployeeType().equals(Constants.EMPLOYEE_TYPE)) {
-                roles.add(Constants.COMPANY_ADMIN);
                 if (employee.getRoles() != null && !employee.getRoles().isEmpty()) {
                     roles.addAll(employee.getRoles());
                 }
+                resourceType = Constants.COMPANY_ADMIN;
             }else {
                 roles.add(Constants.EMPLOYEE);
+                resourceType = Constants.EMPLOYEE;
             }
-            token = JwtTokenUtil.generateEmployeeToken(employee.getId(), roles, request.getCompany(), request.getUsername(), employee.getUserType());
+            token = JwtTokenUtil.generateEmployeeToken(employee.getId(), roles, request.getCompany(), request.getUsername(), resourceType);
         }else {
             openSearchOperations.saveOtpToUser(userEntity, otp, request.getCompany());
-            roles.add(userEntity.getUserType());
-            token = JwtTokenUtil.generateEmployeeToken(userEntity.getId(), roles, request.getCompany(), request.getUsername(), null);
+            token = JwtTokenUtil.generateEmployeeToken(userEntity.getId(), userEntity.getRoles(), request.getCompany(), request.getUsername(), userEntity.getUserType());
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(new LoginResponse(token, null)), HttpStatus.OK);

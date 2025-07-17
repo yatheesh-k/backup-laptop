@@ -11,6 +11,7 @@ import com.pb.employee.persistance.model.CompanyEntity;
 import com.pb.employee.persistance.model.DepartmentEntity;
 import com.pb.employee.persistance.model.EmployeeEntity;
 import com.pb.employee.persistance.model.UserEntity;
+import com.pb.employee.request.UpdateRolesRequest;
 import com.pb.employee.request.UserRequest;
 import com.pb.employee.request.UserUpdateRequest;
 import com.pb.employee.response.EmployeeResponse;
@@ -275,6 +276,46 @@ public class UserServiceImpl implements UserService {
             );
         }
     }
+
+
+    @Override
+    public ResponseEntity<?> updateUserRoles(String companyName, String id, UpdateRolesRequest updatePayload) throws EmployeeException {
+        String index;
+        try {
+            index = ResourceIdUtils.generateCompanyIndex(companyName);
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null){
+                log.error("Exception while fetching the company calendar details");
+                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+
+            Collection<UserEntity> existingUsers = dao.getUsers(companyName, id, companyEntity.getId(), null);
+            if (existingUsers == null) {
+                log.error("User not found in this company {}", companyName);
+                throw new EmployeeException(String.format(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.USER_NOT_FOUND),companyName), HttpStatus.NOT_FOUND);
+            }
+
+            UserEntity existingUser = dao.get(existingUsers.stream().findFirst().get().getId(), companyName).get();
+            if (updatePayload.getRoles().equals(existingUser.getRoles())) {
+                log.error("No changes made to user roles for user {}", existingUser.getId());
+                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.NO_CHANGES_DONE), HttpStatus.BAD_REQUEST);
+            }
+            UserEntity updatedData = objectMapper.convertValue(updatePayload, UserEntity.class);
+            BeanUtils.copyProperties(updatedData, existingUser, getNullPropertyNames(updatedData));
+            dao.save(existingUser, companyName);
+
+            return new ResponseEntity<>(
+                    ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
+
+        } catch (EmployeeException employeeException) {
+            log.error("Error during user update: {}", employeeException.getMessage());
+            throw employeeException;
+        } catch (Exception exception) {
+            log.error("Error during user update: {}", exception.getMessage());
+            throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNABLE_SAVE_USER), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     private String[] getNullPropertyNames(Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);

@@ -45,17 +45,19 @@ public class JwtTokenUtil {
 
     }
     public static String generateEmployeeToken(String username, List<String> roles,String company,String employee, String userType) {
-        String token= Jwts.builder()
+        var token= Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .claim(Constants.ROLES, roles)
                 .claim(Constants.COMPANY, company)
                 .claim(Constants.EMPLOYEE, employee)
                 .claim(Constants.RESOURCE_TYPE, userType)
-                .setExpiration(new Date(System.currentTimeMillis() + 10800000))
-                .signWith(key)
+                .setExpiration(new Date(System.currentTimeMillis() + 10800000));
+        if (userType != null && !userType.isEmpty()) {
+            token.claim(Constants.RESOURCE_TYPE, userType);
+        }
+        return  token.signWith(key)
                 .compact();
-        return  token;
     }
     public static Claims decodeToken(String token) {
         return Jwts.parser()

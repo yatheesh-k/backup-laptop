@@ -32,6 +32,7 @@ public class CompanyEntity {
     private String companyBranch;
 
     private String cinNo;
+    private String stampImage;
     private String pfPercentage;
     private String travelAllowance;
     private String specialAllowance;
