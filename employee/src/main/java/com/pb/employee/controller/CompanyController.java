@@ -152,14 +152,14 @@ public class CompanyController {
 
 
 
-    @RequestMapping(value = "/{companyId}/userType", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{companyName}/roles", method = RequestMethod.PATCH)
     @io.swagger.v3.oas.annotations.Operation(security = { @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
-            summary = "${api.UpdateUserTypeRequest.tag}", description = "${api.UpdateUserTypeRequest.description}")
+            summary = "${api.UpdateCompanyRoles.tag}", description = "${api.UpdateCompanyRoles.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description= "OK")
-    public ResponseEntity<?> updateCompanyUserType(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+    public ResponseEntity<?> UpdateCompanyRoles(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
                                              @RequestHeader(Constants.AUTH_KEY) String authToken,
-                                             @PathVariable String companyId, UpdateUserTypeRequest request) throws EmployeeException {
-        return companyService.updateCompanyUserType(companyId, request);
+                                             @PathVariable String companyName,@RequestBody @Valid UpdateRolesRequest request) throws EmployeeException {
+        return companyService.updateCompanyRoles(companyName, request);
     }
 
 }

@@ -1,10 +1,7 @@
 package com.ems.accountant.persistance;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -12,10 +9,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PortalsCredEntity extends AbstractEntity{
+public class DueDatesEntity extends AbstractEntity{
 
     private String companyId;
-    private List<CredentialsPayload> credPayload;
+    private String pfDay;
+    private String gstDay;
+    private String ptDay;
+    private String tdsDay;
 
 
 }

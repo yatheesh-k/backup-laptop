@@ -1,6 +1,7 @@
 package com.pb.employee.service;
 
 import com.pb.employee.exception.EmployeeException;
+import com.pb.employee.request.UpdateRolesRequest;
 import com.pb.employee.request.UserRequest;
 import com.pb.employee.request.UserUpdateRequest;
 import com.pb.employee.response.UserResponse;
@@ -19,4 +20,5 @@ public interface UserService {
 
     void deleteUser(String companyName, String Id)throws EmployeeException;
 
+    ResponseEntity<?> updateUserRoles(String companyName, String id, UpdateRolesRequest updatePayload) throws EmployeeException;
 }

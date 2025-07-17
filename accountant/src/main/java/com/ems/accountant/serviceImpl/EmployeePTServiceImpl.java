@@ -9,6 +9,7 @@ import com.ems.accountant.exception.ErrorMessageKey;
 import com.ems.accountant.persistance.CompanyEntity;
 import com.ems.accountant.persistance.EmployeeAccountEntity;
 import com.ems.accountant.persistance.EmployeeEntity;
+import com.ems.accountant.request.EmployeePTRequest;
 import com.ems.accountant.request.EmployeePTUpdate;
 import com.ems.accountant.service.EmployeePTService;
 import com.ems.accountant.utils.Constants;
@@ -73,18 +74,8 @@ public class EmployeePTServiceImpl implements EmployeePTService {
             String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
             List<EmployeeAccountEntity> employees = parseExcelSheetForPT(companyEntity, month, year, file, indexName);
 
-            for (EmployeeAccountEntity employee : employees) {
-                Collection<EmployeeAccountEntity> accounts = accountDao.getEmployeeAccountByPanMonthYear(
-                        employee.getPanNo(), companyEntity.getId(), month, year, companyEntity.getShortName(), null, null);
-
-                if (accounts != null && !accounts.isEmpty()) {
-                    EmployeeAccountEntity existingAccount = accounts.iterator().next();
-                    existingAccount.setProfessionalTax(employee.getProfessionalTax());
-                    openSearchOperations.saveEntity(existingAccount, existingAccount.getId(), indexName);
-                    log.info("Updated PT for Employee: {} for month: {}, year: {}", existingAccount.getEmployeeId(), month, year);
-                } else {
-                    log.warn("No existing employee account found for PAN: {} for month: {}, year: {}", employee.getPanNo(), month, year);
-                }
+            for (EmployeeAccountEntity employee :employees) {
+                openSearchOperations.saveEntity(employee, employee.getId(), indexName);
             }
 
         } catch (AccountantException e) {
@@ -122,13 +113,23 @@ public class EmployeePTServiceImpl implements EmployeePTService {
                 log.error("Employee account not found for ID: {}", accountId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PT_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
+            double salary = Double.parseDouble(request.getSalaryAmount());
+
+            int ptAmount;
+            if (salary <= 15000) {
+                ptAmount = 0;
+            } else if (salary <= 20000) {
+                ptAmount = 150;
+            } else {
+                ptAmount = 200;
+            }
 
             EmployeeAccountEntity entitySrc = objectMapper.convertValue(request, EmployeeAccountEntity.class);
             EmployeeAccountEntity entityTgt = objectMapper.convertValue(employees.iterator().next(), EmployeeAccountEntity.class);
 
             BeanUtils.copyProperties(entitySrc, entityTgt, getNullPropertyNames(entitySrc));
 
-            entityTgt.setProfessionalTax(base64Encode(request.getProfessionalTax()));
+            entityTgt.setProfessionalTax(base64Encode(String.valueOf(ptAmount)));
             openSearchOperations.saveEntity(entityTgt, entityTgt.getId(), indexName);
 
         } catch (AccountantException e) {
@@ -140,6 +141,64 @@ public class EmployeePTServiceImpl implements EmployeePTService {
         }
 
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+    }
+
+    @Override
+    public ResponseEntity<?> addSingleEmployeeForPT(String companyName, EmployeePTRequest request) throws AccountantException, IOException {
+        EmployeeAccountEntity employee = null;
+        try {
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Company not found for ID: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+            log.info("Processing employee accounts for company: {}", companyName);
+            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(request.getPanNo(), request.getMonth(), request.getYear());
+            EmployeeEntity employeeEntity = openSearchOperations.getEmployeeByPanNo(companyEntity.getShortName(), base64Encode(request.getPanNo()));
+            if (employeeEntity == null) {
+                log.error("Employee not found for PAN: {}", request.getPanNo());
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+
+            double salary = Double.parseDouble(request.getSalaryAmount());
+            int ptAmount;
+            if (salary <= 15000) {
+                ptAmount = 0;
+            } else if (salary <= 20000) {
+                ptAmount = 150;
+            } else {
+                ptAmount = 200;
+            }
+
+            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeEntity.getId(), resourceId, request.getMonth(), request.getYear());
+            if (employees != null && !employees.isEmpty() && employees.stream().anyMatch(emp -> emp.getProfessionalTax() != null && !emp.getProfessionalTax().isEmpty())) {
+                log.error("Employee account already exists for ID: {}", resourceId);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PT_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+            }else if (employees == null || employees.isEmpty()) {
+                employee = objectMapper.convertValue(request, EmployeeAccountEntity.class);
+                employee.setId(resourceId);
+                employee.setCompanyId(companyEntity.getId());
+                employee.setType(Constants.EMPLOYEE_ACCOUNT);
+                employee.setPanNo(base64Encode(request.getPanNo()));
+                employee.setProfessionalTax(base64Encode(String.valueOf(ptAmount)));
+                employee.setEmployeeId(employeeEntity.getId());
+            }else {
+                employee=employees.iterator().next();
+                employee.setProfessionalTax(base64Encode(String.valueOf(ptAmount)));
+            }
+
+            accountDao.save(employee, companyName);
+
+        }catch (AccountantException e) {
+            log.error("Exception while fetching company details: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("An unexpected error occurred while fetching company details: {}", e.getMessage());
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_PT), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(
+                ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+
     }
 
     private Map<String, Object> parseExcelSheetForPTComparing(
@@ -310,6 +369,7 @@ public class EmployeePTServiceImpl implements EmployeePTService {
             throws IOException, AccountantException {
 
         List<EmployeeAccountEntity> employees = new ArrayList<>();
+        List<String> alreadyRegisteredPans = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -349,23 +409,45 @@ public class EmployeePTServiceImpl implements EmployeePTService {
                     .findFirst()
                     .orElseThrow(() -> new AccountantException("Employee not found for PAN: " + panPlain, HttpStatus.NOT_FOUND));
 
+            Collection<EmployeeAccountEntity> existingAccounts = accountDao.getEmployeeAccountByPanMonthYear(
+                    panEncoded, company.getId(), month, year, company.getShortName(), matchedEmployee.getId(), null);
+
+            if (existingAccounts != null && !existingAccounts.isEmpty()) {
+                alreadyRegisteredPans.add(panPlain);
+                continue;
+            }
+
+
             EmployeeAccountEntity employee = new EmployeeAccountEntity();
-            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(panEncoded, month, year);
+            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(panPlain, month, year);
 
-            employee.setId(resourceId);
-            employee.setEmployeeName(employeeName);
-            employee.setEmployeeId(matchedEmployee.getId());
-            employee.setPanNo(panEncoded);
-            employee.setMonth(month);
-            employee.setYear(year);
-            employee.setCompanyId(company.getId());
-            employee.setProfessionalTax(base64Encode(String.valueOf(ptAmount)));
-            employee.setType(Constants.EMPLOYEE_ACCOUNT);
-
+            Optional<EmployeeAccountEntity> existingAccount = accountDao.get(resourceId, company.getShortName());
+            if (existingAccount.isPresent() && !existingAccount.get().getProfessionalTax().isEmpty()) {
+                log.error("Employee account already exists for ID: {}", resourceId);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PT_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+            }else if (existingAccount.isEmpty()) {
+                employee.setId(resourceId);
+                employee.setEmployeeName(employeeName);
+                employee.setEmployeeId(matchedEmployee.getId());
+                employee.setPanNo(panEncoded);
+                employee.setMonth(month);
+                employee.setYear(year);
+                employee.setCompanyId(company.getId());
+                employee.setProfessionalTax(base64Encode(String.valueOf(ptAmount)));
+                employee.setType(Constants.EMPLOYEE_ACCOUNT);
+            }else{
+                employee = existingAccount.get();
+                employee.setProfessionalTax(base64Encode(String.valueOf(ptAmount)));
+            }
             employees.add(employee);
         }
 
         workbook.close();
+
+        if (!alreadyRegisteredPans.isEmpty()) {
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_ALREADY_EXISTS_PANS) + String.join(", ", alreadyRegisteredPans), HttpStatus.CONFLICT);
+        }
+
         return employees;
     }
 

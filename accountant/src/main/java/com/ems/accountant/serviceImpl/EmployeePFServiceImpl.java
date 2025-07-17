@@ -119,6 +119,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             throws IOException, AccountantException {
 
         List<EmployeeAccountEntity> employees = new ArrayList<>();
+        List<String> alreadyRegisteredUans = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -142,24 +143,44 @@ public class EmployeePFServiceImpl implements EmployeePFService {
                     .findFirst()
                     .orElseThrow(() -> new AccountantException("Employee not found for UAN: " + uanPlain, HttpStatus.NOT_FOUND));
 
+            Collection<EmployeeAccountEntity> existingAccounts = accountDao.getEmployeeAccountByUanMonthYear(
+                    uanEncoded, company.getId(), month, year, company.getShortName(), matchedEmployee.getId(), null);
+
+            if (existingAccounts != null && !existingAccounts.isEmpty()) {
+                alreadyRegisteredUans.add(uanPlain);
+                continue;
+            }
+
             EmployeeAccountEntity employee = new EmployeeAccountEntity();
-            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(uanEncoded, month, year);
-
-            employee.setId(resourceId);
-            employee.setEmployeeName(employeeName);
-            employee.setEmployeeId(matchedEmployee.getId());
-            employee.setPanNo(base64Encode(panNo));
-            employee.setUanNo(uanEncoded);
-            employee.setMonth(month);
-            employee.setYear(year);
-            employee.setCompanyId(company.getId());
-            employee.setProvidentFund(base64Encode(pfAmount));
-            employee.setType(Constants.EMPLOYEE_ACCOUNT);
-
+            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(panNo, month, year);
+            Optional<EmployeeAccountEntity> existingAccount = accountDao.get(resourceId, company.getShortName());
+            if (existingAccount.isPresent() && !existingAccount.get().getProvidentFund().isEmpty()) {
+                log.error("Employee account already exists for ID: {}", resourceId);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PF_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+            }else if (existingAccount.isEmpty()) {
+                employee.setId(resourceId);
+                employee.setEmployeeName(employeeName);
+                employee.setEmployeeId(matchedEmployee.getId());
+                employee.setPanNo(base64Encode(panNo));
+                employee.setUanNo(uanEncoded);
+                employee.setMonth(month);
+                employee.setYear(year);
+                employee.setCompanyId(company.getId());
+                employee.setProvidentFund(base64Encode(pfAmount));
+                employee.setType(Constants.EMPLOYEE_ACCOUNT);
+            }else{
+                employee = existingAccount.get();
+                employee.setProvidentFund(base64Encode(pfAmount));
+            }
             employees.add(employee);
         }
 
         workbook.close();
+
+        if (!alreadyRegisteredUans.isEmpty()) {
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_ALREADY_EXISTS_UANS) + String.join(", ", alreadyRegisteredUans), HttpStatus.CONFLICT);
+        }
+
         return employees;
     }
 
@@ -296,7 +317,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
 
     @Override
     public ResponseEntity<?> addSingleEmployeeForPF(String companyName, EmployeePFRequest request) throws AccountantException, IOException {
-
+        EmployeeAccountEntity employee = null;
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
@@ -304,26 +325,36 @@ public class EmployeePFServiceImpl implements EmployeePFService {
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
             log.info("Processing employee accounts for company: {}", companyName);
-            String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
-            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(request.getUanNo(), request.getMonth(), request.getYear());
-            EmployeeEntity employeeEntity = openSearchOperations.getEmployeeByUanNo(companyEntity.getShortName(), request.getUanNo());
+            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(request.getPanNo(), request.getMonth(), request.getYear());
+            EmployeeEntity employeeEntity = openSearchOperations.getEmployeeByUanNo(companyEntity.getShortName(), base64Encode(request.getUanNo()));
             if (employeeEntity == null) {
                 log.error("Employee not found for UAN: {}", request.getUanNo());
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
-            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeEntity.getEmployeeId(), resourceId, request.getMonth(), request.getYear());
-            if (employees != null && !employees.isEmpty() && employees.stream().anyMatch(emp -> !emp.getProvidentFund().isEmpty())) {
-                log.error("Employee account already exists for UAN: {}", request.getUanNo());
+            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeEntity.getId(), resourceId, request.getMonth(), request.getYear());
+            if (employees != null && !employees.isEmpty() && employees.stream().anyMatch(emp -> emp.getProvidentFund() != null && !emp.getProvidentFund().isEmpty())) {
+                log.error("Employee account already exists for ID: {}", resourceId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PF_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+            }else if (employees == null || employees.isEmpty()) {
+                employee = objectMapper.convertValue(request, EmployeeAccountEntity.class);
+                employee.setId(resourceId);
+                employee.setCompanyId(companyEntity.getId());
+                employee.setType(Constants.EMPLOYEE_ACCOUNT);
+                employee.setPanNo(base64Encode(request.getPanNo()));
+                employee.setUanNo(base64Encode(request.getUanNo()));
+                employee.setProvidentFund(base64Encode(request.getProvidentFund()));
+                employee.setEmployeeId(employeeEntity.getId());
+
+            }else {
+                employee=employees.iterator().next();
+                employee.setProvidentFund(base64Encode(request.getProvidentFund()));
+                if (employee.getProfessionalTax()!=null && !employee.getProfessionalTax().isEmpty()) {
+                    employee.setProfessionalTax(base64Encode(employee.getProfessionalTax()));
+                }
+                if (employee.getTds()!=null && !employee.getTds().isEmpty()) {
+                    employee.setTds(base64Encode(employee.getTds()));
+                }
             }
-            EmployeeAccountEntity employee = objectMapper.convertValue(request, EmployeeAccountEntity.class);
-            employee.setId(resourceId);
-            employee.setCompanyId(companyEntity.getId());
-            employee.setType(Constants.EMPLOYEE_ACCOUNT);
-            employee.setPanNo(base64Encode(request.getPanNo()));
-            employee.setUanNo(base64Encode(request.getUanNo()));
-            employee.setProvidentFund(base64Encode(request.getProvidentFund()));
-            employee.setEmployeeId(employeeEntity.getId());
 
             accountDao.save(employee, companyName);
 
