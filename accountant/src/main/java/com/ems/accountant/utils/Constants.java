@@ -83,4 +83,5 @@ public class Constants {
     public static final String INVOICE_MANAGEMENT =  "invoice_management";
 
 
+    public static final String DUE_DATES = "due_dates";
 }
