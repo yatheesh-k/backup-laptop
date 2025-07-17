@@ -64,6 +64,9 @@ public class ResourceIdUtils {
     public static String generateTDSReceiptResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.TDS_RECEIPT, companyName, month, year);
     }
+    public static String generateDueDatesResourceId(String id) {
+        return generateGlobalResourceId(ResourceType.DUE_DATES, id);
+    }
 
     /**
      * Generate a global resource ID based on the resource type
