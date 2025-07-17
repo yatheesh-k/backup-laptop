@@ -10,9 +10,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RUNTIME)
-@Constraint(validatedBy = UserTypeValidationImpl.class)
-public @interface UserTypeValidation {
-    String message() default "The User type doesn't match!";
+@Constraint(validatedBy = RoleValidationImpl.class)
+public @interface RoleValidation {
+    String message() default "The role doesn't match!";
     Class<?>[] groups() default {};
     Class<? extends String>[] payload() default {};
 }

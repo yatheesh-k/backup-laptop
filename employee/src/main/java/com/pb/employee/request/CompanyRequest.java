@@ -1,10 +1,11 @@
 package com.pb.employee.request;
 
 
-import com.pb.employee.validations.UserTypeValidation;
+import com.pb.employee.validations.RoleValidation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.springframework.context.annotation.Role;
 
 import java.util.List;
 
@@ -95,6 +96,6 @@ public class CompanyRequest {
     @Size(min = 2, max = 30, message = "{shortName.notnull.message}")
     private String shortName;
 
-    @UserTypeValidation
-    private String userType;
+    @RoleValidation
+    private List<String> roles;
 }

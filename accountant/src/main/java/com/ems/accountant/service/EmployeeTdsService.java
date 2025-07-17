@@ -2,6 +2,7 @@ package com.ems.accountant.service;
 
 import com.ems.accountant.exception.AccountantException;
 import com.ems.accountant.request.EmployeeTDSRequest;
+import com.ems.accountant.request.GSTAccountRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,4 +15,6 @@ public interface EmployeeTdsService {
 
     ResponseEntity<?> updateEmployeeForTDS(String companyName, String employeeId, String accountId, EmployeeTDSRequest request) throws AccountantException, IOException;
 
-    }
+    ResponseEntity<?> addSingleEmployeeForTDS(String companyName, EmployeeTDSRequest employeeTDSRequest) throws AccountantException;
+
+}
