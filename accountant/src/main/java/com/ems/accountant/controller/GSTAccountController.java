@@ -84,9 +84,9 @@ public class GSTAccountController {
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(account), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "{companyName}/gst/account", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "{companyName}/gst", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
-            summary = "${api.getGSTAccounts.tag}", description = "${api.getGSTAccounts.description}")
+            summary = "${api.getGSTAccountsByYearAndMonth.tag}", description = "${api.getGSTAccountsByYearAndMonth.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
     public ResponseEntity<?> getGSTAccountsByYearAndMonth(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
@@ -104,7 +104,7 @@ public class GSTAccountController {
 
     @RequestMapping(value = "{companyName}/gst/accounts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
-            summary = "${api.getGSTAccountsByCom.tag}", description = "${api.getGSTAccountsByCustomer.description}")
+            summary = "${api.getGSTAccounts.tag}", description = "${api.getGSTAccounts.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
     public ResponseEntity<?> getGSTAccountsByCustomer(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
@@ -113,7 +113,7 @@ public class GSTAccountController {
         Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName,  null, null, null);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(account), HttpStatus.OK);    }
 
-    @RequestMapping(value = "{companyName}/account/{Id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "{companyName}/account/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.updateGSTAccount.tag}", description = "${api.updateGSTAccount.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
