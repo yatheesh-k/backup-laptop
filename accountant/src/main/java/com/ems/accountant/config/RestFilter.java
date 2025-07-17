@@ -36,7 +36,7 @@ public class RestFilter implements Filter {
 
     // Use the same key generated in JwtTokenUtil for signing/validation (HS256)
     private static final Key key = JwtConfig.key;
-    private static final List<String> REQUIRED_ROLES = Arrays.asList(Constants.COMPANY_ADMIN, Constants.EMPLOYEE, Constants.EMS_ADMIN, Constants.ACCOUNTANT, Constants.HRM);
+    private static final List<String> REQUIRED_ROLES = Arrays.asList(Constants.COMPANY_ADMIN, Constants.EMPLOYEE, Constants.EMS_ADMIN, Constants.ACCOUNTANT, Constants.HRM,Constants.CA,Constants.TAX_CONSULTANT,Constants.HR_MANAGEMENT,Constants.INVOICE_MANAGEMENT);
 
     private static Set<String> SWAGGER_URLS_TO_BYPASS_AUTH = Set.of(
             "/ems/api-docs",

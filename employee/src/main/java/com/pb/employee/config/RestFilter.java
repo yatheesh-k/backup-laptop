@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pb.employee.common.ResponseErrorObject;
 import com.pb.employee.common.ResponseObject;
 import com.pb.employee.request.ValidateLoginRequest;
+import com.pb.employee.util.APIConstants;
 import com.pb.employee.util.Constants;
 import feign.FeignException;
 import io.jsonwebtoken.Claims;
@@ -36,7 +37,7 @@ public class RestFilter implements Filter {
 
     // Use the same key generated in JwtTokenUtil for signing/validation (HS256)
     private static final Key key = JwtConfig.key;
-    private static final List<String> REQUIRED_ROLES = Arrays.asList(Constants.COMPANY_ADMIN, Constants.EMPLOYEE, Constants.EMS_ADMIN, Constants.USER_ADMIN, Constants.ACCOUNTANT,Constants.HR,Constants.ASSOCIATE,Constants.CANDIDATE);
+    private static final List<String> REQUIRED_ROLES = Arrays.asList(Constants.COMPANY_ADMIN, Constants.EMPLOYEE, Constants.EMS_ADMIN, Constants.USER_ADMIN, Constants.ACCOUNTANT,Constants.HR,Constants.ASSOCIATE,Constants.CANDIDATE, APIConstants.HRM,APIConstants.CA,APIConstants.TAX_CONSULTANT,APIConstants.HR_MANAGEMENT,APIConstants.INVOICE_MANAGEMENT);
 
     private static Set<String> SWAGGER_URLS_TO_BYPASS_AUTH = Set.of(
             "/ems/api-docs",
