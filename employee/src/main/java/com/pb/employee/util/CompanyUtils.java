@@ -18,7 +18,7 @@ import java.util.List;
 public class CompanyUtils {
 
     public static Entity maskCompanyProperties(CompanyRequest companyRequest, String id, String defaultPassword, String status) {
-        String hra = null, pan = null, pf = null, spa = null, ta = null, regNo = null, mobileNo=null, landNo= null, gstNo=null, cinNo=null, pmNo=null, psmailId=null;
+        String hra = null, pan = null, pf = null, spa = null, ta = null, regNo = null, mobileNo=null, alternateNo= null, gstNo=null, cinNo=null, pmNo=null, psmailId=null;
         ObjectMapper objectMapper = new ObjectMapper();
 
         CompanyEntity entity = objectMapper.convertValue(companyRequest, CompanyEntity.class);
@@ -52,8 +52,8 @@ public class CompanyUtils {
             entity.setMobileNo(mobileNo);
         }
         if(companyRequest.getAlternateNo() != null) {
-            landNo = Base64.getEncoder().encodeToString(companyRequest.getAlternateNo().toString().getBytes());
-            entity.setAlternateNo(landNo);
+            alternateNo = Base64.getEncoder().encodeToString(companyRequest.getAlternateNo().toString().getBytes());
+            entity.setAlternateNo(alternateNo);
         }
         if(companyRequest.getPersonalMobileNo() != null) {
             pmNo = Base64.getEncoder().encodeToString(companyRequest.getPersonalMobileNo().toString().getBytes());
@@ -82,7 +82,7 @@ public class CompanyUtils {
     }
 
     public static Entity unmaskCompanyProperties(CompanyEntity companyEntity,  HttpServletRequest request) {
-        String hra = null, pan = null, pf = null, spa = null, ta = null, regNo = null, mobileNo=null, landNo= null, gstNo=null, cinNo=null, personalMobileNumber=null, psmailId=null;
+        String hra = null, pan = null, pf = null, spa = null, ta = null, regNo = null, mobileNo=null, alternateNo= null, gstNo=null, cinNo=null, personalMobileNumber=null, psmailId=null;
         if(companyEntity.getHraPercentage() != null) {
             hra = new String(Base64.getDecoder().decode(companyEntity.getHraPercentage().getBytes()));
             companyEntity.setHraPercentage(hra);
@@ -94,7 +94,6 @@ public class CompanyUtils {
         if(companyEntity.getPfPercentage() != null) {
             pf = new String(Base64.getDecoder().decode(companyEntity.getPfPercentage().getBytes()));
             companyEntity.setPfPercentage(pf);
-
         }
         if(companyEntity.getSpecialAllowance() != null) {
             spa = new String(Base64.getDecoder().decode(companyEntity.getSpecialAllowance().getBytes()));
@@ -113,8 +112,8 @@ public class CompanyUtils {
             companyEntity.setMobileNo(mobileNo);
         }
         if(companyEntity.getAlternateNo() != null) {
-            landNo = new String(Base64.getDecoder().decode(companyEntity.getAlternateNo().getBytes()));
-            companyEntity.setAlternateNo(landNo);
+            alternateNo = new String(Base64.getDecoder().decode(companyEntity.getAlternateNo().getBytes()));
+            companyEntity.setAlternateNo(alternateNo);
         }
         if(companyEntity.getPersonalMobileNo() != null) {
             personalMobileNumber = new String(Base64.getDecoder().decode(companyEntity.getPersonalMobileNo().getBytes()));
@@ -149,7 +148,7 @@ public class CompanyUtils {
 
     public static CompanyEntity maskCompanyUpdateProperties(CompanyEntity existingEntity, CompanyUpdateRequest companyRequest) {
 
-        String hra = null, pf = null, spa = null, ta = null, mobileNo=null, landNo=null, pmNo=null, persMailId=null;
+        String hra = null, pf = null, spa = null, ta = null, mobileNo=null, alternateNo=null, pmNo=null, persMailId=null;
 
         if(companyRequest.getHraPercentage() != null) {
             hra = Base64.getEncoder().encodeToString(companyRequest.getHraPercentage().toString().getBytes());
@@ -172,8 +171,8 @@ public class CompanyUtils {
             existingEntity.setMobileNo(mobileNo);
         }
         if(companyRequest.getAlternateNo() != null) {
-            landNo = Base64.getEncoder().encodeToString(companyRequest.getAlternateNo().toString().getBytes());
-            existingEntity.setAlternateNo(landNo);
+            alternateNo = Base64.getEncoder().encodeToString(companyRequest.getAlternateNo().toString().getBytes());
+            existingEntity.setAlternateNo(alternateNo);
         }if(companyRequest.getPersonalMobileNo() != null) {
             String pesMobileNumber = Base64.getEncoder().encodeToString(companyRequest.getPersonalMobileNo().toString().getBytes());
             existingEntity.setPersonalMobileNo(pesMobileNumber);
@@ -439,7 +438,7 @@ public class CompanyUtils {
 
     public static Map<String, Object> duplicateValues(CompanyRequest companyRequest, List<CompanyEntity> companyEntities) {
         Map<String, Object> responseBody = new HashMap<>();
-           String cinNo = null, regNo = null, mobileNo = null, landNo =  null,
+           String cinNo = null, regNo = null, mobileNo = null, alternateNo =  null,
                    panNo= null, personalMail = null, personalMobile = null,
                    mailId=null, gstNo=null;
         for (CompanyEntity companyEntity :companyEntities) {
@@ -476,8 +475,8 @@ public class CompanyUtils {
 
             }
             if (companyRequest.getAlternateNo() != null && companyEntity.getAlternateNo() != null) {
-                landNo = new String(Base64.getDecoder().decode(companyEntity.getAlternateNo().getBytes()));
-                if (!companyEntity.getAlternateNo().isEmpty() && landNo.equals(companyRequest.getAlternateNo())){
+                alternateNo = new String(Base64.getDecoder().decode(companyEntity.getAlternateNo().getBytes()));
+                if (!companyEntity.getAlternateNo().isEmpty() && alternateNo.equals(companyRequest.getAlternateNo())){
                     responseBody.put(Constants.DUPLICATE_ALTERNATE_NO, companyRequest.getAlternateNo());
                 }
             }
@@ -536,7 +535,7 @@ public class CompanyUtils {
 
     public static Map<String, Object> duplicateUpdateValues(CompanyUpdateRequest companyUpdateRequest, List<CompanyEntity> companyEntities) {
         Map<String, Object> responseBody = new HashMap<>();
-        String cinNo = null, regNo = null, mobileNo = null, landNo =  null, gstNo = null, panNo= null, personalMail = null, personalMobile = null;
+        String cinNo = null, regNo = null, mobileNo = null, alternateNo =  null, gstNo = null, panNo= null, personalMail = null, personalMobile = null;
         for (CompanyEntity companyEntity :companyEntities) {
             if (companyUpdateRequest.getMobileNo() != null && companyEntity.getMobileNo() != null) {
                 mobileNo = new String(Base64.getDecoder().decode(companyEntity.getMobileNo().getBytes()));
@@ -552,8 +551,8 @@ public class CompanyUtils {
                 responseBody.put(Constants.DUPLICATE_AS_EMAIL_NO, companyEntity.getEmailId());
             }
             if (companyUpdateRequest.getAlternateNo() != null && companyEntity.getAlternateNo() != null) {
-                landNo = new String(Base64.getDecoder().decode(companyEntity.getAlternateNo().getBytes()));
-                if (!companyEntity.getAlternateNo().isEmpty() && landNo.equals(companyUpdateRequest.getAlternateNo())){
+                alternateNo = new String(Base64.getDecoder().decode(companyEntity.getAlternateNo().getBytes()));
+                if (!companyEntity.getAlternateNo().isEmpty() && alternateNo.equals(companyUpdateRequest.getAlternateNo())){
                     responseBody.put(Constants.DUPLICATE_ALTERNATE_NO, companyUpdateRequest.getAlternateNo());
                 }
 
@@ -853,7 +852,7 @@ public class CompanyUtils {
     public static Map<String, Object> duplicateValuesInTheCompany(CompanyUpdateRequest companyUpdateRequest, List<CompanyEntity> companyEntities) {
 
         Map<String, Object> responseBody = new HashMap<>();
-        String cinNo = null, regNo = null, mobileNo = null, landNo =  null, gstNo = null, panNo= null, personalMail = null, personalMobile = null, emailId=null;
+        String cinNo = null, regNo = null, mobileNo = null,  alternateNo=  null, gstNo = null, panNo= null, personalMail = null, personalMobile = null, emailId=null;
         for (CompanyEntity companyEntity :companyEntities) {
 
             if (companyUpdateRequest.getAlternateNo().equals(companyUpdateRequest.getMobileNo())){
