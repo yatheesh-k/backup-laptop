@@ -15,10 +15,7 @@ import java.util.List;
 public class PortalsCredEntity extends AbstractEntity{
 
     private String companyId;
-    private List<PFPortalCredentials> pfCredentials;
-    private List<PTPortalCredentials> ptCredentials;
-    private List<GSTPortalCredentials> gstCredentials;
-    private List<TDSPortalCredentials> tdsCredentials;
+    private List<CredentialsPayload> credPayload;
 
 
 }

@@ -12,7 +12,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PTPortalCredentials {
+public class CredentialsPayload {
+
+    @Schema(example = "credentialsName")
+    @Pattern(regexp = "^(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s]$", message = "{pt.credentialsName.pattern.message}")
+    @Size(max = 100, min = 2, message = "{pt.credentialsName.size.message}")
+    private String credentialsName;
 
     @Schema(example = "username")
     @Pattern(regexp = "^(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s]$", message = "{pt.userName.pattern.message}")
