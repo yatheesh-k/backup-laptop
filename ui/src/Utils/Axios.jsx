@@ -6,11 +6,19 @@ const hostname = window.location.hostname;
 
 const BASE_URL = `${protocol}//${hostname}:8092/ems`;
 const Login_URL = `${protocol}//${hostname}:9090/ems`;
+// New microservice (port 8093)
+const MICROSERVICE_URL = `${protocol}//${hostname}:8093/ems`;
 
 // ✅ Create Axios Instance (Without Token)
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {
+    "Content-Type": "application/json",
+  },
+});
+const microserviceAxiosInstance = axios.create({
+  baseURL: MICROSERVICE_URL,  // Instance for 8093 microservices
+   headers: {
     "Content-Type": "application/json",
   },
 });
@@ -26,6 +34,18 @@ axiosInstance.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+// ✅ Attach Token Dynamically Using Axios Interceptors
+const attachTokenInterceptor = (config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }  
+  return config;
+};
+
+axiosInstance.interceptors.request.use(attachTokenInterceptor);
+microserviceAxiosInstance.interceptors.request.use(attachTokenInterceptor);
 
 // // Refresh token function
 // const refreshAuthToken = async () => {
@@ -334,6 +354,27 @@ export const EmployeePostApi = (data) => {
   return axiosInstance.post('/employee', data);
 }
 
+export const PostEmployeeExcel = async (file) => {
+   const formData = new FormData();
+  formData.append('file', file);
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.post(
+      `/${companyName}/employees/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating GST receipt:", error);
+    throw error;
+  }
+};
+
 export const uploadEmployeeImage = (employeeId, file) => {
   const companyName = localStorage.getItem("companyName");
   const formData = new FormData();
@@ -349,7 +390,10 @@ export const getEmployeeImage = (employeeId) => {
   const companyName = localStorage.getItem("companyName");
   return axiosInstance.get(`/${companyName}/employee/${employeeId}/image`);
 };
-
+export const getEmployeesAccounts = (employeeId) => {
+  const companyName = localStorage.getItem("companyName");
+  return axiosInstance.get(`/${companyName}/employee/accounts`);
+};
 
 export const CandidateToEmployeePostApi = (candidateId, data) => {
   return axiosInstance.post(`/candidate/${candidateId}`, data);
@@ -1540,8 +1584,8 @@ export const updateCandidateDocument = (candidateId, documentId, documentNumbers
 export const PostGstAccountExcel = async (formData, month, year) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.post(
-      `/${companyName}/gst/account/register/${month}/${year}`,
+    const response = await microserviceAxiosInstance.post(
+      `/${companyName}/gst/uplaod?month=${month}&year=${year}`,
       formData,
       {
         headers: {
@@ -1559,7 +1603,7 @@ export const PostGstAccountExcel = async (formData, month, year) => {
 export const postGstAccountRegistration=async(data)=>{
  const companyName = localStorage.getItem("companyName");  
   try {
-    const response = await axiosInstance.post(`/${companyName}/gst/account`, data);
+    const response = await microserviceAxiosInstance.post(`/${companyName}/gst`, data);
     return response.data;
   } catch (error) {
     console.error('Error creating GST:', error);
@@ -1570,7 +1614,7 @@ export const postGstAccountRegistration=async(data)=>{
 export const GstAccountGetAPI=async()=>{
    const companyName = localStorage.getItem("companyName");  
   try {
-    const response = await axiosInstance.get(`/${companyName}/gst`);
+    const response = await microserviceAxiosInstance.get(`/${companyName}/gst/accounts`);
     return response.data;
   } catch (error) {
     console.error('Error creating GST:', error);
@@ -1580,7 +1624,7 @@ export const GstAccountGetAPI=async()=>{
 export const GetGstAccountByMonthYear=async(month, year)=>{
  const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.post(`/${companyName}/gst/accounts`,
+    const response = await microserviceAxiosInstance.post(`/${companyName}/gst`,
       {
     params: { month, year }, // Passing month and year as query params
   });
@@ -1593,7 +1637,7 @@ export const GetGstAccountByMonthYear=async(month, year)=>{
 export const getGstAccountById = async (id) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.get(`/${companyName}/gst/account/${id}`);
+    const response = await microserviceAxiosInstance.get(`/${companyName}/gst/account/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching GST response by ID:', error);
@@ -1603,7 +1647,7 @@ export const getGstAccountById = async (id) => {
 export const deleteGstAccountById = async (id) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.delete(`/${companyName}/account/${id}`);
+    const response = await microserviceAxiosInstance.delete(`/${companyName}/account/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error deleting GST response by ID:', error);
@@ -1613,7 +1657,7 @@ export const deleteGstAccountById = async (id) => {
 export const putGstAccountById = async (id, data) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.put(`/${companyName}/gst/account/${id}`, data);
+    const response = await microserviceAxiosInstance.put(`/${companyName}/gst/account/${id}`, data);
     return response.data;
   } catch (error) {
     console.error('Error updating GST response by ID:', error);
@@ -1624,7 +1668,7 @@ export const putGstAccountById = async (id, data) => {
 export const GstPostApi = async (data) => {
   const companyName = localStorage.getItem("companyName");  
   try {
-    const response = await axiosInstance.post(`/${companyName}/gst`, data);
+    const response = await microserviceAxiosInstance.post(`/${companyName}/gst/comparing`, data);
     return response.data;
   } catch (error) {
     console.error('Error creating GST:', error);
@@ -1635,7 +1679,7 @@ export const GstPostApi = async (data) => {
 export const getGstResponse = async (month,year) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.get(`/${companyName}/gst/response`, {
+    const response = await microserviceAxiosInstance.get(`/${companyName}/gst/response`, {
     params: { month, year }, // Passing month and year as query params
   });
     return response.data;
@@ -1647,7 +1691,7 @@ export const getGstResponse = async (month,year) => {
 export const GstPostResponse = async (data) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.post(`/${companyName}/gst/response`,data);  
+    const response = await microserviceAxiosInstance.post(`/${companyName}/gst/response`,data);  
     return response.data;
   } catch (error) {
     console.error('Error creating product:', error);
@@ -1657,7 +1701,7 @@ export const GstPostResponse = async (data) => {
 export const getGstResponseById = async (id) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.get(`/${companyName}/gst/response/${id}`);
+    const response = await microserviceAxiosInstance.get(`/${companyName}/gst/response/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching GST response by ID:', error);
@@ -1667,7 +1711,7 @@ export const getGstResponseById = async (id) => {
 export const deleteGstResponseById = async (id) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.delete(`/${companyName}/gst/response/${id}`);
+    const response = await microserviceAxiosInstance.delete(`/${companyName}/gst/response/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error deleting GST response by ID:', error);
@@ -1677,7 +1721,7 @@ export const deleteGstResponseById = async (id) => {
 export const patchGstResponseById = async (id, data) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.patch(`/${companyName}/gst/response/${id}`, data);
+    const response = await microserviceAxiosInstance.patch(`/${companyName}/gst/response/${id}`, data);
     return response.data;
   } catch (error) {
     console.error('Error updating GST response by ID:', error);
@@ -1688,7 +1732,7 @@ export const patchGstResponseById = async (id, data) => {
 export const GstReceiptResponse = async (month,year) => { 
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.post(`/${companyName}/gst/receipt`,
+    const response = await microserviceAxiosInstance.post(`/${companyName}/gst/receipt`,
       {
     params: { month, year }, // Passing month and year as query params
   });
@@ -1702,7 +1746,7 @@ export const GstReceiptResponse = async (month,year) => {
 export const postGstReceipt = async (formData) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.post(`/${companyName}/gst/receipt`, formData, {
+    const response = await microserviceAxiosInstance.post(`/${companyName}/gst/receipt`, formData, {
       headers: {  
         'Content-Type': 'multipart/form-data', // Ensure the correct content type for file uploads
       },
@@ -1717,7 +1761,7 @@ export const postGstReceipt = async (formData) => {
 export const getGstReciptById = async (id) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.get(`/${companyName}/gst/receipt/${id}`);
+    const response = await microserviceAxiosInstance.get(`/${companyName}/gst/receipt/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching GST receipt by ID:', error);
@@ -1728,7 +1772,7 @@ export const getGstReciptById = async (id) => {
 export const deleteGstReciptById = async (id) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.delete(`/${companyName}/gst/receipt/${id}`);
+    const response = await microserviceAxiosInstance.delete(`/${companyName}/gst/receipt/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error deleting GST receipt by ID:', error);
@@ -1739,7 +1783,7 @@ export const deleteGstReciptById = async (id) => {
 export const patchGstReciptById = async (id, data) => {
   const companyName = localStorage.getItem("companyName");
   try {
-    const response = await axiosInstance.patch(`/${companyName}/gst/receipt/${id}`, data, {
+    const response = await microserviceAxiosInstance.patch(`/${companyName}/gst/receipt/${id}`, data, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -1750,3 +1794,23 @@ export const patchGstReciptById = async (id, data) => {
     throw error;
   }
 }
+export const CredentialsGetAPI = () => {
+   const company = localStorage.getItem("companyName")
+  return axiosInstance.get(`/${company}/portalCred`)
+}
+
+export const CredentialsPostAPI = (data) => {
+  return axiosInstance.post('/employee', data);
+}
+
+export const CredentialsPatchAPIById = (id,data) => {
+   const company = localStorage.getItem("companyName")
+  return axiosInstance.patch(`/${company}/portalCred/${id}`,data)
+}
+
+export const CredentialsDeleteAPIById = (id) => {
+   const company = localStorage.getItem("companyName")
+  return axiosInstance.delete(`/${company}/portalCred/${id}`)
+}
+
+

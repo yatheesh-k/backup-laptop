@@ -547,5 +547,84 @@ export const validateBankBranch =(bankBranch)=>{
     return true;
 }
 
+// utils/validations.js
+
+// Capitalized name regex: Each word starts with capital, no trailing/leading space
+const nameRegex = /^(?! )[A-Z][a-z]*(?: [A-Z][a-z]*)*$/;
+
+// GST Number: standard 15 characters
+const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+// Year: 4 digit
+const yearRegex = /^\d{4}$/;
+
+// Month: must be word (Jan, February, etc.)
+const monthRegex = /^(January|February|March|April|May|June|July|August|September|October|November|December)$/i;
+
+// Number only fields (e.g. amount fields)
+const numericRegex = /^[0-9]+$/;
+
+
+export const nameValidation = {
+  required: "Name is required",
+  pattern: {
+    value: nameRegex,
+    message: "Each word should start with a capital letter, no extra spaces",
+  },
+  maxLength: {
+    value: 60,
+    message: "Name must not exceed 60 characters",
+  },
+};
+
+export const gstValidation = {
+  required: "GST No is required",
+  pattern: {
+    value: gstRegex,
+    message: "Invalid GST Number format",
+  },
+};
+
+export const yearValidation = {
+  required: "Year is required",
+  pattern: {
+    value: yearRegex,
+    message: "Enter a valid 4-digit year",
+  },
+};
+
+export const monthValidation = {
+  required: "Month is required",
+  pattern: {
+    value: monthRegex,
+    message: "Enter a valid month (e.g. July)",
+  },
+};
+
+export const invoiceNumberValidation = {
+  required: "Invoice Number is required",
+  maxLength: {
+    value: 20,
+    message: "Invoice Number should not exceed 20 characters",
+  },
+};
+
+export const numberValidation = (label = "This field") => ({
+  required: `${label} is required`,
+  pattern: {
+    value: numericRegex,
+    message: `${label} must be a valid number`,
+  },
+  minLength: {
+    value: 1,
+    message: `${label} is too short`,
+  },
+  maxLength: {
+    value: 10,
+    message: `${label} must not exceed 10 digits`,
+  },
+});
+
+
 
 

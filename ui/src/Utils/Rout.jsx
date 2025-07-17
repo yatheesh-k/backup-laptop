@@ -106,6 +106,9 @@ import CompanyGSTSubmission from '../AccountantModule/GST/CompanyGSTSubmission';
 import EmployeeManager from '../CompanyModule/Employee/EmployeeManager/EmployeeManager';
 import EmployeeSummary from '../CompanyModule/Employee/EmployeeManager/EmployeeSummary';
 import GSTCustomerRegistration from '../AccountantModule/GST/GSTCustomerRegistration';
+import InvoiceAccountsSummary from '../AccountantModule/GST/InvoiceAccountsSummary';
+import AddCredentialForm from '../CredentialsManagement/AddCredentialsForm';
+import PasswordManagementSummary from '../CredentialsManagement/PasswordManagementSummary';
 
 
 
@@ -208,6 +211,7 @@ export const allAvailableRoutes = [
   {path: '/companyGSTSubmission', allowedTypes: ['company_admin','Admin','Accountant'] },
   {path: '/employeeMangement', allowedTypes: ['company_admin'] },
   {path: '/employeeSummary', allowedTypes: ['company_admin'] },
+  {path:'/invoicesAccountsManagment', allowedTypes:['company_admin']}
 ];
 
 const Routing = () => {
@@ -595,8 +599,20 @@ const Routing = () => {
         element={<ProtectedRoute element={<EmployeeSummary/>} allowedTypes={['company_admin']} />} 
       />
       <Route 
-      path='/CustomerAccountsManagment'
+      path='/invoicesAccountsManagment'
       element={<ProtectedRoute element={<GSTCustomerRegistration/>} allowedTypes={['company_admin']}/>}
+      />
+      <Route 
+      path='/invoiceAccountsSummary'
+      element={<ProtectedRoute element={<InvoiceAccountsSummary/>} allowedTypes={['company_admin']}/>}
+      />
+      <Route 
+      path='/addCredentials'
+      element={<ProtectedRoute element={<AddCredentialForm/>} allowedTypes={['company_admin']}/>}
+      />
+        <Route 
+      path='/passwordManager'
+      element={<ProtectedRoute element={<PasswordManagementSummary/>} allowedTypes={['company_admin']}/>}
       />
     </Routes>
   );

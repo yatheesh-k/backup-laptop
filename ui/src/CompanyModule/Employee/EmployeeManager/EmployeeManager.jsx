@@ -14,14 +14,8 @@ import {
   validateUAN,
 } from "../../../Utils/Validate";
 import { Download } from "react-bootstrap-icons";
-
-const requiredFields = ['First Name', 'Last Name', 'Email ID','Mobile No','UAN No','PAN No','Aadhar No','PF No','Gross Salary'];
-
-const validateExcelData = (data) => {
-  return data.every(row =>
-    requiredFields.every(field => row[field] !== undefined && row[field] !== null && row[field].toString().trim() !== '')
-  );
-};
+import { EmployeePostApi, PostEmployeeExcel } from "../../../Utils/Axios";
+import { toast } from "react-toastify";
 
 const templateHeaders = ['First Name', 'Last Name', 'Email ID', 'Mobile No', 'UAN No', 'PAN No', 'Aadhar No', 'PF No', 'Gross Salary'];
 
@@ -33,53 +27,58 @@ const downloadTemplate = () => {
 };
 
 const ExcelUpload = () => {
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = async (evt) => {
-      const data = new Uint8Array(evt.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-       if (!validateExcelData(jsonData)) {
-        alert('Excel validation failed. Make sure all required fields are filled for each employee.');
-        return;
-      }
+  const {
+    register,
+    handleSubmit,
+    setError,reset,
+    formState: { errors },
+  } = useForm();
 
 
-      try {
-        const response = await fetch('/api/employees/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(jsonData),
-        });
-        const result = await response.json();
-        console.log('Upload response:', result);
-      } catch (error) {
-        console.error('Upload error:', error);
-      }
-    };
+ const onSubmit = async (data) => {
+    const file = data.file[0];
 
-    reader.readAsArrayBuffer(file);
+    try {
+      const result = await PostEmployeeExcel(file);
+      console.log('Upload successful:', result);
+      toast.success(result.data.data)
+      reset();
+    } catch (error) {
+      console.error('Upload failed:', error);
+        // Show backend error using setError under the file input
+      setError('excelFile', {
+        type: 'manual',
+        message: 'Upload failed. Please try again.',
+      });
+    }
   };
 
+
   return (
-    <div className="mb-4">
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="mb-4">
         <div className="d-flex justify-content-between align-items-center mb-2">
-            <label htmlFor="excelFile" className="form-label mb-0">Upload Excel (.xlsx)</label>
-            <button type="button" className="btn btn-sm btn-outline-success d-flex justify-content-center" onClick={downloadTemplate}><Download className="m-1"/> Download Template</button>
+          <label htmlFor="excelFile" className="form-label mb-0">Upload Excel (.xlsx)</label>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-success d-flex align-items-center"
+            onClick={downloadTemplate}
+          >
+            <Download className="me-1" size={16} />
+            Download Template
+          </button>
         </div>
-      <input
-        type="file"
-        id="excelFile"
-        accept=".xlsx, .xls"
-        onChange={handleFileUpload}
-        className="form-control"
-      />
-    </div>
+        <input
+          type="file"
+          id="file"
+          accept=".xlsx, .xls .csv"
+          className={`form-control ${errors.file ? 'is-invalid' : ''}`}
+          {...register('file', { required: 'Excel file is required' })}
+        />
+        {errors.file && <div className="invalid-feedback">{errors.file.message}</div>}
+      </div>
+      <button type="submit" className="btn btn-primary">Upload</button>
+    </form>
   );
 };
 
@@ -140,11 +139,7 @@ const EmployeeForm = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await fetch('/api/employees/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      const response = await EmployeePostApi(data)
       const result = await response.json();
       console.log('Registration response:', result);
       reset();
@@ -319,7 +314,10 @@ const EmployeeManager = () => {
                   Home
                 </Link>
               </li>
-              <li className="breadcrumb-item active">Employee Management</li>
+              <li className="breadcrumb-item active">Employee</li>
+              <li className="breadcrumb-item">
+                 <a href="/employeeSummary">Employees Summary</a>
+              </li>
               <li className="breadcrumb-item active">Employee Registration</li>
             </ol>
           </nav>
