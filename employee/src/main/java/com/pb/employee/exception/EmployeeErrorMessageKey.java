@@ -193,7 +193,9 @@ public enum EmployeeErrorMessageKey {
     INVALID_USER_TYPE("invalid.user.type"),
     COMPANY_ADMIN_NOT_FOUND("company.admin.not.found"),
     UNABLE_UPDATE_USER_TYPE("unable.update.user.type"),
-    USER_TYPE_ALREADY_EXIST("user.type.already.exist"),;
+    USER_TYPE_ALREADY_EXIST("user.type.already.exist"),
+    INVALID_ROLE("invalid.role"),
+    UNABLE_UPDATE_COMPANY_ROLES("unable.update.company.roles"),;
     private final String key;
 
     EmployeeErrorMessageKey(String keyVal) {
