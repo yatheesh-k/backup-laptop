@@ -79,4 +79,5 @@ public class Constants {
     public static final String GST_RECEIPT = "gst_receipt";
     public static final String TDS_RECEIPT= "tds_receipt";
 
+    public static final String DUE_DATES = "due_dates";
 }
