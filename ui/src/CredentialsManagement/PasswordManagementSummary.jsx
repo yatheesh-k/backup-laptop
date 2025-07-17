@@ -12,10 +12,31 @@ import {
 import { Copy, Eye, EyeSlash } from "react-bootstrap-icons";
 import { toast } from "react-toastify";
 
+// 🔸 Static Data Format
+const staticData = {
+  companyId: "abc123",
+  credPayload: [
+    {
+      credentialsName: "PF",
+      userName: "admin",
+      password: "secret",
+      portalUrl: "https://pf.com",
+    },
+    {
+      credentialsName: "ESI",
+      userName: "admin2",
+      password: "secret2",
+      portalUrl: "https://esi.com",
+    },
+  ],
+  id: "abc123-id",
+  type: "portal_credentials",
+};
+
 const PasswordManagementSummary = () => {
   const [isExistingData, setIsExistingData] = useState(false);
-  const [showPasswords, setShowPasswords] = useState(false);
-
+  const [showPasswords, setShowPasswords] = useState([]);
+  const [passwordData, setPasswordData] = useState([]);
   const {
     register,
     control,
@@ -41,61 +62,112 @@ const PasswordManagementSummary = () => {
   });
 
   useEffect(() => {
-    const fetchCredentials = async () => {
-      try {
-        const response = await CredentialsGetAPI();
-        const data = response.data;
+    if (
+      Array.isArray(passwordData?.credPayload) &&
+      passwordData.credPayload.length > 0
+    ) {
+      reset({ credentials: passwordData.credPayload });
+      setShowPasswords(passwordData.credPayload.map(() => false));
+      setIsExistingData(true);
+    } else {
+      reset({
+        credentials: [
+          {
+            credentialsName: "",
+            userName: "",
+            password: "",
+            portalUrl: "",
+          },
+        ],
+      });
+      setShowPasswords([false]);
+      setIsExistingData(false);
+    }
+  }, [passwordData]);
 
-        if (Array.isArray(data) && data.length > 0) {
-          setIsExistingData(true);
-          replace(data);
-        } else {
-          setIsExistingData(false);
-          reset({
-            credentials: [
-              {
-                credentialsName: "",
-                userName: "",
-                password: "",
-                portalUrl: "",
-              },
-            ],
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching credentials", error);
-        setIsExistingData(false);
-        reset({
-          credentials: [
-            {
-              credentialsName: "",
-              userName: "",
-              password: "",
-              portalUrl: "",
-            },
-          ],
-        });
-      }
-    };
+  //   useEffect(() => {
+  //     const fetchCredentials = async () => {
+  //       try {
+  //         const response = await CredentialsGetAPI();
+  //         const data = response.data.data;
 
-    fetchCredentials();
-  }, [replace, reset]);
+  //         if (Array.isArray(data) && data.length > 0) {
+  //           setIsExistingData(true);
+  //           replace(data);
+  //         } else {
+  //           setIsExistingData(false);
+  //           reset({
+  //             credentials: [
+  //               {
+  //                 credentialsName: "",
+  //                 userName: "",
+  //                 password: "",
+  //                 portalUrl: "",
+  //               },
+  //             ],
+  //           });
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching credentials", error);
+  //         setIsExistingData(false);
+  //         reset({
+  //           credentials: [
+  //             {
+  //               credentialsName: "",
+  //               userName: "",
+  //               password: "",
+  //               portalUrl: "",
+  //             },
+  //           ],
+  //         });
+  //       }
+  //     };
+
+  //     fetchCredentials();
+  //   }, [replace, reset]);
 
   // POST or PUT
   const onSubmit = async (data) => {
     try {
-      for (let item of data.credentials) {
-        if (item._id) {
-          await CredentialsPatchAPIById(item._id, item); // Assuming PATCH API accepts (id, data)
-        } else {
-          await CredentialsPostAPI(item);
-        }
-      }
+      const payload = {
+        credPayload: data.credentials,
+      };
 
-      alert("Credentials saved/updated successfully!");
+      console.log("Final Payload:", payload);
+
+      // ✅ If no data (null or empty array) → POST API
+      if (
+        !passwordData ||
+        (Array.isArray(passwordData) && passwordData.length === 0)
+      ) {
+        console.log("Submitting new credentials via POST API");
+        const response = await CredentialsPostAPI(payload);
+        toast.success("Credentials saved successfully!");
+        toast.success(response.data?.message || "Saved!");
+      }
+      // ✅ If valid data exists → PATCH API
+      else {
+        // If your data is an array and contains objects with `id`
+        const id = Array.isArray(passwordData)
+          ? passwordData?.id
+          : passwordData?.id;
+
+        if (!id) {
+          toast.error("Invalid data for update (missing ID).");
+          return;
+        }
+
+        console.log(
+          "Updating existing credentials via PATCH API:",
+          id,
+          payload
+        );
+        const response = await CredentialsPatchAPIById(id, payload);
+        toast.success(response.data?.message || "Updated successfully!");
+      }
     } catch (error) {
-      console.error("Save/Update failed", error);
-      alert("Something went wrong while saving credentials.");
+      console.error("Submission error:", error);
+      toast.error("Failed to save credentials.");
     }
   };
 
@@ -139,6 +211,23 @@ const PasswordManagementSummary = () => {
       .catch(() => {
         toast.error("Failed to copy!");
       });
+  };
+
+  const togglePassword = (index) => {
+    const updated = [...showPasswords];
+    updated[index] = !updated[index];
+    setShowPasswords(updated);
+  };
+
+  const handleClear = () => {
+    reset({ credentials: [] });
+    append({
+      credentialsName: "",
+      userName: "",
+      password: "",
+      portalUrl: "",
+    });
+    setShowPasswords([false]);
   };
 
   return (
@@ -218,17 +307,19 @@ const PasswordManagementSummary = () => {
                   <div className="col-md-3">
                     <div className="d-flex justify-content-between align-items-center">
                       <label className="form-label mb-0">Password</label>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-link p-0"
-                        onClick={() => handleCopy(item.password, "Password")}
-                      >
-                        <Copy />
-                      </button>
+                      {passwordData?.id && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-link p-0"
+                          onClick={() => handleCopy(item.password, "Password")}
+                        >
+                          <Copy />
+                        </button>
+                      )}
                     </div>{" "}
                     <div className="input-group">
                       <input
-                        type={showPasswords ? "text" : "password"}
+                        type={showPasswords[index] ? "text" : "password"}
                         className="form-control"
                         placeholder="Password"
                         {...register(`credentials.${index}.password`, {
@@ -240,19 +331,27 @@ const PasswordManagementSummary = () => {
                       />
 
                       <span className="input-group-text p-0 bg-transparent">
-      <button
-        type="button"
-        className="btn btn-sm p-1 bg-transparent border-0"
-        style={{
-          borderRight: "1px solid #ced4da",
-          borderRadius: 0,
-        }}
-        onClick={() => setShowPasswords((prev) => !prev)}
-        tabIndex={-1}
-      >
-        {showPasswords ? <Eye size={18} /> : <EyeSlash size={18} />}
-      </button>
-    </span>
+                        <button
+                          type="button"
+                          className="btn btn-sm p-1 bg-transparent border-0"
+                          style={{
+                            borderRight: "1px solid #ced4da",
+                            borderRadius: 0,
+                          }}
+                          onClick={() =>
+                            setShowPasswords((prev) =>
+                              prev.map((val, i) => (i === index ? !val : val))
+                            )
+                          }
+                          tabIndex={-1}
+                        >
+                          {showPasswords[index] ? (
+                            <Eye size={18} />
+                          ) : (
+                            <EyeSlash size={18} />
+                          )}
+                        </button>
+                      </span>
                     </div>
                     {errors.credentials?.[index]?.password && (
                       <p className="text-danger">
@@ -292,7 +391,7 @@ const PasswordManagementSummary = () => {
                     )}
                   </div>
 
-                  <div className="col-md-1 d-flex align-items-end mb-1">
+                  <div className="col-md-1 d-flex align-items-end mb-1 me-2">
                     <button
                       type="button"
                       className="btn btn-danger btn-sm"
@@ -308,14 +407,15 @@ const PasswordManagementSummary = () => {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() =>
+                  onClick={() => {
                     append({
                       credentialsName: "",
                       userName: "",
                       password: "",
                       portalUrl: "",
-                    })
-                  }
+                    });
+                    setShowPasswords((prev) => [...prev, false]);
+                  }}
                 >
                   + Add More
                 </button>
@@ -331,7 +431,7 @@ const PasswordManagementSummary = () => {
                   >
                     Clear
                   </button>
-                  {fields.length > 0 && (
+                  {fields.length > 0 && passwordData?.id && (
                     <button
                       type="button"
                       className="btn btn-danger"

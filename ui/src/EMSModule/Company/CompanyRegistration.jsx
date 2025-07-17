@@ -944,7 +944,6 @@ const CompanyRegistration = () => {
                                 ? "Please Select Your User Type"
                                 : false,
                             })}
-                            disabled={editMode}
                             checked={userType.includes("HRM")}
                             onChange={handleUserTypeChange}
                           />
@@ -965,7 +964,6 @@ const CompanyRegistration = () => {
                               ? "Please Select Your User Type"
                               : false,
                           })}
-                          disabled={editMode}
                           checked={userType.includes("Accountant")}
                           onChange={handleUserTypeChange}
                         />

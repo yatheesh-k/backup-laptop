@@ -1800,7 +1800,8 @@ export const CredentialsGetAPI = () => {
 }
 
 export const CredentialsPostAPI = (data) => {
-  return axiosInstance.post('/employee', data);
+  const company = localStorage.getItem("companyName")
+  return axiosInstance.post(`/${company}/portalCred`, data);
 }
 
 export const CredentialsPatchAPIById = (id,data) => {
