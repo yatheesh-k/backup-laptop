@@ -3,6 +3,8 @@ package com.pb.employee.persistance.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -20,6 +22,7 @@ public class UserEntity implements Entity, IDEntity {
     private String lastName;
     private String emailId;
     private String password;
+    private List<String> roles;
     private String department;
     private String type;
 }

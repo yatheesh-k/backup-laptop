@@ -140,7 +140,7 @@ public class CompanyServiceImpl implements CompanyService {
                 employeeType(Constants.EMPLOYEE_TYPE).
                 employeeId(employeeAdminId).
                 companyId(resourceId).
-                userType(companyRequest.getUserType()).
+                roles(companyRequest.getRoles()).
                 emailId(companyRequest.getEmailId()).
                 password(password).
                 status(status).
@@ -525,8 +525,8 @@ public class CompanyServiceImpl implements CompanyService {
 
 
     @Override
-    public ResponseEntity<?> updateCompanyUserType(String companyName, UpdateUserTypeRequest updatePayload) throws EmployeeException {
-        log.info("Updating employee role for company: {}, employeeId: {}, role: {}", companyName, updatePayload.getUserType());
+    public ResponseEntity<?> updateCompanyRoles(String companyName, UpdateRolesRequest updatePayload) throws EmployeeException {
+        log.info("Updating employee role for company: {}", companyName);
         String indexName = ResourceIdUtils.generateCompanyIndex(companyName);
         CompanyEntity company = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
         if (company == null) {
@@ -539,18 +539,18 @@ public class CompanyServiceImpl implements CompanyService {
             throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_ADMIN_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         try {
-            if (employee.getUserType().contains(updatePayload.getUserType())) {
-                log.info("company userType already exists for employeeId: {}", employee.getId());
+            if (employee.getRoles().contains(updatePayload.getRoles())) {
+                log.info("company Roles already exists for employeeId: {}", employee.getId());
                 return new ResponseEntity<>(ResponseBuilder.builder().build().createFailureResponse(new Exception(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.USER_TYPE_ALREADY_EXIST))), HttpStatus.CONFLICT);
             }
-            employee.setUserType(updatePayload.getUserType());
+            employee.setRoles(updatePayload.getRoles());
             openSearchOperations.saveEntity(employee, employee.getId(), indexName);
             log.info("Employee role updated successfully for employeeId: {}", employee.getId());
             return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
 
         } catch (Exception ex) {
             log.error("Unexpected error while updating employee role for employeeId {}: {}",  employee.getId(), ex.getMessage(), ex);
-            throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNABLE_UPDATE_USER_TYPE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNABLE_UPDATE_COMPANY_ROLES), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

@@ -48,7 +48,6 @@ public class EmployeeEntity implements Entity{
     private String bankName;
     private String bankBranch;
     private String profileImage;
-    private String userType;
     private String type;
 
 }
