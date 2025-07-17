@@ -27,16 +27,6 @@ public class CandidateUpdateRequest {
     @NotBlank(message = "{dateOfHiring.notnull.message}")
     private String dateOfHiring;
 
-    @Schema(example = "yyyy-mm-dd")
-    @Pattern(regexp =  "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$", message = "{dateOfHiring.format}")
-    @NotBlank(message = "{expiryDate.notnull.message}")
-    private String expiryDate;
-
-    @Schema(example = "mobileNo")
-    @NotNull(message = "{mobileNo.notnull.message}")
-    @Pattern(regexp = "^\\+91 [6-9]\\d{9}$", message = "{invalid.mobileNo}")
-    private String mobileNo;
-
     @Schema(example = "Active")
     @Pattern(regexp = "^(Active|InActive)$", message = "{status.format}")
     @NotBlank(message = "{status.notnull.message}")

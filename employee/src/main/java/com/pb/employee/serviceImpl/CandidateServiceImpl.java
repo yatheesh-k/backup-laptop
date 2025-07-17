@@ -169,21 +169,13 @@ public class CandidateServiceImpl implements CandidateService {
                 log.error("Unable to fetch candidate with id {}", candidateId);
                 throw new EmployeeException(String.format(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.CANDIDATE_NOT_FOUND), candidateId), HttpStatus.NOT_FOUND);
             }
-            LocalDate expiryDate = LocalDate.parse(candidateUpdateRequest.getExpiryDate());
 
-            if (!expiryDate.isAfter(LocalDate.now())) {
-                log.error("Expiry date cannot be before today");
-                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EXPIRY_DATE_CANNOT_BE_BEFORE_TODAY),
-                        HttpStatus.BAD_REQUEST);
-            }
 
             try {
                 if ((candidateUpdateRequest.getFirstName() .equals(existingCandidate.getFirstName()))
                         && (candidateUpdateRequest.getLastName().equals(existingCandidate.getLastName()))
-                        && candidateUpdateRequest.getMobileNo().equals(existingCandidate.getMobileNo())
                         && candidateUpdateRequest.getDateOfHiring().equals(existingCandidate.getDateOfHiring())
-                        && candidateUpdateRequest.getStatus().equals(existingCandidate.getStatus())
-                        && candidateUpdateRequest.getExpiryDate().equals(existingCandidate.getExpiryDate())) {
+                        && candidateUpdateRequest.getStatus().equals(existingCandidate.getStatus())) {
                     throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.NO_CHANGES_DONE), HttpStatus.BAD_REQUEST);
                 }
 
