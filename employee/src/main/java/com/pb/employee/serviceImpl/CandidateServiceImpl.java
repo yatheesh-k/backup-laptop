@@ -79,7 +79,7 @@ public class CandidateServiceImpl implements CandidateService {
                 throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EMPLOYEE_EMAILID_ALREADY_EXISTS),
                         HttpStatus.CONFLICT);
             }
-            Collection<CandidateEntity> existingCandidate = candidateDao.getCandidates(candidateRequest.getCompanyName(), resourceId, companyEntity.getId());
+            Collection<CandidateEntity> existingCandidate = candidateDao.getCandidates(candidateRequest.getCompanyName(), resourceId, companyEntity.getId(), null);
             if (!existingCandidate.isEmpty()) {
                 log.error("Candidate with email {} already exists", candidateRequest.getEmailId());
                 throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.CANDIDATE_EMAILID_ALREADY_EXISTS),
@@ -135,7 +135,7 @@ public class CandidateServiceImpl implements CandidateService {
                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
            }
            log.debug("Getting Company Calendar by companyName: {}", companyName);
-           Collection<CandidateEntity> candidateEntities = candidateDao.getCandidates(companyName, candidateId, companyEntity.getId());
+           Collection<CandidateEntity> candidateEntities = candidateDao.getCandidates(companyName, candidateId, companyEntity.getId(), null);
            return candidateEntities.stream()
                    .filter(c -> !Constants.CONVERTED.equalsIgnoreCase(c.getStatus()))
                    .toList();
