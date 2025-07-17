@@ -11,7 +11,7 @@ import * as XLSX from "xlsx";
 import { Link } from "react-router-dom";
 
 const PTProcessing = () => {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const { register, handleSubmit,trigger,setValue, formState: { errors }, reset } = useForm();
   const [approvalMonth, setApprovalMonth] = useState("");
   const [approvalYear, setApprovalYear] = useState("");
   const [approvalList, setApprovalList] = useState([]);
@@ -19,7 +19,79 @@ const PTProcessing = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [acknowledgementFile, setAcknowledgementFile] = useState(null);
 
+  
+  const noTrailingSpaces = (value, fieldName) => {
+    // Check if the value ends with a space
+    if (value.endsWith(' ')) {
+      return "Spaces are not allowed at the end";
+    }
 
+    // Check if the value is less than 3 characters long
+    if (value.length < 3) {
+      return "Minimum 3 characters Required";
+    }
+    // If no error, return true
+    return true;
+  };
+  const handleInputChange = (e, fieldName) => {
+    let value = e.target.value.trimStart().replace(/ {2,}/g, " "); // Remove leading spaces and extra spaces
+
+    if (fieldName !== "email") {
+      value = value.replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter after space
+    }
+
+    setValue(fieldName, value);
+    trigger(fieldName); // Trigger validation
+  };
+
+  const preventInvalidInput = (e, type) => {
+    const key = e.key;
+
+    // Prevent non-numeric input for amount fields
+    if (
+      type === "numeric" &&
+      (!/^[0-9.]$/.test(key) || (key === '.' && e.target.value.includes('.')))
+    ) {
+      e.preventDefault();
+    }
+
+
+    // Prevent special characters in receipt number except hyphens and slashes
+    if (type === "receiptNumber" && /[^a-zA-Z0-9/-]/.test(key)) {
+      e.preventDefault();
+    }
+  };
+
+  const validateField = (value, type) => {
+    switch (type) {
+      case "amount":
+        return (
+          /^[0-9]+(\.[0-9]{1,2})?$/.test(value) ||
+          "Enter a valid amount (e.g., 1000 or 1000.50)"
+        );
+      case "receiptNumber":
+        return (
+          /^[a-zA-Z0-9/-]+$/.test(value) ||
+          "Only letters, numbers, hyphens and slashes allowed"
+        );
+      case "date":
+        const selectedDate = new Date(value);
+        const currentDate = new Date();
+        return (
+          selectedDate <= currentDate ||
+          "Date cannot be in the future"
+        );
+      case "file":
+        if (!value) return "File is required";
+        const validTypes = ["application/pdf", "image/jpeg", "image/png"];
+        return (
+          validTypes.includes(value.type) ||
+          "Only PDF, JPG, and PNG files are allowed"
+        );
+      default:
+        return true;
+    }
+  };
   // Calculate total PT amount
   const calculateTotalPT = () => {
     return approvalList.reduce((total, emp) => {
@@ -230,14 +302,14 @@ const PTProcessing = () => {
                           Download Approval List
                         </button>
 
-                        {/* <a 
+                        <a 
                           href="https://www.tgct.gov.in/tgportal/" 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="btn btn-info"
                         >
                           Proceed to Professional Tax Portal
-                        </a> */}
+                        </a>
                       </div>
                     </>
                   )}
@@ -255,17 +327,20 @@ const PTProcessing = () => {
                             type="text"
                             className="form-control"
                             {...register("ptTotalAmount", {
-                              required: "PT Total Amount is required",
-                              pattern: {
-                                value: /^[0-9]+(\.[0-9]{1,2})?$/,
-                                message: "Enter a valid amount"
-                              }
+                              required: "Professional Tax Total Amount is required",
+                              validate: (value) => validateField(value, "amount"),
+                              maxLength: {
+                                value: 10,
+                                message: "Professional Tax Amount must not be exceed 10 digits.",
+                              },
                             })}
+                            onKeyPress={(e) => preventInvalidInput(e, "numeric")}
+                            onChange={(e) => handleInputChange(e, "ptTotalAmount")}
                           />
                           {errors.ptTotalAmount && (
-                            <div className="text-danger small mt-1">
+                            <p className="errorMsg">
                               {errors.ptTotalAmount.message}
-                            </div>
+                            </p>
                           )}
                         </div>
                         <div className="col-md-6">
@@ -274,13 +349,22 @@ const PTProcessing = () => {
                             type="text"
                             className="form-control"
                             {...register("ptReceiptNumber", {
-                              required: "Professional Tax Receipt Number is required"
+                               required: "Professional Tax Receipt Number is required",
+                              maxLength: {
+                                value: 10,
+                                message: "Professional Tax Receipt Number must not be exceed 10 digits.",
+                              },
+                              validate: (value) => {
+                                return noTrailingSpaces(value, "ptReceiptNumber") || validateField(value, "receiptNumber");
+                              }
                             })}
+                            onKeyPress={(e) => preventInvalidInput(e, "receiptNumber")}
+                            onChange={(e) => handleInputChange(e, "ptReceiptNumber")}
                           />
                           {errors.ptReceiptNumber && (
-                            <div className="text-danger small mt-1">
+                            <p className="errorMsg">
                               {errors.ptReceiptNumber.message}
-                            </div>
+                            </p>
                           )}
                         </div>
 
@@ -290,7 +374,8 @@ const PTProcessing = () => {
                             type="date"
                             className="form-control"
                             {...register("ptReceiptDate", {
-                              required: "Professional Tax Receipt Date is required"
+                              required: "Professional Tax Receipt Date is required",
+                              validate: (value) => validateField(value, "date"),
                             })}
                           />
                           {errors.ptReceiptDate && (
@@ -307,7 +392,8 @@ const PTProcessing = () => {
                             className="form-control"
                             accept=".pdf,.jpg,.png"
                             {...register("file", {
-                              required: "Please upload acknowledgement file"
+                              required: "Please upload acknowledgement file",
+                              validate: (value) => validateField(value, "file"),
                             })}
                             onChange={(e) => setAcknowledgementFile(e.target.files[0])}
                           />

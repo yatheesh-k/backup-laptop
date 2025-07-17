@@ -3,32 +3,22 @@ import LayOut from "../../LayOut/LayOut";
 import {
   EmployeePFDetailsGetAPI,
   EmployeePFComparingAPI,
-  RegisterPFEmployeeAPI,
   SubmitPFForProcessingAPI,
   AddPFResponseAPI
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
 import { Download, Upload, PlusCircle, CheckCircle, ArrowClockwise } from "react-bootstrap-icons";
 import * as XLSX from "xlsx";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 
 const CompanyPFSubmission = () => {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [comparisonFile, setComparisonFile] = useState(null);
   const [comparisonResult, setComparisonResult] = useState(null);
   const [isComparing, setIsComparing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAddEmployee, setShowAddEmployee] = useState(false);
-  const [newEmployee, setNewEmployee] = useState({
-    firstName: "",
-    lastName: "",
-    emailId: "",
-    mobileNumber: "",
-    panNo: "",
-    uanNo: "",
-    pfAmount: ""
-  });
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
   const [showRemarksModal, setShowRemarksModal] = useState(false);
@@ -110,66 +100,6 @@ const CompanyPFSubmission = () => {
       handleApiError(error);
     } finally {
       setIsComparing(false);
-    }
-  };
-
-  const registerNewEmployee = async () => {
-    if (!newEmployee.firstName || !newEmployee.lastName || !newEmployee.panNo || !newEmployee.pfAmount) {
-      toast.error("Please fill all required fields");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const response = await RegisterPFEmployeeAPI({
-        firstName: newEmployee.firstName,
-        lastName: newEmployee.lastName,
-        emailId: newEmployee.emailId,
-        mobileNumber: newEmployee.mobileNumber,
-        panNo: newEmployee.panNo,
-        uanNo: newEmployee.uanNo,
-        pfAmount: newEmployee.pfAmount
-      });
-
-      if (response.data.success) {
-        toast.success("Employee registered successfully");
-        const newEmployeeData = {
-          "Employee Name": `${newEmployee.firstName} ${newEmployee.lastName}`,
-          "PAN No": newEmployee.panNo,
-          "UAN No": newEmployee.uanNo,
-          "PF Amount": newEmployee.pfAmount
-        };
-        
-        setEmployees(prevEmployees => [...prevEmployees, newEmployeeData]);
-
-        if (comparisonResult) {
-          const updatedNotExisted = comparisonResult.data["Employees Not existed in company"]
-            .filter(name => name !== `${newEmployee.firstName} ${newEmployee.lastName}`);
-          
-          setComparisonResult(prev => ({
-            ...prev,
-            data: {
-              ...prev.data,
-              "Employees Not existed in company": updatedNotExisted
-            }
-          }));
-        }
-
-        setNewEmployee({
-          firstName: "",
-          lastName: "",
-          emailId: "",
-          mobileNumber: "",
-          panNo: "",
-          uanNo: "",
-          pfAmount: ""
-        });
-        setShowAddEmployee(false);
-      }
-    } catch (error) {
-      handleApiError(error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -447,19 +377,36 @@ const CompanyPFSubmission = () => {
                         <div className="card mb-3 border-warning">
                           <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                             <span>Employees Not Found in Company Records ({comparisonResult.data["Employees Not existed in company"].length})</span>
-                            <button
-                              className="btn btn-sm btn-light me-2"
-                              onClick={() => setShowAddEmployee(true)}
-                            >
-                              <PlusCircle className="me-1 d-inline-flex align-items-center" />
-                              Add Employee
-                            </button>
+                            <div>
+                              <button
+                                className="btn btn-sm btn-light me-2"
+                                onClick={() => {
+                                  // Navigate to employee register page
+                                  navigate("/employeeRegister");
+                                }}
+                              >
+                                <PlusCircle className="me-1 d-inline-flex align-items-center" />
+                                Register Employee
+                              </button>
+                              <button
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={downloadPFDetailsExcel}
+                              >
+                                <Download className="me-1 d-inline-flex align-items-center" />
+                                Get Excel to Update
+                              </button>
+                            </div>
                           </div>
                           <div className="card-body">
+                            <div className="alert alert-info mb-3">
+                              <strong>Note:</strong> These employees are in your uploaded file but not in company records. 
+                              You can either register them as new employees or remove them from your Excel file and reupload.
+                            </div>
                             <ul className="list-group">
                               {comparisonResult.data["Employees Not existed in company"].map((emp, i) => (
-                                <li key={i} className="list-group-item">
+                                <li key={i} className="list-group-item d-flex justify-content-between align-items-center">
                                   <span>{emp}</span>
+                                  <small className="text-muted">Not in company records</small>
                                 </li>
                               ))}
                             </ul>
@@ -555,110 +502,6 @@ const CompanyPFSubmission = () => {
                     </div>
                   )}
                 </div>
-
-                {/* Add New Employee Modal */}
-                {showAddEmployee && (
-                  <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1050 }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                      <div className="modal-content">
-                        <div className="modal-header">
-                          <h5 className="modal-title">Register New Employee for PF</h5>
-                          <button
-                            type="button"
-                            className="btn-close"
-                            onClick={() => setShowAddEmployee(false)}
-                          ></button>
-                        </div>
-                        <div className="modal-body">
-                          <div className="row">
-                            <div className="mb-3">
-                              <label className="form-label">First Name*</label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={newEmployee.firstName}
-                                onChange={(e) => setNewEmployee({ ...newEmployee, firstName: e.target.value })}
-                              />
-                            </div>
-                            <div className="mb-3">
-                              <label className="form-label">Last Name*</label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                value={newEmployee.lastName}
-                                onChange={(e) => setNewEmployee({ ...newEmployee, lastName: e.target.value })}
-                              />
-                            </div>
-                          </div>
-                          <div className="mb-3">
-                            <label className="form-label">Email ID</label>
-                            <input
-                              type="email"
-                              className="form-control"
-                              value={newEmployee.emailId}
-                              onChange={(e) => setNewEmployee({ ...newEmployee, emailId: e.target.value })}
-                            />
-                          </div>
-                          <div className="mb-3">
-                            <label className="form-label">Mobile Number</label>
-                            <input
-                              type="tel"
-                              className="form-control"
-                              value={newEmployee.mobileNumber}
-                              onChange={(e) => setNewEmployee({ ...newEmployee, mobileNumber: e.target.value })}
-                              maxLength="10"
-                            />
-                          </div>
-                          <div className="mb-3">
-                            <label className="form-label">PAN Number*</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={newEmployee.panNo}
-                              onChange={(e) => setNewEmployee({ ...newEmployee, panNo: e.target.value })}
-                              maxLength="10"
-                            />
-                          </div>
-                          <div className="mb-3">
-                            <label className="form-label">UAN Number</label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              value={newEmployee.uanNo}
-                              onChange={(e) => setNewEmployee({ ...newEmployee, uanNo: e.target.value })}
-                            />
-                          </div>
-                          <div className="mb-3">
-                            <label className="form-label">PF Amount*</label>
-                            <input
-                              type="number"
-                              className="form-control"
-                              value={newEmployee.pfAmount}
-                              onChange={(e) => setNewEmployee({ ...newEmployee, pfAmount: e.target.value })}
-                            />
-                          </div>
-                        </div>
-                        <div className="modal-footer">
-                          <button
-                            type="button"
-                            className="btn btn-secondary"
-                            onClick={() => setShowAddEmployee(false)}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={registerNewEmployee}
-                            disabled={isSubmitting}
-                          >
-                            {isSubmitting ? 'Registering...' : 'Register Employee'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Remarks Modal */}
                 {showRemarksModal && currentRemarkItem && (
