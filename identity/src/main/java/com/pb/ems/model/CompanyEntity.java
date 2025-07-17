@@ -40,6 +40,5 @@ public class CompanyEntity {
     private String shortName;
     private String status;
     private String type;
-    private String stampImage;
 
 }
