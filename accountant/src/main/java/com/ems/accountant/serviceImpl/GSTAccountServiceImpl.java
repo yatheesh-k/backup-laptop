@@ -246,7 +246,6 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             String cGst = getStringCellValue(row.getCell(6));
             String sGst = getStringCellValue(row.getCell(7));
             String iGst = getStringCellValue(row.getCell(8));
-            String comment = getStringCellValue(row.getCell(9));
 
             GSTAccountEntity entity = new GSTAccountEntity();
 
@@ -329,7 +328,6 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             String cGst = getStringCellValue(row.getCell(6));
             String sGst = getStringCellValue(row.getCell(7));
             String iGst = getStringCellValue(row.getCell(8));
-            String comment = getStringCellValue(row.getCell(9));
 
             if (customerGstNo == null || customerGstNo.isBlank()) continue;
 
