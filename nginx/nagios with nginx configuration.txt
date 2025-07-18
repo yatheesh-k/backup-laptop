@@ -1,0 +1,219 @@
+sudo apt-get update
+ 1820  ls
+ 1821  cd /opt/
+ 1822  ls
+ 1823  sudo apt-get install -y autoconf gcc libc6 make wget unzip nginx php-fpm libgd-dev
+ 1824  ls
+ 1825  clear
+ 1826  ls
+ 1827  cd /opt/
+ 1828  dpkg -l
+ 1829  clear
+ 1830  ls
+ 1831  dpkg-query -l nginx
+ 1832  apt list --installed
+ 1833  ls
+ 1834  apt list --installed | grep nginx
+ 1835  apt list --installed | grep autoconfig
+ 1836  apt list --installed | grep autoconf
+ 1837  apt list --installed | grep gcc
+ 1838  apt list --installed | grep libc6
+ 1839  apt list --installed | grep make
+ 1840  apt list --installed | grep php-fpm
+ 1841  apt list --installed | grep libgd-dev
+ 1842  cd /tmp/
+ 1843  ls
+ 1844  wget -O nagioscore.tar.gz https://github.com/NagiosEnterprises/nagioscore/archive/nagios-4.4.14.tar.gz
+ 1845  ls
+ 1846  tar -xvzf nagioscore.tar.gz
+ 1847  ls
+ 1848  cd nagioscore-nagios-4.4.14/
+ 1849  ls
+ 1850  sudo ./configure --with-httpd-conf=/etc/nginx/sites-enabled
+ 1851  sudo make all
+ 1852  ls
+ 1853  sudo apt-get install libssl-dev
+ 1854  sudo ./configure --with-httpd-conf=/etc/nginx/sites-enabled
+ 1855  sudo make all
+ 1856  clear
+ 1857  cd /tmp/
+ 1858  ls
+ 1859  cd nagioscore-nagios-4.4.14/
+ 1860  ls
+ 1861  sudo ./configure --with-httpd-conf=/etc/nginx/sites-enabled
+ 1862  http://localhost/nagios/
+ 1863  curl http://localhost/nagios/
+ 1864  curl https://localhost/nagios/
+ 1865  sudo make install
+ 1866  ls
+ 1867  cd base/
+ 1868  make install
+ 1869  sudo make install-groups-users
+ 1870  sudo groupadd nagios
+ 1871  sudo useradd -m -s /bin/bash -g nagios nagios
+ 1872  sudo usermod -a -G nagios www-data
+ 1873  sudo make install
+ 1874  sudo make all
+ 1875  sudo make install
+ 1876  cd /etc/nginx/sites-available/
+ 1877  ls
+ 1878  cat default
+ 1879  ll
+ 1880  sudo make install-daemoninit
+ 1881  cd /tmp/nagioscore-nagios-4.4.14/base/
+ 1882  ls
+ 1883  sudo make install-daemoninit
+ 1884  cd ..
+ 1885  sudo make install-daemoninit
+ 1886  ls
+ 1887  cd /tmp/
+ 1888  ls
+ 1889  cd nagioscore-nagios-4.4.14/
+ 1890  ls
+ 1891  cd /tmp/nagioscore-nagios-4.4.14/
+ 1892  ls
+ 1893  cd base/
+ 1894  ls
+ 1895  cd ..
+ 1896  sudo make install-commandmode
+ 1897  sudo make install-config
+ 1898  sudo vim /etc/nginx/sites-available/nagios
+ 1899  php -v
+ 1900  sudo vim /etc/nginx/sites-available/nagios
+ 1901  sudo ln -s /etc/nginx/sites-available/nagios /etc/nginx/sites-enabled/
+ 1902  sudo systemctl restart nginx.service
+ 1903  sudo systemctl status firewalld
+ 1904  sudo firewall-cmd --list-all
+ 1905  lsof -i:80
+ 1906  lsof -i:443
+ 1907  sudo lsof -i:8080
+ 1908  sudo lsof -i:8081
+ 1909  sudo lsof -i:80
+ 1910  sudo kill 65114
+ 1911  sudo lsof -i:80
+ 1912  sudo systemctl restart nginx.service
+ 1913  sudo lsof -i:80
+ 1914  sudo firewall-cmd --list-all
+ 1915  sudo vim /etc/nginx/sites-available/nagios
+ 1916  sudo firewalld-cmd --zone=public --add-port=81/tcp --permanent
+ 1917  sudo firewall-cmd --zone=public --add-port=81/tcp --permanent
+ 1918  sudo systemctl reload firewalld.service
+ 1919  sudo firewall-cmd --reload
+ 1920  sudo firewall-cmd --list-all
+ 1921  sudo lsof -i :80
+ 1922  sudo lsof -i :81
+ 1923  sudo vim /etc/nginx/sites-available/nagios
+ 1924  sudo systemctl restart nginx.service
+ 1925  sudo systemctl status nagios.service
+ 1926  sudo systemctl start nagios.service
+ 1927  journalctl -xeu nagios.service
+ 1928  sudo systemctl status php8.3-fpm
+ 1929  sudo vim /usr/local/nagios/etc/nagios.cfg
+ 1930  ls /usr/local/nagios/var/spool/checkresults
+ 1931  ls /usr/local/nagios/var/spool/
+ 1932  ls /usr/local/nagios/var/spool
+ 1933  sudo ls /usr/local/nagios/var/spool
+ 1934  cd /usr/local/nagios/var/
+ 1935  ls
+ 1936  cd rw/
+ 1937  pwd
+ 1938  cd ..
+ 1939  ls
+ 1940  pwd
+ 1941  ll
+ 1942  cd ..
+ 1943  ll
+ 1944  sudo chown -R nagios:nagios /usr/local/nagios/var
+ 1945  ll
+ 1946  sudo systemctl start nagios
+ 1947  journalctl -xeu nagios.service
+ 1948  sudo mkdir -p /usr/local/nagios/var/spool/checkresults
+ 1949  sudo chown -R nagios:nagios /usr/local/nagios/var/spool
+ 1950  sudo ls /usr/local/nagios/var/spool
+ 1951  sudo nagios -v /usr/local/nagios/etc/nagios.cfg
+ 1952  nagios -v /usr/local/nagios/etc/nagios.cfg
+ 1953  sudo systemctl start nagios
+ 1954  sudo systemctl status nagios
+ 1955  sudo htpasswd -c /usr/local/nagios/etc/htpasswd.users nagiosadmin
+ 1956  cd /var/www/html/
+ 1957  ls
+ 1958  ls /usr/local/nagios/share
+ 1959  sudo ls /usr/local/nagios/share
+ 1960  cd /usr/local/nagios/
+ 1961  ls
+ 1962  ls /usr/lib/nagios
+ 1963  ls /usr/share/nagios
+ 1964  nagios -v /usr/local/nagios/etc/nagios.cfg
+ 1965  cd etc/
+ 1966  ls
+ 1967  ll
+ 1968  nagios4 -v /etc/nagios4/nagios.cfg
+ 1969  sudo systemctl status nagios.service
+ 1970  ls
+ 1971  cd /opt/
+ 1972  ls
+ 1973  sudo systemctl status nagios.service
+ 1974  curl http://localhost:81/nagios
+ 1975  cd /var/www/
+ 1976  ls
+ 1977  cd /etc/nginx/sites-available/
+ 1978  la
+ 1979  ls
+ 1980  cat nagios
+ 1981  cd /usr/local/nagios/share
+ 1982  cd /usr/local/nagios
+ 1983  ls
+ 1984  sudo find /usr -name "nagios"
+ 1985  cd /usr/lib/nagios/
+ 1986  ls
+ 1987  cd plugins/
+ 1988  ls
+ 1989  ll
+ 1990  cd /usr/local/nagios/bin/nagios
+ 1991  ls
+ 1992  cd /usr/local/nagios/bin
+ 1993  ls
+ 1994  cd /tmp/nagioscore-nagios-4.4.14/
+ 1995  ls
+ 1996  cd html/
+ 1997  ls
+ 1998  sudo vim /etc/nginx/sites-available/nagios
+ 1999  clear
+ 2000  sud vim /etc/nginx/sites-available/nagios
+ 2001  sudo vim /etc/nginx/sites-available/nagios
+ 2002  sudo nginx -t
+ 2003  sudo systemctl restart nagios.service
+ 2004  sudo cp -r /tmp/nagioscore-nagios-4.4.14/html/* /usr/local/nagios/share/
+ 2005  cd /usr/local/nagios/
+ 2006  ls
+ 2007  sudo mkdir share
+ 2008  ls
+ 2009  ll
+ 2010  sudo chown nagios:nagios share/ -R
+ 2011  ll
+ 2012  sudo cp -r /tmp/nagioscore-nagios-4.4.14/html/* /usr/local/nagios/share/
+ 2013  ll
+ 2014  cd share/
+ 2015  ll
+ 2016  sudo chown nagios:nagios share/ -R
+ 2017  ll
+ 2018  sudo chown nagios:nagios -R
+ 2019  sudo chown nagios:nagios /usr/local/nagios/ -R
+ 2020  ll
+ 2021  sudo nginx -t
+ 2022  sudo systemctl restart nagios.service
+ 2023  sudo systemctl status nagios.service
+ 2024  curl http://localhost:81/nagios
+ 2025  sudo systemctl status nagios.service
+ 2026  curl -I http://192.168.1.164:81/nagios
+ 2027  sudo tail -f /var/log/nginx/access.log
+ 2028  sudo tail -f /var/log/nginx/error.log
+ 2029  ls -l /usr/local/nagios/share
+ 2030  cat /etc/nginx/nginx.conf | grep user
+ 2031  sudo chown -R www-data:www-data /usr/local/nagios/share
+ 2032  ll
+ 2033  sudo find /usr/local/nagios/share -type d -exec chmod 755 {} \;  # Set directories to 755
+ 2034  sudo find /usr/local/nagios/share -type f -exec chmod 644 {} \;  # Set files to 644
+ 2035  sudo systemctl restart nginx
+ 2036  sudo systemctl restart php8.3-fpm
+ 2037  history

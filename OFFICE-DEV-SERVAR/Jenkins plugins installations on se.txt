@@ -1,0 +1,37 @@
+Jenkins plugins installations on server,
+
+0,Folders == This plugin allows users to create "folders" to organize jobs. Users can define custom taxonomies (like by project type, organization type etc). Folders are    nestable and you can define views within folders. Maintained by CloudBees, Inc.
+
+1,git    ==    This plugin integrates Git with Jenkins.
+
+2,github ==    This plugin integrates GitHub to Jenkins.
+
+3,SSH Build Agents == Allows to launch agents over SSH, using a Java implementation of the SSH protocol.
+
+4,Email Extension == This plugin is a replacement for Jenkins's email publisher. It allows to configure every aspect of e   mail notifications: when an email is sent,who should receive it and what the email says
+
+5,Configuration as Code == This plugin allows configuration of Jenkins based on human-readable declarative configuration files.
+
+6,Build Name and Description Setter == This plug-in sets the display name and description of a build to something other than #1, #2, #3, ...
+
+7,Credentials Binding == Allows credentials to be bound to environment variables for use from miscellaneous build steps.
+
+8,SSH Agent == This plugin allows you to provide SSH credentials to builds via a ssh-agent in Jenkins.
+
+9,Timestamper == Adds timestamps to the Console Output
+
+10,Workspace Cleanup == This plugin deletes the project workspace when invoked.
+
+11,Gradle == This plugin allows Jenkins to invoke Gradle build scripts directly
+.
+12,NodeJS == NodeJS Plugin executes NodeJS script as a build step.
+
+13,Pipeline == A suite of plugins that lets you orchestrate automation, simple or complex. See Pipeline as Code with Jenkins for more details.
+
+14,GitHub Branch Source == Multibranch projects and organization folders from GitHub. Maintained by CloudBees, Inc.
+
+15,Pipeline: GitHub Groovy Libraries == Allows Pipeline Groovy libraries to be loaded on the fly from GitHub
+
+16,Pipeline Graph View == Provides "Pipeline Graph" visualization of a pipeline job run.
+
+17,Locale == This plugin lets you control the language of Jenkins.
