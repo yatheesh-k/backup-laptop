@@ -206,6 +206,7 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
 
+
     @Override
     public void deleteCandidateById(String companyName, String candidateId) throws EmployeeException, IOException {
         try {
