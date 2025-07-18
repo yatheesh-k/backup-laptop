@@ -1,0 +1,434 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang2057{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red255\green0\blue0;\red0\green0\blue255;}
+{\*\generator Riched20 10.0.22621}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\f0\fs22\lang9 Learning Kubernetes from Docker Compose and Docker Swarm is a great way to build upon your existing knowledge and get a smoother transition into Kubernetes. Both Docker Compose and Docker Swarm are useful tools for container orchestration, but Kubernetes is more complex and offers a broader set of features. Here\rquote s a learning path to help you use your current understanding of Docker and Docker Swarm to get started with Kubernetes.\par
+\par
+Step 1: Understand Kubernetes Basics\par
+Before diving into running Kubernetes itself, it\rquote s important to understand the basic concepts that Kubernetes uses. These concepts are similar to what you might have encountered in Docker Compose and Docker Swarm, but Kubernetes has a more complex structure and features.\par
+\par
+Key Kubernetes Concepts:\par
+Pod: The smallest and simplest Kubernetes object. A pod represents a single instance of a running process in your cluster and can contain one or more containers.\par
+Node: A physical or virtual machine in your Kubernetes cluster. Each node contains the necessary components to run pods (i.e., Kubelet, container runtime like Docker or containerd, etc.).\par
+Cluster: A set of nodes that run containerized applications in Kubernetes.\par
+Deployment: A way to define a set of identical pods. A deployment ensures that the specified number of pods are always running.\par
+Service: A way to expose an application running on a set of pods as a network service. It defines how to access pods from within or outside the cluster.\par
+Namespace: A way to divide cluster resources between multiple users.\par
+Ingress: A set of rules for managing external access to services, usually HTTP.\par
+ConfigMap and Secret: Ways to store and manage configuration data and sensitive data, respectively, that your applications need.\par
+Resources to Learn the Basics:\par
+Kubernetes Concepts\par
+Kubernetes Overview\par
+\par
+Step 2: Set Up Kubernetes Locally\par
+You need to install a local Kubernetes environment to begin experimenting. Here are some options for setting up Kubernetes locally:\par
+\par
+\cf1 Minikube:\par
+\cf0\par
+Minikube is an easy-to-setup tool that runs a Kubernetes cluster locally on your machine. It's great for learning and development.\par
+\par
+Install Minikube:\par
+# For Linux or macOS:\par
+curl -LO {{\field{\*\fldinst{HYPERLINK https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 }}{\fldrslt{https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64\ul0\cf0}}}}\f0\fs22\par
+sudo mv minikube-linux-amd64 /usr/local/bin/minikube\par
+sudo chmod +x /usr/local/bin/minikube\par
+\par
+Start a Kubernetes cluster with:\par
+minikube start\par
+\par
+\cf1 Docker Desktop Kubernetes:\par
+\cf0\par
+If you are already using Docker Desktop on Windows or macOS, Kubernetes is built into Docker Desktop. You can enable it in the Docker Desktop settings under Kubernetes.\par
+Once enabled, you can use the kubectl command (installed with Docker Desktop) to interact with Kubernetes.\par
+\par
+\cf1 Kind (Kubernetes in Docker):\par
+\cf0\par
+Kind is a tool for running Kubernetes clusters inside Docker containers, which is great for testing and learning purposes.\par
+\par
+Install Kind:\par
+curl -Lo ./kind {{\field{\*\fldinst{HYPERLINK https://github.com/kubernetes-sigs/kind/releases/download/v0.18.0/kind-linux-amd64 }}{\fldrslt{https://github.com/kubernetes-sigs/kind/releases/download/v0.18.0/kind-linux-amd64\ul0\cf0}}}}\f0\fs22\par
+chmod +x ./kind\par
+sudo mv ./kind /usr/local/bin/kind\par
+\par
+Create a Kubernetes cluster:\par
+kind create cluster\par
+\par
+Step 3: Transition from Docker Compose to Kubernetes\par
+Since you\rquote re already familiar with Docker Compose, transitioning from Docker Compose to Kubernetes manifests will be easier.\par
+\par
+Docker Compose to Kubernetes:\par
+Docker Compose is great for running multi-container applications on a single host, but Kubernetes is designed for scaling and managing containers across a cluster of machines.\par
+Kubernetes manifests (YAML files) define the desired state for your applications. You can think of them as the Kubernetes equivalent of a docker-compose.yml file, but with more complexity and options.\par
+Example: Docker Compose to Kubernetes Transition\par
+Let\rquote s say your docker-compose.yml for your 3 containers looks like this:\par
+\par
+yaml\par
+\par
+version: '3.8'\par
+\par
+services:\par
+  ems_ui:\par
+    image: lakshmipriyapbt/ems-employee:u1\par
+    ports:\par
+      - "7000:7000"\par
+    networks:\par
+      - ems_network\par
+\par
+  ems_identity:\par
+    image: lakshmipriyapbt/ems-employee:i1\par
+    ports:\par
+      - "9000:9000"\par
+    networks:\par
+      - ems_network\par
+\par
+  ems_employee:\par
+    image: lakshmipriyapbt/ems-employee:e1\par
+    ports:\par
+      - "8000:8000"\par
+    networks:\par
+      - ems_network\par
+\par
+networks:\par
+  ems_network:\par
+    driver: bridge\par
+You can convert this to Kubernetes YAML manifests like this:\par
+\par
+\cf1 Kubernetes Deployment Example:\cf0\par
+yaml\par
+\par
+apiVersion: apps/v1\par
+kind: Deployment\par
+metadata:\par
+  name: ems-identity\par
+spec:\par
+  replicas: 1\par
+  selector:\par
+    matchLabels:\par
+      app: ems-identity\par
+  template:\par
+    metadata:\par
+      labels:\par
+        app: ems-identity\par
+    spec:\par
+      containers:\par
+        - name: ems-identity\par
+          image: lakshmipriyapbt/ems-employee:i1\par
+          ports:\par
+            - containerPort: 9000\par
+---\par
+apiVersion: apps/v1\par
+kind: Deployment\par
+metadata:\par
+  name: ems-ui\par
+spec:\par
+  replicas: 1\par
+  selector:\par
+    matchLabels:\par
+      app: ems-ui\par
+  template:\par
+    metadata:\par
+      labels:\par
+        app: ems-ui\par
+    spec:\par
+      containers:\par
+        - name: ems-ui\par
+          image: lakshmipriyapbt/ems-employee:u1\par
+          ports:\par
+            - containerPort: 7000\par
+---\par
+apiVersion: apps/v1\par
+kind: Deployment\par
+metadata:\par
+  name: ems-employee\par
+spec:\par
+  replicas: 1\par
+  selector:\par
+    matchLabels:\par
+      app: ems-employee\par
+  template:\par
+    metadata:\par
+      labels:\par
+        app: ems-employee\par
+    spec:\par
+      containers:\par
+        - name: ems-employee\par
+          image: lakshmipriyapbt/ems-employee:e1\par
+          ports:\par
+            - containerPort: 8000\par
+\par
+\cf1 Kubernetes Service Example:\cf0\par
+Kubernetes services expose your deployments to the network:\par
+\par
+yaml\par
+\par
+apiVersion: v1\par
+kind: Service\par
+metadata:\par
+  name: ems-ui-service\par
+spec:\par
+  selector:\par
+    app: ems-ui\par
+  ports:\par
+    - protocol: TCP\par
+      port: 7000\par
+      targetPort: 7000\par
+---\par
+apiVersion: v1\par
+kind: Service\par
+metadata:\par
+  name: ems-identity-service\par
+spec:\par
+  selector:\par
+    app: ems-identity\par
+  ports:\par
+    - protocol: TCP\par
+      port: 9000\par
+      targetPort: 9000\par
+---\par
+apiVersion: v1\par
+kind: Service\par
+metadata:\par
+  name: ems-employee-service\par
+spec:\par
+  selector:\par
+    app: ems-employee\par
+  ports:\par
+    - protocol: TCP\par
+      port: 8000\par
+      targetPort: 8000\par
+\par
+\cf1 Apply the YAML Manifests:\cf0\par
+After creating the Kubernetes YAML files for your deployments and services, you can apply them using kubectl:\par
+\par
+bash\par
+\par
+kubectl apply -f ems-ui-deployment.yaml\par
+kubectl apply -f ems-identity-deployment.yaml\par
+kubectl apply -f ems-employee-deployment.yaml\par
+kubectl apply -f ems-ui-service.yaml\par
+kubectl apply -f ems-identity-service.yaml\par
+kubectl apply -f ems-employee-service.yaml\par
+\par
+Step 4: Explore Kubernetes Features\par
+Once you get your containers running, explore more Kubernetes features:\par
+\par
+Scaling: You can scale your deployments up or down easily:\par
+kubectl scale deployment ems-ui --replicas=3\par
+\par
+Namespaces: Group your resources by namespace for better organization.\par
+kubectl create namespace ems\par
+kubectl apply -f ems-ui-deployment.yaml --namespace=ems\par
+\par
+Helm: Helm is a package manager for Kubernetes, similar to docker-compose but with more features and flexibility.\par
+\par
+Learn Helm.\par
+Ingress: Manage external HTTP access to your services using an ingress controller.\par
+\par
+Learn more about Ingress.\par
+Step 5: Practice and Learn More\par
+The best way to learn Kubernetes is through hands-on practice. Here are some resources to continue your learning journey:\par
+\par
+Kubernetes Documentation: The official Kubernetes documentation is your best friend.\par
+\par
+Kubernetes Docs\par
+Kubernetes on Google Cloud: Google Cloud offers a free tier for Kubernetes clusters. You can experiment with Kubernetes in a cloud environment.\par
+\par
+Google Kubernetes Engine (GKE)\par
+Kubernetes by Example: Free resource for hands-on Kubernetes tutorials.\par
+\par
+Kubernetes By Example\par
+Interactive Learning:\par
+\par
+[Play with Kubernetes](https\par
+\par
+\par
+------\par
+7-11-24\par
+nce you have successfully created your Deployment and Service in Kubernetes, the next steps involve several areas depending on what you're looking to do with your Kubernetes application. Below are key next steps for different purposes in Kubernetes.\par
+\par
+1. Scaling the Application\par
+You can scale your application by adjusting the number of replicas for the deployment. This is useful for improving availability and performance.\par
+\par
+To scale up or down the number of replicas for your deployment:\par
+\par
+bash\par
+Copy code\par
+kubectl scale deployment ems-ui-deployment --replicas=3\par
+This will scale your application to 3 replicas. You can scale it back down by changing the number of replicas accordingly.\par
+\par
+To check the status of the scaling:\par
+\par
+bash\par
+Copy code\par
+kubectl get deployments\par
+This will show the desired number of pods vs. the actual number running.\par
+\par
+2. Rolling Updates for Your Application\par
+Kubernetes makes it easy to perform rolling updates on your application, ensuring minimal downtime during updates.\par
+\par
+To update the image for your deployment (for example, updating the version of your container image):\par
+\par
+bash\par
+Copy code\par
+kubectl set image deployment/ems-ui-deployment ems-ui=lakshmipriyapbt/ems-employee:v2\par
+This will update the ems-ui container in your deployment to use version v2 of your image.\par
+\par
+To check the rollout status:\par
+\par
+bash\par
+Copy code\par
+kubectl rollout status deployment/ems-ui-deployment\par
+If you need to roll back the update:\par
+\par
+bash\par
+Copy code\par
+kubectl rollout undo deployment/ems-ui-deployment\par
+3. Persistent Storage\par
+If your application needs persistent storage (e.g., a database or file storage), you can set up Persistent Volumes (PVs) and Persistent Volume Claims (PVCs) in Kubernetes.\par
+\par
+Example of a Persistent Volume Claim for a simple use case:\par
+\par
+yaml\par
+Copy code\par
+apiVersion: v1\par
+kind: PersistentVolumeClaim\par
+metadata:\par
+  name: ems-pvc\par
+spec:\par
+  accessModes:\par
+    - ReadWriteOnce\par
+  resources:\par
+    requests:\par
+      storage: 1Gi\par
+You can then attach the PVC to your application in the Deployment YAML file, ensuring that it gets mounted into your pod:\par
+\par
+yaml\par
+Copy code\par
+volumeMounts:\par
+  - mountPath: /data\par
+    name: ems-data\par
+volumes:\par
+  - name: ems-data\par
+    persistentVolumeClaim:\par
+      claimName: ems-pvc\par
+4. Networking and Service Discovery\par
+Kubernetes provides several ways to handle networking and service discovery between different services.\par
+\par
+DNS Resolution for Services: Kubernetes automatically provides DNS resolution for services within the same namespace. For example, if you have a service named ems-ui-service, you can access it from another pod using ems-ui-service:3000.\par
+\par
+Create Ingress Resources: To expose your application externally using a domain name, you can create an Ingress resource, which allows you to route HTTP(S) traffic to your service.\par
+\par
+Example of an Ingress definition:\par
+\par
+yaml\par
+Copy code\par
+apiVersion: networking.k8s.io/v1\par
+kind: Ingress\par
+metadata:\par
+  name: ems-ui-ingress\par
+  annotations:\par
+    nginx.ingress.kubernetes.io/rewrite-target: /\par
+spec:\par
+  rules:\par
+  - host: ems-ui.local\par
+    http:\par
+      paths:\par
+      - path: /\par
+        pathType: Prefix\par
+        backend:\par
+          service:\par
+            name: ems-ui-service\par
+            port:\par
+              number: 3000\par
+For this to work, you will need an Ingress Controller like NGINX or Traefik running in your cluster.\par
+5. Monitoring and Logging\par
+Monitoring your Kubernetes applications is critical for production environments.\par
+\par
+Use Kubernetes Metrics Server to gather resource metrics:\par
+\par
+bash\par
+Copy code\par
+kubectl top nodes\par
+kubectl top pods\par
+Set Up Logging: By default, Kubernetes logs are available via kubectl logs, but for a more advanced logging solution, you can integrate with tools like Fluentd, Elasticsearch, and Kibana (EFK stack) or Prometheus and Grafana for monitoring.\par
+\par
+Example for checking logs of a specific pod:\par
+\par
+bash\par
+Copy code\par
+kubectl logs ems-app-pod\par
+Prometheus and Grafana can be set up for custom monitoring and dashboards.\par
+\par
+6. ConfigMaps and Secrets\par
+In Kubernetes, ConfigMaps and Secrets are used to handle configuration and sensitive data such as passwords, respectively.\par
+\par
+Create a ConfigMap for storing non-sensitive configuration values:\par
+\par
+bash\par
+Copy code\par
+kubectl create configmap app-config --from-literal=APP_ENV=production --from-literal=DEBUG=false\par
+Create a Secret for sensitive information (like API keys or passwords):\par
+\par
+bash\par
+Copy code\par
+kubectl create secret generic app-secret --from-literal=DB_PASSWORD=secretpassword\par
+You can then reference these in your deployments or pods:\par
+\par
+yaml\par
+Copy code\par
+envFrom:\par
+  - configMapRef:\par
+      name: app-config\par
+  - secretRef:\par
+      name: app-secret\par
+7. Auto-Scaling\par
+You can set up Horizontal Pod Autoscaling (HPA) to automatically scale the number of pods in your deployment based on CPU or memory usage.\par
+\par
+Set up an HPA based on CPU usage:\par
+\par
+bash\par
+Copy code\par
+kubectl autoscale deployment ems-ui-deployment --cpu-percent=50 --min=1 --max=5\par
+This will automatically scale the ems-ui-deployment based on CPU usage, keeping it between 1 and 5 replicas.\par
+\par
+8. Continuous Integration/Continuous Deployment (CI/CD)\par
+You can automate your deployment pipeline with tools like Jenkins, GitLab CI/CD, or GitHub Actions. These tools can help you automatically deploy updates to your Kubernetes cluster whenever you push code changes to your repository.\par
+\par
+Example: GitLab CI/CD for Kubernetes deployment:\par
+\par
+In .gitlab-ci.yml:\par
+\par
+yaml\par
+Copy code\par
+deploy:\par
+  script:\par
+    - kubectl apply -f deployment.yaml\par
+  only:\par
+    - master\par
+9. Cleanup\par
+Once you are done experimenting with your deployments, you can delete the resources you've created.\par
+\par
+Delete the Deployment and Service:\par
+\par
+bash\par
+Copy code\par
+kubectl delete -f deployment.yaml\par
+Or individually:\par
+\par
+bash\par
+Copy code\par
+kubectl delete deployment ems-ui-deployment\par
+kubectl delete service ems-ui-service\par
+10. Accessing Kubernetes in Production\par
+Once you are ready to move to a production-like environment:\par
+\par
+Set up proper Load Balancers: You can configure external load balancers to distribute traffic to your nodes or expose your services using Ingress controllers.\par
+Create a Kubernetes Cluster on the Cloud: You can set up Kubernetes on cloud providers like AWS (EKS), Google Cloud (GKE), or Azure (AKS) for more scalability and fault tolerance.\par
+Next Steps Summary\par
+Scale and update your deployment using kubectl scale and kubectl set image.\par
+Monitor your application with Prometheus, Grafana, and logging tools.\par
+Set up Persistent Volumes if you need to store data.\par
+Consider setting up Horizontal Pod Autoscaling for load management.\par
+Automate your deployments with CI/CD pipelines.\par
+If you have any specific goals or challenges, feel free to ask, and I can guide you further!\par
+}
+ 

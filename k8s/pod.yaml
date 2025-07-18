@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ems-pod
+  labels:
+    app: ems
+spec:
+  containers:
+    - name: ui-container
+      image: yatheesh836/ems:ui-i
+      ports:
+        - containerPort: 5000
+      resources:
+        limits:
+          memory: "1Gi"
+          cpu: "1000m"
+        requests:
+          memory: "512Mi"
+          cpu: "500m"
+    - name: identity-container
+      image: yatheesh836/ems:identity-i
+      ports:
+        - containerPort: 5001
+      resources:
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
+        requests:
+          memory: "256Mi"
+          cpu: "250m"
+    - name: employee-container
+      image: yatheesh836/ems:e-i
+      ports:
+        - containerPort: 5002
+      resources:
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
+        requests:
+          memory: "256Mi"
+          cpu: "250m"
+

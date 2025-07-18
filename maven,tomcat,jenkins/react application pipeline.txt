@@ -1,0 +1,69 @@
+    1  clone and install npm 
+
+
+============================================================================
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/yatheesh-k/project_chat_application.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+     }
+  }
+success this pipeline
+================================================================================= 
+  2, clone build installation npm 
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/yatheesh-k/project_chat_application.git'
+            }
+        }
+
+         stage('Build') { 
+            steps {
+                sh 'npm install' 
+            }
+        }
+    }
+}
+success this pipeline 
+===================================================================================
+  3, clone, npm installtion, build, testm, pipeline.
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/yatheesh-k/arzoo01.git'
+            }
+        }
+
+          stage('Build') { 
+              steps {
+                sh 'npm install' 
+              }
+         }
+           stage('test') {
+               steps {
+                   sh ''
+               }
+           }
+suceess pipeline
+=======================================================================================        
+4,

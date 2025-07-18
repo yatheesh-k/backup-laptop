@@ -1,0 +1,117 @@
+#Deployment.yaml file
+
+# Employee Deployment and Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-deployment
+  labels:
+    app: ems-employee
+spec:
+  replicas: 3  # Number of replicas for the employee service
+  selector:
+    matchLabels:
+      app: ems-employee
+  template:
+    metadata:
+      labels:
+        app: ems-employee
+    spec:
+      containers:
+        - name: employee-container
+          image: yatheesh836/ems:e-i  # Docker image for the employee service
+          ports:
+            - containerPort: 8191  # Expose port 8191 for employee service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: employee-service
+spec:
+  selector:
+    app: ems-employee  # Match the app label from the deployment
+  ports:
+    - protocol: TCP
+      port: 8081   # Port exposed by the service
+      targetPort: 8191  # Port the container listens on
+  type: LoadBalancer  # Expose externally using LoadBalancer (can use NodePort or ClusterIP as needed)
+
+# Identity Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-deployment
+  labels:
+    app: ems-identity
+spec:
+  replicas: 3  # Number of replicas for the identity service
+  selector:
+    matchLabels:
+      app: ems-identity
+  template:
+    metadata:
+      labels:
+        app: ems-identity
+    spec:
+      containers:
+        - name: identity-container
+          image: yatheesh836/ems:identity-i  # Docker image for the identity service
+          ports:
+            - containerPort: 8191  # Expose port 8191 for identity service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+spec:
+  selector:
+    app: ems-identity
+  ports:
+    - protocol: TCP
+      port: 8082   # Port exposed by the service
+      targetPort: 8191  # Port the container listens on
+  type: LoadBalancer  # Expose externally using LoadBalancer
+
+# UI Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-deployment
+  labels:
+    app: ems-ui
+spec:
+  replicas: 3  # Number of replicas for the UI service
+  selector:
+    matchLabels:
+      app: ems-ui
+  template:
+    metadata:
+      labels:
+        app: ems-ui
+    spec:
+      containers:
+        - name: ui-container
+          image: yatheesh836/ems:ui-i  # Docker image for the UI service
+          ports:
+            - containerPort: 3000  # Expose port 3000 for UI service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui-service
+spec:
+  selector:
+    app: ems-ui
+  ports:
+    - protocol: TCP
+      port: 80  # Port exposed by the service
+      targetPort: 3000  # Port the container listens on
+  type: LoadBalancer  # Expose externally using LoadBalancer
+
+
+
