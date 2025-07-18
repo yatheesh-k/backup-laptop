@@ -1,0 +1,55 @@
+  1  cd /opt/
+    2  clear
+    3  sudo apt update
+    4  clear
+    5  sudo swapoff -a
+    6  sudo sed -i '/ swap / s/^/#/' /etc/fstab
+    7  cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+br_netfilter
+EOF
+
+    8  sudo modprobe br_netfilter
+    9  cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+   10  sudo sysctl --system
+   11  sudo modprobe br_netfilter
+   12  cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+   13  sudo sysctl --system
+   14  sudo apt update && sudo apt install -y curl gnupg lsb-release
+   15  sudo apt install -y containerd
+   16  sudo mkdir -p /etc/containerd
+   17  containerd config default | sudo tee /etc/containerd/config.toml
+   18  sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+   19  sudo systemctl restart containerd
+   20  sudo systemctl enable containerd
+   21  sudo curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | sudo gpg --dearmor -o /usr/share/keyrings/kubernetes-archive-keyring.gpg
+   22  echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+   23  sudo apt update
+   24  VERSION=1.31.8-1.1
+   25  sudo apt install -y kubelet=${VERSION} kubeadm=${VERSION} kubectl=${VERSION}
+   26  sudo apt-mark hold kubelet kubeadm kubectl
+   27  kubeadm version
+   28  kubelet --version
+   29  kubectl version --client
+   30  sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+   31  # As regular user (non-root)
+   32  mkdir -p $HOME/.kube
+   33  sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
+   34  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+   35  kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+   36  kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+   37  kubectl get nodes
+   38  kubectl get pods -A
+   39  history
+   40  kubectl get pods -A
+   41  kubectl get pods -n kubesystem
+   42  kubectl get pods -n kube-system
