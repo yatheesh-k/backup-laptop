@@ -78,5 +78,10 @@ public class Constants {
     public static final String PORTAL_CREDENTIALS = "portal_credentials";
     public static final String GST_RECEIPT = "gst_receipt";
     public static final String TDS_RECEIPT= "tds_receipt";
+    public static final String TAX_CONSULTANT =  "tax_consultant";
+    public static final String HR_MANAGEMENT =  "hr_management";
+    public static final String INVOICE_MANAGEMENT =  "invoice_management";
 
+
+    public static final String DUE_DATES = "due_dates";
 }

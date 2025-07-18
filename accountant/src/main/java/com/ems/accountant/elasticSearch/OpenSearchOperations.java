@@ -155,4 +155,25 @@ public class OpenSearchOperations {
         }
         return null;
     }
+
+    public EmployeeEntity getEmployeeByPanNo(String shortName, String panNo) {
+        logger.debug("Getting employee by UAN No: {} for company {}", panNo, shortName);
+        BoolQuery boolQuery = BoolQuery.of(b -> b
+                .filter(f -> f.matchPhrase(m -> m.field(Constants.PAN_NUMBER).query(panNo))));
+        SearchRequest searchRequest = SearchRequest.of(s -> s
+                .index(ResourceIdUtils.generateCompanyIndex(shortName))  // Specify the index
+                .query(Query.of(q -> q.bool(boolQuery)))
+                .size(1));
+
+        try {
+            SearchResponse<EmployeeEntity> searchResponse = esClient.search(searchRequest, EmployeeEntity.class);
+            List<Hit<EmployeeEntity>> hits = searchResponse.hits().hits();
+            if (hits != null && !hits.isEmpty()) {
+                return hits.get(0).source();
+            }
+        } catch (IOException e) {
+            logger.error("Unable to fetch employee details", e);
+        }
+        return null;
+    }
 }

@@ -1138,11 +1138,11 @@ public class OpenSearchOperations {
     }
 
 
-    public EmployeeEntity getCompanyAdmin(String companyName, String indexEms) {
+    public EmployeeEntity getCompanyAdmin(String id, String indexEms) {
         SearchResponse<EmployeeEntity> searchResponse = null;
         try {
             BoolQuery boolQuery = BoolQuery.of(b -> b
-                    .filter(f -> f.matchPhrase(m -> m.field(Constants.COMPANY).query(companyName)))
+                    .filter(f -> f.matchPhrase(m -> m.field(Constants.COMPANY_ID).query(id)))
                     .filter(f -> f.matchPhrase(m -> m.field(Constants.TYPE).query(Constants.EMPLOYEE)))
                     .filter(f -> f.matchPhrase(m -> m.field(Constants.EMP_TYPE).query(Constants.EMPLOYEE_TYPE))));
             SearchRequest searchRequest = SearchRequest.of(s -> s
