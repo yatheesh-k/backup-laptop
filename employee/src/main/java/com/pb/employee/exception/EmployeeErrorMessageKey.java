@@ -195,7 +195,8 @@ public enum EmployeeErrorMessageKey {
     UNABLE_UPDATE_USER_TYPE("unable.update.user.type"),
     USER_TYPE_ALREADY_EXIST("user.type.already.exist"),
     INVALID_ROLE("invalid.role"),
-    UNABLE_UPDATE_COMPANY_ROLES("unable.update.company.roles"),;
+    UNABLE_UPDATE_COMPANY_ROLES("unable.update.company.roles"),
+    EMAIL_ALREADY_USED_BY_CANDIDATE("email.already.used.by.candidate"),;
     private final String key;
 
     EmployeeErrorMessageKey(String keyVal) {

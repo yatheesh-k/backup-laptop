@@ -26,7 +26,7 @@ public class CandidateDaoImpl extends AbstractDao<CandidateEntity> implements Ca
     }
 
     @Override
-    public Collection<CandidateEntity> getCandidates(String companyName, String candidateId, String companyId) throws EmployeeException {
+    public Collection<CandidateEntity> getCandidates(String companyName, String candidateId, String companyId, String emailId) throws EmployeeException {
         Collection<Filter> filters = new ArrayList<>();
 
         if (StringUtils.isNotBlank(companyName)) {
@@ -35,6 +35,10 @@ public class CandidateDaoImpl extends AbstractDao<CandidateEntity> implements Ca
 
         if (StringUtils.isNotBlank(candidateId)) {
             filters.add(new Filter(Constants.ID, Operator.EQ, candidateId));
+        }
+
+        if (StringUtils.isNotBlank(emailId)) {
+            filters.add(new Filter(Constants.EMAIL_ID, Operator.EQ, emailId));
         }
 
         return search(filters, companyName);

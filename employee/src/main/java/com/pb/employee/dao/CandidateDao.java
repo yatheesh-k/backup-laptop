@@ -9,6 +9,6 @@ public interface CandidateDao extends Dao<CandidateEntity> {
 
     default Class<CandidateEntity> getEntityClass() {return CandidateEntity.class;}
 
-    Collection<CandidateEntity> getCandidates(String companyName, String candidateId, String companyId) throws EmployeeException;
+    Collection<CandidateEntity> getCandidates(String companyName, String candidateId, String companyId, String emailId) throws EmployeeException;
 
 }

@@ -736,7 +736,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
-            candidates= candidateDao.getCandidates(request.getCompanyName(), candidateId, company.getId());
+            candidates= candidateDao.getCandidates(request.getCompanyName(), candidateId, company.getId(), null);
             if (CollectionUtils.isEmpty(candidates)) {
                 log.warn("Candidate not found for candidateId: {}, companyName: {}, companyId: {}", candidateId, request.getCompanyName(), company.getId());
                 throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.CANDIDATE_NOT_EXIST), HttpStatus.NOT_FOUND);
