@@ -1,0 +1,28 @@
+#Docker-compose.yaml file
+services:
+  ui-image:
+    image: yatheesh836/ems:ui-i
+    ports:
+      - "5000:5000"
+    networks:
+      - my_network
+
+  identity-image:
+    image: yatheesh836/ems:identity-i
+    ports:
+      - "5001:5001"
+    networks:
+      - my_network
+
+  employee-image:
+    image: yatheesh836/ems:e-i
+    ports:
+      - "5002:5002"
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: overlay
+
+~
