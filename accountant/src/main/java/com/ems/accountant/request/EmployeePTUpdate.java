@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -15,9 +16,11 @@ import lombok.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EmployeePTUpdate {
 
+    @Schema(example = "xxx yyy")
+    @Size(min = 2, max = 100, message = "{employee.size.message}")
+    @Pattern(regexp = "^[A-Z][a-zA-Z]*(?:\\s[A-Z][a-zA-Z]*)*$", message = "{employee.name.message}")
     private String employeeName;
-    private String month;
-    private String year;
+
 
     @Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$",  message = "{invalid.salaryAmount}")
     @Schema(example = "salary")

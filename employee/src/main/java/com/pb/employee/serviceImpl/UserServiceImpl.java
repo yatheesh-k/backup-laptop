@@ -2,15 +2,13 @@ package com.pb.employee.serviceImpl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pb.employee.common.ResponseBuilder;
+import com.pb.employee.dao.CandidateDao;
 import com.pb.employee.dao.UserDao;
 import com.pb.employee.exception.EmployeeErrorMessageKey;
 import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.exception.ErrorMessageHandler;
 import com.pb.employee.opensearch.OpenSearchOperations;
-import com.pb.employee.persistance.model.CompanyEntity;
-import com.pb.employee.persistance.model.DepartmentEntity;
-import com.pb.employee.persistance.model.EmployeeEntity;
-import com.pb.employee.persistance.model.UserEntity;
+import com.pb.employee.persistance.model.*;
 import com.pb.employee.request.UpdateRolesRequest;
 import com.pb.employee.request.UserRequest;
 import com.pb.employee.request.UserUpdateRequest;
@@ -56,6 +54,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private EmployeeService employeeService;
 
+    @Autowired
+    private CandidateDao candidateDao;
+
     @Override
     public ResponseEntity<?> registerUser(String companyName, UserRequest userRequest, HttpServletRequest request) throws EmployeeException, IOException {
         String resourceId = null;
@@ -72,6 +73,13 @@ public class UserServiceImpl implements UserService {
             if (companyEntity == null){
                 log.error("Exception while fetching the company calendar details");
                 throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+            Collection<CandidateEntity> existingCandidate = candidateDao.getCandidates(companyName, null, companyEntity.getId(), userRequest.getEmailId());
+            {
+                if (!existingCandidate.isEmpty()) {
+                    log.error("Candidate with email {} already exists", userRequest.getEmailId());
+                    throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EMAIL_ALREADY_USED_BY_CANDIDATE), HttpStatus.CONFLICT);
+                }
             }
             if (companyEntity.getEmailId().equals(userRequest.getEmailId())){
                 log.error("Exception while fetching the company calendar details");
