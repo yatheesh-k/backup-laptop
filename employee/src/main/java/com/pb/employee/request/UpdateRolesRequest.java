@@ -1,6 +1,6 @@
 package com.pb.employee.request;
 
-import jakarta.validation.constraints.NotEmpty;
+import com.pb.employee.validations.RoleValidation;
 import lombok.*;
 
 import java.util.List;
@@ -12,6 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 public class UpdateRolesRequest {
 
-
-    public List<@NotEmpty String> roles;
+    @RoleValidation
+    public List< String> roles;
 }
