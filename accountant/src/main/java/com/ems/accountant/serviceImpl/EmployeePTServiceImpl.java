@@ -108,7 +108,7 @@ public class EmployeePTServiceImpl implements EmployeePTService {
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
-            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeId, accountId, request.getMonth(), request.getYear());
+            Collection<EmployeeAccountEntity> employees = this.getEmployeeAccountDetails(companyName, employeeId, accountId, null,null);
             if (employees == null || employees.isEmpty()) {
                 log.error("Employee account not found for ID: {}", accountId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PT_NOT_FOUND), HttpStatus.NOT_FOUND);
@@ -412,7 +412,8 @@ public class EmployeePTServiceImpl implements EmployeePTService {
             Collection<EmployeeAccountEntity> existingAccounts = accountDao.getEmployeeAccountByPanMonthYear(
                     panEncoded, company.getId(), month, year, company.getShortName(), matchedEmployee.getId(), null);
 
-            if (existingAccounts != null && !existingAccounts.isEmpty()) {
+            if (existingAccounts != null && !existingAccounts.isEmpty() && existingAccounts.stream()
+                    .anyMatch(acc -> acc.getProfessionalTax() != null && !acc.getProfessionalTax().isEmpty())) {
                 alreadyRegisteredPans.add(panPlain);
                 continue;
             }
@@ -422,7 +423,7 @@ public class EmployeePTServiceImpl implements EmployeePTService {
             String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(panPlain, month, year);
 
             Optional<EmployeeAccountEntity> existingAccount = accountDao.get(resourceId, company.getShortName());
-            if (existingAccount.isPresent() && !existingAccount.get().getProfessionalTax().isEmpty()) {
+            if (existingAccount.isPresent() && existingAccount.get().getProfessionalTax()!=null &&!existingAccount.get().getProfessionalTax().isEmpty()) {
                 log.error("Employee account already exists for ID: {}", resourceId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PT_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
             }else if (existingAccount.isEmpty()) {

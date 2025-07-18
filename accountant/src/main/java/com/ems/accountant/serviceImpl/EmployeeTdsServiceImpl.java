@@ -90,52 +90,29 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
     public ResponseEntity<?> registerEmployeeForTDS(String companyName, String month, String year, MultipartFile file) throws AccountantException, IOException {
         try {
             CompanyEntity companyEntity = validatingCompanyAndFile(companyName, file);
-            log.info("Processing TDS accounts for company: {}", companyName);
+            log.info("Processing employee accounts for company: {}", companyName);
             String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
             List<EmployeeAccountEntity> employees = parseExcelSheetForTDS(companyEntity, month, year, file, indexName);
-
-            for (EmployeeAccountEntity employee : employees) {
-                // PAN-based lookup
-                Collection<EmployeeAccountEntity> accounts = accountDao.getEmployeeAccountByPanMonthYear(
-                        employee.getPanNo(), companyEntity.getId(), month, year, companyEntity.getShortName(), null, null
-                );
-
-                if (accounts != null && !accounts.isEmpty()) {
-                    EmployeeAccountEntity existingAccount = accounts.iterator().next();
-
-                    // If TDS already exists, throw conflict
-                    if (existingAccount.getTds() != null && !existingAccount.getTds().isBlank()) {
-                        log.error("TDS already exists for Employee ID: {} in month {}, year {}", existingAccount.getEmployeeId(), month, year);
-                        throw new AccountantException(
-                                String.format("TDS already updated for Employee ID: %s", existingAccount.getEmployeeId()),
-                                HttpStatus.CONFLICT
-                        );
-                    }
-
-                    // Update and save
-                    existingAccount.setTds(base64Encode(employee.getTds()));
-                    openSearchOperations.saveEntity(existingAccount, existingAccount.getId(), indexName);
-                    log.info("Updated TDS for Employee: {} for month: {}, year: {}", existingAccount.getEmployeeId(), month, year);
-                } else {
-                    log.warn("No employee account found for PAN: {} for month: {}, year: {}", employee.getPanNo(), month, year);
-                }
+            for (EmployeeAccountEntity employee :employees) {
+                openSearchOperations.saveEntity(employee, employee.getId(), indexName);
             }
 
-        } catch (AccountantException e) {
-            log.error("Exception while saving TDS: {}", e.getMessage());
+        }catch (AccountantException e) {
+            log.error("Exception while fetching company details: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            log.error("Unexpected error occurred while saving TDS: {}", e.getMessage());
+            log.error("An unexpected error occurred while fetching company details: {}", e.getMessage());
             throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+
     }
 
     public List<EmployeeAccountEntity> parseExcelSheetForTDS(CompanyEntity company, String month, String year, MultipartFile file, String index) throws IOException, AccountantException {
 
         List<EmployeeAccountEntity> employees = new ArrayList<>();
+        List<String> alreadyRegisteredTds = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -159,37 +136,45 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
                     .orElseThrow(() ->
                             new AccountantException("Employee not found for PAN: " + panPlain, HttpStatus.NOT_FOUND));
 
-            // Check if TDS already exists
-            Collection<EmployeeAccountEntity> accounts = accountDao.getEmployeeAccountByPanMonthYear(
-                    panEncoded, company.getId(), month, year, company.getShortName(), null, null);
+            Collection<EmployeeAccountEntity> existingAccounts = accountDao.getEmployeeAccountByPanMonthYear(
+                    panEncoded, company.getId(), month, year, company.getShortName(), matchedEmployee.getId(), null);
 
-            if (accounts != null && !accounts.isEmpty()) {
-                EmployeeAccountEntity existingAccount = accounts.iterator().next();
-                if (existingAccount.getTds() != null && !existingAccount.getTds().isBlank()) {
-                    throw new AccountantException(
-                            String.format("TDS already exists for employee ID: %s, month: %s, year: %s",
-                                    existingAccount.getEmployeeId(), month, year),
-                            HttpStatus.CONFLICT);
-                }
+            if (existingAccounts != null && !existingAccounts.isEmpty() &&existingAccounts.stream()
+                    .anyMatch(acc -> acc.getTds() != null && !acc.getTds().isEmpty())) {
+                alreadyRegisteredTds.add(panPlain);
+                continue;
             }
 
+
             EmployeeAccountEntity employee = new EmployeeAccountEntity();
-            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(panEncoded, month, year);
+            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(panPlain, month, year);
 
-            employee.setId(resourceId);
-            employee.setEmployeeName(employeeName);
-            employee.setEmployeeId(matchedEmployee.getId());
-            employee.setPanNo(panEncoded);
-            employee.setMonth(month);
-            employee.setYear(year);
-            employee.setCompanyId(company.getId());
-            employee.setTds(base64Encode(tdsAmount));
-            employee.setType(Constants.EMPLOYEE_ACCOUNT);
-
+            Optional<EmployeeAccountEntity> existingAccount = accountDao.get(resourceId, company.getShortName());
+            if (existingAccount.isPresent() && existingAccount.get().getTds()!=null && !existingAccount.get().getTds().isEmpty()) {
+                log.error("Employee account already exists for ID: {}", resourceId);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_TDS_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+            }else if (existingAccount.isEmpty()) {
+                employee.setId(resourceId);
+                employee.setEmployeeName(employeeName);
+                employee.setEmployeeId(matchedEmployee.getId());
+                employee.setPanNo(panEncoded);
+                employee.setMonth(month);
+                employee.setYear(year);
+                employee.setCompanyId(company.getId());
+                employee.setTds(base64Encode(tdsAmount));
+                employee.setType(Constants.EMPLOYEE_ACCOUNT);
+            }else{
+                employee = existingAccount.get();
+                employee.setTds(base64Encode(tdsAmount));
+            }
             employees.add(employee);
+
         }
 
         workbook.close();
+        if (!alreadyRegisteredTds.isEmpty()) {
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_ALREADY_EXISTS_PANS) + String.join(", ", alreadyRegisteredTds), HttpStatus.CONFLICT);
+        }
         return employees;
     }
 
@@ -392,7 +377,9 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
     }
 
     @Override
-    public ResponseEntity<?> addSingleEmployeeForTDS(String companyName, EmployeeTDSRequest employeeTDSRequest) throws AccountantException {
+    public ResponseEntity<?> addSingleEmployeeForTDS(String companyName, EmployeeTDSRequest request) throws AccountantException {
+        EmployeeAccountEntity employee = null;
+
         try {
 
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
@@ -401,35 +388,48 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
-            if (employeeTDSRequest.getPan() == null || employeeTDSRequest.getPan().isBlank()) {
+            if (request.getPanNo() == null || request.getPanNo().isBlank()) {
                 log.warn("PAN is blank, Pan Is required for TDS");
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PAN_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
-            Collection<EmployeeAccountEntity> existingRecords = accountDao.getEmployeeAccountByPanMonthYear(base64Encode(employeeTDSRequest.getPan()), companyEntity.getId(),
-                    employeeTDSRequest.getMonth(), employeeTDSRequest.getYear(), companyEntity.getShortName(), null, null);
-            if (existingRecords != null && !existingRecords.isEmpty()) {
-                log.warn("TDS record already exists for PAN: {}", employeeTDSRequest.getPan());
-                throw new AccountantException("TDS already exists for this PAN and month/year", HttpStatus.CONFLICT);
+            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(request.getPanNo(), request.getMonth(), request.getYear());
+            EmployeeEntity employeeEntity = openSearchOperations.getEmployeeByPanNo(companyEntity.getShortName(), base64Encode(request.getPanNo()));
+            if (employeeEntity == null) {
+                log.error("Employee not found for PAN: {}", request.getPanNo());
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
 
-            String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
+            Collection<EmployeeAccountEntity> employees = pfService.getEmployeeAccountDetails(companyName, employeeEntity.getId(), resourceId, request.getMonth(), request.getYear());
+            if (employees != null && !employees.isEmpty() && employees.stream().anyMatch(emp -> emp.getTds() != null && !emp.getTds().isEmpty())) {
+                log.error("Employee account already exists for ID: {}", resourceId);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_TDS_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+            }else if (employees == null || employees.isEmpty()) {
+                employee = objectMapper.convertValue(request, EmployeeAccountEntity.class);
+                employee.setId(resourceId);
+                employee.setCompanyId(companyEntity.getId());
+                employee.setType(Constants.EMPLOYEE_ACCOUNT);
+                employee.setPanNo(base64Encode(request.getPanNo()));
+                employee.setTds(base64Encode(request.getTds()));
+                employee.setEmployeeId(employeeEntity.getId());
 
-            String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(employeeTDSRequest.getPan(), employeeTDSRequest.getMonth(), employeeTDSRequest.getYear());
-            EmployeeAccountEntity employee = new EmployeeAccountEntity();
-            employee.setId(resourceId);
-            employee.setEmployeeName(employeeTDSRequest.getEmployeeName());
-            employee.setPanNo(base64Encode( employeeTDSRequest.getPan()));
-            employee.setMonth(employeeTDSRequest.getMonth());
-            employee.setYear(employeeTDSRequest.getYear());
-            employee.setCompanyId(companyEntity.getId());
-            employee.setTds(base64Encode(employeeTDSRequest.getTds()));
-            employee.setType(Constants.EMPLOYEE_ACCOUNT);
-
-            openSearchOperations.saveEntity(employee, employee.getId(), indexName);
-            log.info("Stored TDS for employee with PAN: {}", employeeTDSRequest.getPan());
-
-            return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+            }else {
+                employee=employees.iterator().next();
+                employee.setTds(base64Encode(request.getTds()));
+                if (employee.getPanNo()!=null && !employee.getPanNo().isEmpty()) {
+                    employee.setPanNo(base64Encode(employee.getPanNo()));
+                }
+                if (employee.getUanNo()!=null && !employee.getUanNo().isEmpty()) {
+                    employee.setUanNo(base64Encode(employee.getUanNo()));
+                }
+                if (employee.getProfessionalTax()!=null && !employee.getProfessionalTax().isEmpty()) {
+                    employee.setProfessionalTax(base64Encode(employee.getProfessionalTax()));
+                }
+                if (employee.getProvidentFund()!=null && !employee.getProvidentFund().isEmpty()) {
+                    employee.setProvidentFund(base64Encode(employee.getProvidentFund()));
+                }
+            }
+            accountDao.save(employee, companyName);
 
         }catch (AccountantException e) {
             log.error("Exception while Adding Employee TDS: {}", e.getMessage());
@@ -439,6 +439,9 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             log.error("Error while storing TDS for employee", e);
             throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        return new ResponseEntity<>(
+                ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+
     }
 
 
