@@ -100,12 +100,19 @@ public class OfferLetterServiceImpl implements OfferLetterService {
 
             Collection<OfferLetterEntity> offerLetters = offerLetterDao.getOfferLetter(rawCompany.getShortName(), null);
             if (offerLetters != null && !offerLetters.isEmpty()) {
-                OfferLetterEntity offerLetter = offerLetters.iterator().next(); // or use a loop if needed
-                if (Objects.equals(offerLetter.getReferenceNo(), request.getReferenceNo())) {
-                    log.error("Offer letter not found for referenceNo: {}", offerLetter.getReferenceNo());
-                    throw new EmployeeException(String.format(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.OFFER_LETTER_REF_EXIST), offerLetter.getReferenceNo()), HttpStatus.NOT_FOUND);
+                boolean refExists = offerLetters.stream()
+                        .anyMatch(o -> o.getReferenceNo() != null &&
+                                o.getReferenceNo().equalsIgnoreCase(request.getReferenceNo()));
+
+                if (refExists) {
+                    log.error("Offer letter already exists for referenceNo: {}", request.getReferenceNo());
+                    throw new EmployeeException(
+                            String.format(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.OFFER_LETTER_REF_EXIST), request.getReferenceNo()),
+                            HttpStatus.CONFLICT // or BAD_REQUEST
+                    );
                 }
             }
+
 
             OfferLetterEntity entity = objectMapper.convertValue(request, OfferLetterEntity.class);
             entity.setId(resourceId);
