@@ -971,7 +971,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 log.error("Company not found for ID: {}", companyName);
                 throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
-            EmployeeEntity companyAdmin = openSearchOperations.getCompanyAdmin(companyName, Constants.INDEX_EMS);
+            EmployeeEntity companyAdmin = openSearchOperations.getCompanyAdmin(companyEntity.getId(), Constants.INDEX_EMS);
             if (!companyAdmin.getRoles().contains(Constants.ACCOUNTANT)) {
                 log.error("Company admin not found for company: {}", companyName);
                 throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNAUTHORIZED_ACCESS), HttpStatus.NOT_FOUND);

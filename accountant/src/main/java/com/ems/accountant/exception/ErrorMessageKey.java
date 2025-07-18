@@ -80,7 +80,15 @@ public enum ErrorMessageKey {
     TDS_RECEIPTS_NOT_FOUND("tds.receipts.not.found"),
     UNABLE_DELETE_TDS_RECEIPTS("unable.to.delete.tds.receipts"),
     UNABLE_SAVE_TDS_RECEIPTS("unable.to.save.tds.receipts"),
-    PAN_NOT_FOUND("pan.not.found");
+    PAN_NOT_FOUND("pan.not.found"),
+    EMPLOYEE_PT_ALREADY_EXISTS("employee.pt.already.exists"),
+    PT_ALREADY_EXISTS_PANS("pt.already.exists.pan"),
+    PT_ALREADY_EXISTS_UANS("pf.already.exists.uan"),
+    DUE_DATES_ALREADY_EXIST("due.dates.already.exist"),
+    UNABLE_SAVE_DUE_DATES("unable.to.save.due.dates"),
+    DUE_DATES_NOT_FOUND("due.dates.not.found"),
+    UNABLE_UPDATE_DUE_DATES("unable.to.update.due.dates"),
+    UNABLE_DELETE_DUE_DATES("unable.to.delete.due.dates");
 
     private final String key;
 

@@ -65,6 +65,4 @@ public class GSTAccountRequest {
     @Size(max = 15, message = "{iGst.size.message}")
     private String iGst;
 
-    @Size(max = 500, message = "{comment.size.message}")
-    private String comment;
 }
