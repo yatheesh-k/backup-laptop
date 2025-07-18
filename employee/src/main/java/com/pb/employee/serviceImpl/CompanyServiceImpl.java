@@ -540,11 +540,12 @@ public class CompanyServiceImpl implements CompanyService {
             throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_ADMIN_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         try {
-            if (employee.getRoles() != null && !employee.getRoles().isEmpty() && employee.getRoles().contains(updatePayload.getRoles())) {
+            if (employee.getRoles() != null && !employee.getRoles().isEmpty() && employee.getRoles().equals(updatePayload.getRoles())) {
                 log.info("company Roles already exists for employeeId: {}", employee.getId());
-                return new ResponseEntity<>(ResponseBuilder.builder().build().createFailureResponse(new Exception(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.USER_TYPE_ALREADY_EXIST))), HttpStatus.CONFLICT);
+                return new ResponseEntity<>(ResponseBuilder.builder().build().createFailureResponse(new Exception(
+                                String.format(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.USER_TYPE_ALREADY_EXIST), updatePayload.getRoles()))), HttpStatus.CONFLICT);
             }
-            employee.getRoles().addAll(updatePayload.getRoles());
+            employee.setRoles(updatePayload.getRoles());
             openSearchOperations.saveEntity(employee, employee.getId(), indexName);
             log.info("Employee role updated successfully for employeeId: {}", employee.getId());
             return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);

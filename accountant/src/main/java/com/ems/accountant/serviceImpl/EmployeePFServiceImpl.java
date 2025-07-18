@@ -146,7 +146,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             Collection<EmployeeAccountEntity> existingAccounts = accountDao.getEmployeeAccountByUanMonthYear(
                     uanEncoded, company.getId(), month, year, company.getShortName(), matchedEmployee.getId(), null);
 
-            if (existingAccounts != null && !existingAccounts.isEmpty()) {
+            if (existingAccounts != null && !existingAccounts.isEmpty() && existingAccounts.stream().anyMatch(acc -> acc.getProfessionalTax() != null && !acc.getProfessionalTax().isEmpty())) {
                 alreadyRegisteredUans.add(uanPlain);
                 continue;
             }
@@ -154,7 +154,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             EmployeeAccountEntity employee = new EmployeeAccountEntity();
             String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(panNo, month, year);
             Optional<EmployeeAccountEntity> existingAccount = accountDao.get(resourceId, company.getShortName());
-            if (existingAccount.isPresent() && !existingAccount.get().getProvidentFund().isEmpty()) {
+            if (existingAccount.isPresent() && existingAccount.get().getProvidentFund()!=null && !existingAccount.get().getProvidentFund().isEmpty()) {
                 log.error("Employee account already exists for ID: {}", resourceId);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PF_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
             }else if (existingAccount.isEmpty()) {
@@ -171,6 +171,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             }else{
                 employee = existingAccount.get();
                 employee.setProvidentFund(base64Encode(pfAmount));
+                employee.setUanNo(uanEncoded);
             }
             employees.add(employee);
         }
@@ -348,6 +349,10 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             }else {
                 employee=employees.iterator().next();
                 employee.setProvidentFund(base64Encode(request.getProvidentFund()));
+                employee.setUanNo(base64Encode(request.getUanNo()));
+                if(employee.getPanNo()!=null && !employee.getPanNo().isEmpty()){
+                    employee.setPanNo(base64Encode(employee.getPanNo()));
+                }
                 if (employee.getProfessionalTax()!=null && !employee.getProfessionalTax().isEmpty()) {
                     employee.setProfessionalTax(base64Encode(employee.getProfessionalTax()));
                 }

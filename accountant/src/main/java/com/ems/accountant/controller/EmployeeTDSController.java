@@ -22,7 +22,7 @@ public class EmployeeTDSController {
     @Autowired
     private EmployeeTdsService employeeTDSService;
 
-    @RequestMapping(value = "{companyName}/employee/tds", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "{companyName}/tds/comparing", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.employeeTDSComparing.tag}", description = "${api.employeeTDSComparing.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -60,7 +60,7 @@ public class EmployeeTDSController {
         return employeeTDSService.updateEmployeeForTDS(companyName, employeeId, id, request);
     }
 
-    @RequestMapping(value = "{companyName}/singleEmployee/tds", method = RequestMethod.POST)
+    @RequestMapping(value = "{companyName}/employee/tds", method = RequestMethod.POST)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.addSingleEmployeeForTDS.tag}", description = "${api.addSingleEmployeeForTDS.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")

@@ -68,7 +68,7 @@ public class CandidateController {
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(candidateEntities), HttpStatus.OK);
     }
 
-    @Hidden
+    
     @RequestMapping(value = "candidate/{companyName}/{candidateId}", method = RequestMethod.PUT)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY)},
             summary = "${api.updateCandidate.tag}", description = "${api.updateCandidate.description}")
