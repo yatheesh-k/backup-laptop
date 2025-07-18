@@ -88,7 +88,9 @@ public enum ErrorMessageKey {
     UNABLE_SAVE_DUE_DATES("unable.to.save.due.dates"),
     DUE_DATES_NOT_FOUND("due.dates.not.found"),
     UNABLE_UPDATE_DUE_DATES("unable.to.update.due.dates"),
-    UNABLE_DELETE_DUE_DATES("unable.to.delete.due.dates");
+    UNABLE_DELETE_DUE_DATES("unable.to.delete.due.dates"),
+    EMPLOYEE_TDS_ALREADY_EXISTS("employee.tds.already.exists"),
+    TDS_ALREADY_EXISTS_PANS("tds.already.exists.pan");
 
     private final String key;
 

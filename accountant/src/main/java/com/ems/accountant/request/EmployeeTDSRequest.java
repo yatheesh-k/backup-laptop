@@ -32,7 +32,7 @@ public class EmployeeTDSRequest {
 
     @Schema(example = "ABCDE1234F")
     @Pattern(regexp = "^[A-Z]{5}[0-9]{4}[A-Z]$", message = "{pan.message}")
-    private String pan;
+    private String panNo;
 
     @Schema(example = "1800")
     @Pattern(regexp = "^[0-9]+(\\.[0-9]{1,2})?$", message = "{tds.message}")
