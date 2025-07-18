@@ -602,6 +602,117 @@ export const GetTDSResponsesAPI = (month, year) => {
   });
 };
 
+// GST Api Files
+export const GetCompanyInvoicesAPI = (companyId, filters = {}) => {
+  const companyName = localStorage.getItem("companyName");
+  const { customerId, year, month } = filters;
+
+  return microserviceAxiosInstance.get(`/${companyName}/${companyId}/invoice`, {
+    params: {
+      ...(customerId && { customerId }),
+      ...(year && { year }),
+      ...(month && { month })
+    }
+  });
+};
+
+export const GSTComparingAPI = (month, year, file) => {
+  const companyName = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${companyName}/gst/comparing`, formData, {
+    params: {
+      month: month,
+      year: year
+    },
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
+
+export const RegisterGSTAccountAPI = (month, year, file) => {
+  const companyName = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${companyName}/gst/upload`, formData, {
+    params: {
+      month: month,
+      year: year
+    },
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
+
+export const GetGSTAccountsByYearAndMonthAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/gst`, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
+export const AddGSTReceiptsAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  const formData = new FormData();
+
+  // Append all data fields to formData
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, value);
+    }
+  });
+
+  return microserviceAxiosInstance.post(`/${companyName}/gst/receipt`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const GetGSTReceiptsAPI = (params) => {
+  const company = localStorage.getItem("companyName");
+  const { month, year } = params;
+  
+  return microserviceAxiosInstance.get(`/${company}/gst/receipt`, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+export const AddGSTResponseAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  
+  return microserviceAxiosInstance.post(`/${companyName}/gst/response`, data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export const GetGSTResponsesAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/gst/response`, {
+    params: {
+      ...(month && { month }),
+      ...(year && { year })
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+};
+
 
 export const EmployeeNoAttendanceGetAPI = (month, year) => {
   const company = localStorage.getItem("companyName");

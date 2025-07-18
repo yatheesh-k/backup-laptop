@@ -112,6 +112,10 @@ import CompanyTDSSubmission from '../AccountantModule/Tds/CompanyTDSSubmission';
 import TDSProcessing from '../AccountantModule/Tds/TDSProcessing'
 import TDSResponsesView from '../AccountantModule/Tds/TDSResponsesView';
 import TDSReceiptsView from '../AccountantModule/Tds/TDSReceiptsView';
+import CompanyGSTSubmission from '../AccountantModule/GST/CompanyGSTSubmission';
+import GSTProcessing from '../AccountantModule/GST/GSTProcessing';
+import GSTResponsesView from '../AccountantModule/GST/GSTResponsesView';
+import GSTReceiptsView from '../AccountantModule/GST/GSTReceiptsView';
 
 
 
@@ -217,6 +221,10 @@ export const allAvailableRoutes = [
   {path: '/tdsProcessing', allowedTypes: ['company_admin'] },
   {path: '/tdsResponsesView', allowedTypes: ['company_admin'] },
   {path: '/tdsReceiptsView', allowedTypes: ['company_admin'] },
+  {path: '/companyGSTSubmission',  },
+  {path: '/gstProcessing', },
+  {path: '/gstResponsesView',  },
+  {path: '/gstReceiptsView', },
 ];
 
 const Routing = () => {
@@ -629,6 +637,23 @@ const Routing = () => {
       <Route
         path="/tdsReceiptsView"
         element={<ProtectedRoute element={<TDSReceiptsView/>} allowedTypes={['company_admin']} />}
+      />
+      <Route
+        path="/companyGSTSubmission"
+        // element={<ProtectedRoute element={<CompanyGSTSubmission/>} allowedTypes={['company_admin']} />}
+        element={<CompanyGSTSubmission />}
+      />
+      <Route
+        path="/gstProcessing"
+        element={<ProtectedRoute element={<GSTProcessing/>} />}
+      />
+      <Route
+        path="/gstResponsesView"
+        element={<ProtectedRoute element={<GSTResponsesView/>} />}
+      />
+      <Route
+        path="/gstReceiptsView"
+        element={<ProtectedRoute element={<GSTReceiptsView/>}  />}
       />
     </Routes>
   );
