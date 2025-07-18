@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Install Jenkins on EC2 instance in AWS using CloudFormation with Java 21 installed in /opt for Ubuntu-based instances
+
+Resources:
+  JenkinsInstance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      InstanceType: "t2.micro" # You can adjust this to your required instance type
+      ImageId: "ami-09b0a86a2c84101e1" # AMI ID for an Ubuntu-based instance (change if needed)
+      KeyName: "ems-instance-jenkins" # Replace with your SSH key pair name
+      SecurityGroups:
+        - Ref: JenkinsSecurityGroup
+      UserData: !Base64 |
+        #!/bin/bash
+        sudo apt update -y
+        # Install necessary dependencies
+        sudo apt install -y curl wget git software-properties-common
+        # Add the repository for Java 21
+        sudo add-apt-repository ppa:openjdk-r/ppa -y
+        sudo apt update -y
+        # Install Java 21 (make sure this version is available in your PPA)
+        sudo apt install -y openjdk-21-jdk
+        # Verify Java installation
+        java -version
+        # Create /opt/jenkins directory
+        sudo mkdir -p /opt/jenkins
+        # Download Jenkins WAR file to /opt/jenkins
+        wget -O /opt/jenkins/jenkins.war http://updates.jenkins-ci.org/download/war/latest/jenkins.war
+        # Create a systemd unit file for Jenkins
+        sudo bash -c 'cat > /etc/systemd/system/jenkins.service <<EOF
+        [Unit]
+        Description=Jenkins Automation Server
+        After=network.target
+
+        [Service]
+        ExecStart=/usr/lib/jvm/java-21-openjdk-amd64/bin/java -jar /opt/jenkins/jenkins.war
+        User=root
+        Restart=always
+
+        [Install]
+        WantedBy=multi-user.target
+        EOF'
+        # Reload systemd, enable and start Jenkins service
+        sudo systemctl daemon-reload
+        sudo systemctl enable jenkins
+        sudo systemctl start jenkins
+        # Opening Jenkins' default port 8080 in the firewall
+        sudo ufw allow 8080
+        sudo ufw allow 22
+        sudo ufw reload
+      Tags: 
+      - Key: "Name"
+        Value: "Jenkins"
+      - Key: "Environment"
+        Value: "test"
+  JenkinsSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Allow inbound HTTP and Jenkins port"
+      SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: "0.0.0.0/0" # Allow SSH access from anywhere (you can restrict this for more security)
+        - IpProtocol: "tcp"
+          FromPort: "8080"
+          ToPort: "8080"
+          CidrIp: "0.0.0.0/0" # Allow Jenkins web UI access from anywhere (can be restricted as well)
+        - IpProtocol: "tcp"
+          FromPort: "80"
+          ToPort: "80"
+          CidrIp: "0.0.0.0/0" # Allow HTTP traffic (you can change this to HTTPS for security)
+
+Outputs:
+  JenkinsURL:
+    Description: "The URL to access Jenkins"
+    Value: !Sub "http://${JenkinsInstance.PublicIp}:8080"

@@ -1,0 +1,136 @@
+->virtual Private cloud 
+-> using vpc we can create isolated network for our projects in aws cloud 
+subnets
+Internet gateway
+Route table
+nat gateway
+security group
+NACL
+
+->subnet is nothing partition in vpc (subnetwork in large network)
+->subnet are 2 types
+    1) public subnet
+    2) private subnet
+->  private subnet means no internet connectivity
+-> public subnet means internet connectivity
+Note: we will launch our aws resource using vpc and subnets
+
+Internet gateway(IGW)
+---------------------
+-> Logical connection between internet and amazon vpc
+-> every vpc will have its own internet gateway
+-> igw is used to allow incoming and outgoing trraffic for vpc
+Note: IGT will allow instance with public ip to access the internet
+
+Route Table
+-----------
+-> Route table is used to configure Routing for subnets with in vpc
+-> Every subnet in vpc should connect with Routing table
+
+NAT gateway
+-----------
+-> NAT gateway is used to restrict incoming traffic and allow outgoing traffic in vpc subnets
+-> It allow only one way traffic 
+Note: NAT will allow instance with no public ip to access the internet
+
+Security Group
+--------------
+
+-> SG is used to configure rules/protocols to allow the traffic
+-> SG will not support for DENY
+
+----
+-> NACL is usedto configure rules to deny the traffic 
+-> NACL will provide additional security for vpc at network level
+-> Network Access control list (additional security layer in vpc)
+
+-------------------------
+
+----------------------------------------------------------------------------------
+
+VPC Sizing
+
+-----------------------------------------------------------------------------------
+-> VPC sizing means allocating IP address for our virtual cloud
+-> for example I have taken 100 ips in vpc
+         subnet-1 with 1-50 ips
+         subnet-2 with 51-100 ips
+-> If do vpc sizing like above then all my 100 ips got completed . if i get some new requirement in future
+i don't have IPs to launch my resources.
+
+-> To overcome this problem we don't allocate all IP's to subnets
+-> we will allocate few IPS to subnets and we will keep few IPS for future purpose (Reserving)
+
+         
+
+IP Ranges
+---------
+
+-> IP ranges will be calculated in 2 power
+Note: I am using IPV4 version
+)
+IPV4 
+-----
+--> IT contains 4 parts (4 octects)
+ex 192.134.0.12
+--> Every octect contains 8 bits
+--.> 4 octetects * 8 bits = 32 bits
+--> If we give IP range as/16 => 2 power (32-16) =>2 power 16 => 65536 ips we will get
+--> If we give IP range as /32 => 2 power (32-32)=> power  0  => 1 ip we will get
+--> if we give ip range as 31 => 2 power (32-31) => power  1  => 2 ips we will get 
+--> if we give ip range as 30 => 2 power (32-30) => power  2  => 4 ips we will get 
+--> if we give ip range as 29 => 2 power (32-29) => power  3  => 8 ips we will get
+--> if we give ip range as 28 => 2 power (32-28) => power  4  => 16 ips we wiil get  
+--> if we give ip range as 24 => 2 power (32-24) => power  8  => 256 ips we wiil get  
+Note : its is recommended to create ips with range as /24 because it will give 256 ips for us
+-------------------
+createing vpc with subnets, Route table and internet Gateway
+
+1) go to vpc dashboard and create vpc 
+   
+  CIDR BLOCK : 10.0.0.0/16 (we will get 0-65535 ips)
+
+2) Under VPC, Create subnet-1a in AZ 1a
+CIDR BLOCK : 10.0.0.0/24 (we will get 251 ips, remaining 5 ips aws will reserve) 
+
+3) Under vpc create subnet-1b in AZ lb
+    CIDR BLOCK : 10.0.1.0/24 (we will get 251 ips, remaining 5 ips aws will reserve) 
+4)Create 2 Route Tables
+   Route-Table-1 Associate with subnet-1a
+   Route-Table-2 Associate with subnet-1b 
+
+5) Go to Route Table --> Select Route -> Edit Route -> Add the Route to allow all traffic
+   Destination 0.0.0.0/0 & Target is Internet Gateway
+
+Note : Do this 5th step for both route tables
+
+6) Create Internet Gateway
+
+7) Attach Internet Gateway to Vpc
+
+8) Create EC2 instance-1 using custom vpc with subnet-1a
+              Network -> VPC SELECTION
+              Subnet selection -> subnet-1a
+              Auto-Assign-public-IP -> Enable 
+
+ 9)Create EC2 instance-2 using custom vpc with subnet-1a
+              Network -> VPC SELECTION
+              Subnet selection -> subnet-1b
+
+              Auto-Assign-public-IP -> Enable
+
+10) Connect To ec2 instance and check connectivity
+
+11 After Testing Stop Ec2 Instance 
+
+-------------------------------------
+5 ips will reserver for what purpose
+--------------------------------------
+
+10.0.0.255 will reserver for broadcasting (it is blocked for broadcasting)
+10.0.0.0-> internel router is configure in this vpc
+10.0.0.1-> is for network utility
+10.0.0.2 -> is reserved for future use
+10.0.0.3 -> is reserved for future use
+
+
