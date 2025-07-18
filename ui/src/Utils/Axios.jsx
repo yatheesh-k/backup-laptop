@@ -185,6 +185,18 @@ export const companyDeleteByIdApi = async (companyId) => {
   return axiosInstance.delete(`/company/${companyId}`);
 };
 
+export const companyRolesPatchByIdAPI = async (data) => {
+    const company = localStorage.getItem("companyName");
+  try {
+    const response = await axiosInstance.patch(`/company/${company}/roles`, data);
+    return response.data;  // Return the response data for further handling in the calling function
+  } catch (error) {
+    // Ensure errors are propagated properly by rethrowing the error
+    console.error('Error during company update:', error);  // Optional logging
+    throw error;  // Rethrow the error so it can be caught in onSubmit's catch block
+  }
+};
+
 export const companyUpdateByIdApi = async (companyId, data) => {
   try {
     const response = await axiosInstance.patch(`/company/${companyId}`, data);

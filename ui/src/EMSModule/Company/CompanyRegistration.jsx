@@ -57,7 +57,7 @@ const CompanyRegistration = () => {
     try {
       const payload = {
         ...data, // spread all values from form
-        userType: userType, // override userType with the one from state
+        roles: [userType], // override userType with the one from state
       };
       const updateData = {
         companyAddress: data.companyAddress,
@@ -231,30 +231,6 @@ const CompanyRegistration = () => {
 
     // Restore the cursor position
     input.setSelectionRange(cursorPosition, cursorPosition);
-  };
-
-  const validatePassword = (value) => {
-    const errors = [];
-    if (!/(?=.*[0-9])/.test(value)) {
-      errors.push("at least one digit");
-    }
-    if (!/(?=.*[a-z])/.test(value)) {
-      errors.push("at least one lowercase letter");
-    }
-    if (!/(?=.*[A-Z])/.test(value)) {
-      errors.push("at least one uppercase letter");
-    }
-    if (!/(?=.*[\W_])/.test(value)) {
-      errors.push("at least one special character");
-    }
-    if (value.includes(" ")) {
-      errors.push("no spaces");
-    }
-
-    if (errors.length > 0) {
-      return `Password must contain ${errors.join(", ")}.`;
-    }
-    return true; // Return true if all conditions are satisfied
   };
 
   const toInputLowerCase = (e) => {

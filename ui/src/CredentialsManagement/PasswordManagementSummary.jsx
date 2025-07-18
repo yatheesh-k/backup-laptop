@@ -36,7 +36,7 @@ const staticData = {
 const PasswordManagementSummary = () => {
   const [isExistingData, setIsExistingData] = useState(false);
   const [showPasswords, setShowPasswords] = useState([]);
-  const [passwordData, setPasswordData] = useState([]);
+  const [passwordData, setPasswordData] = useState(staticData);
   const {
     register,
     control,
@@ -259,7 +259,7 @@ const PasswordManagementSummary = () => {
               <h4>Password Manager</h4>
 
               {fields.map((item, index) => (
-                <div className="row mb-3" key={item.id || item._id || index}>
+                <div className="row mb-3 p-3" key={item.id || item._id || index}>
                   <div className="col-md-3">
                     <label className="form-label">Credential Name</label>
                     <input
@@ -391,7 +391,7 @@ const PasswordManagementSummary = () => {
                     )}
                   </div>
 
-                  <div className="col-md-1 d-flex align-items-end mb-1 me-2">
+                  <div className="col-md-1 d-flex align-items-end mb-1">
                     <button
                       type="button"
                       className="btn btn-danger btn-sm"

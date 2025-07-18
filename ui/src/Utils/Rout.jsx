@@ -611,8 +611,8 @@ const Routing = () => {
       element={<ProtectedRoute element={<AddCredentialForm/>} allowedTypes={['company_admin']}/>}
       />
         <Route 
-      path='/passwordManager'
-      element={<ProtectedRoute element={<PasswordManagementSummary/>} allowedTypes={['company_admin']}/>}
+      path='/passwordManager'  element={<PasswordManagementSummary/>}
+      // element={<ProtectedRoute element={<PasswordManagementSummary/>} allowedTypes={['company_admin']}/>}
       />
     </Routes>
   );
