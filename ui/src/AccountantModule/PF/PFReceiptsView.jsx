@@ -84,7 +84,7 @@ const PFReceiptsView = () => {
             <div className="card">
               <div className="card-header">
                 <h5 className="card-title mb-0">
-                  View PF Receipts
+                  View Submitted PF Receipts 
                 </h5>
               </div>
               <div className="card-body">

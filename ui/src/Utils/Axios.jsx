@@ -604,16 +604,14 @@ export const GetTDSResponsesAPI = (month, year) => {
 
 // GST Api Files
 export const GetCompanyInvoicesAPI = (companyId, filters = {}) => {
-  const companyName = localStorage.getItem("companyName");
+  const params = {};
   const { customerId, year, month } = filters;
 
-  return microserviceAxiosInstance.get(`/${companyName}/${companyId}/invoice`, {
-    params: {
-      ...(customerId && { customerId }),
-      ...(year && { year }),
-      ...(month && { month })
-    }
-  });
+  if (customerId) params.customerId = customerId;
+  if (year) params.year = year;
+  if (month) params.month = month;
+
+  return axiosInstance.get(`/company/${companyId}/invoice`, { params });
 };
 
 export const GSTComparingAPI = (month, year, file) => {

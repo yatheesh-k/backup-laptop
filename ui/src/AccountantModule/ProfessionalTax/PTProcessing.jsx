@@ -393,7 +393,7 @@ const PTProcessing = () => {
                             accept=".pdf,.jpg,.png"
                             {...register("file", {
                               required: "Please upload acknowledgement file",
-                              validate: (value) => validateField(value, "file"),
+                              // validate: (value) => validateField(value, "file"),
                             })}
                             onChange={(e) => setAcknowledgementFile(e.target.files[0])}
                           />

@@ -174,8 +174,6 @@ const TDSReceiptsView = () => {
                           <th>Receipt Number</th>
                           <th>Receipt Date</th>
                           <th>Total Amount</th>
-                          <th>Assessment Year</th>
-                          <th>Quarter</th>
                           <th>Receipt File</th>
                         </tr>
                       </thead>
@@ -193,12 +191,6 @@ const TDSReceiptsView = () => {
                             </td>
                             <td>
                               {receipt.tdsTotalAmount ? `₹${receipt.tdsTotalAmount}` : "N/A"}
-                            </td>
-                            <td>
-                              {receipt.assessmentYear || "N/A"}
-                            </td>
-                            <td>
-                              {receipt.quarter || "N/A"}
                             </td>
                             <td>
                               {receipt.tdsReceiptFileName ? (

@@ -84,7 +84,7 @@ const GSTReceiptsView = () => {
             <div className="card">
               <div className="card-header">
                 <h5 className="card-title mb-0">
-                  View GST Receipts
+                  View Submitted GST Receipts
                 </h5>
               </div>
               <div className="card-body">
