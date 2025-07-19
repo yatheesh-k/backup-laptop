@@ -209,22 +209,22 @@ export const allAvailableRoutes = [
   {path: '/invoiceTemplate2', allowedTypes: ['company_admin', 'Admin' , 'Accountant'] },
   {path: '/employeeDocumentUpload', allowedTypes: ['employee'] },
   {path: '/employeeDocumentView', allowedTypes: ['company_admin', 'Admin','HR','employee'] },
-  {path: '/companyPFSubmission', },
-  {path: '/pfProcessing', },
-  {path: '/pfResponsesView', },
-  {path: '/pfReceiptsView', },
-  {path: '/companyPTSubmission', },
-  {path: '/ptProcessing',},
-  {path: '/ptResponsesView', },
-  {path: '/ptReceiptsView', },
-  {path: '/companyTDSSubmission',},
-  {path: '/tdsProcessing',},
-  {path: '/tdsResponsesView',},
-  {path: '/tdsReceiptsView',},
-  {path: '/companyGSTSubmission',  },
-  {path: '/gstProcessing', },
-  {path: '/gstResponsesView',  },
-  {path: '/gstReceiptsView', },
+  {path: '/companyPFSubmission', allowedTypes: ['company_admin'] },
+  {path: '/pfProcessing', allowedTypes: ['company_admin'] },
+  {path: '/pfResponsesView', allowedTypes: ['company_admin'] },
+  {path: '/pfReceiptsView', allowedTypes: ['company_admin'] },
+  {path: '/companyPTSubmission', allowedTypes: ['company_admin'] },
+  {path: '/ptProcessing', allowedTypes: ['company_admin'] },
+  {path: '/ptResponsesView', allowedTypes: ['company_admin'] },
+  {path: '/ptReceiptsView', allowedTypes: ['company_admin'] },
+  {path: '/companyTDSSubmission', allowedTypes: ['company_admin'] },
+  {path: '/tdsProcessing', allowedTypes: ['company_admin'] },
+  {path: '/tdsResponsesView', allowedTypes: ['company_admin'] },
+  {path: '/tdsReceiptsView', allowedTypes: ['company_admin'] },
+  {path: '/companyGSTSubmission', allowedTypes: ['company_admin'] },
+  {path: '/gstProcessing', allowedTypes: ['company_admin'] },
+  {path: '/gstResponsesView', allowedTypes: ['company_admin'] },
+  {path: '/gstReceiptsView', allowedTypes: ['company_admin'] },
 ];
 
 const Routing = () => {
@@ -592,68 +592,67 @@ const Routing = () => {
       />
       <Route
         path="/companyPFSubmission"
-        element={<CompanyPFSubmission/>}
+        element={<ProtectedRoute element={<CompanyPFSubmission/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/pfProcessing"
-        element={<PFProcessing/>}
+        element={<ProtectedRoute element={<PFProcessing/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/pfResponsesView"
-        element={<PFResponsesView/>}
+        element={<ProtectedRoute element={<PFResponsesView/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/pfReceiptsView"
-        element={<PFReceiptsView />}
+        element={<ProtectedRoute element={<PFReceiptsView/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/companyPTSubmission"
-        element={<CompanyPTSubmission/>}
+        element={<ProtectedRoute element={<CompanyPTSubmission/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/ptProcessing"
-        element={<PTProcessing/>}
+        element={<ProtectedRoute element={<PTProcessing/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/ptResponsesView"
-        element={<PTResponsesView />}
+        element={<ProtectedRoute element={<PTResponsesView/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/ptReceiptsView"
-        element={<PTReceiptsView/>}
+        element={<ProtectedRoute element={<PTReceiptsView/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/companyTDSSubmission"
-        element={<CompanyTDSSubmission/>}
+        element={<ProtectedRoute element={<CompanyTDSSubmission/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/tdsProcessing"
-        element={<TDSProcessing/>}
+        element={<ProtectedRoute element={<TDSProcessing/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/tdsResponsesView"
-        element={<TDSResponsesView/>}
+        element={<ProtectedRoute element={<TDSResponsesView/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/tdsReceiptsView"
-        element={<TDSReceiptsView />}
+        element={<ProtectedRoute element={<TDSReceiptsView/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/companyGSTSubmission"
-        // element={<ProtectedRoute element={<CompanyGSTSubmission/>} allowedTypes={['company_admin']} />}
-        element={<CompanyGSTSubmission />}
+        element={<ProtectedRoute element={<CompanyGSTSubmission/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/gstProcessing"
-        element={<GSTProcessing />}
+        element={<ProtectedRoute element={<GSTProcessing/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/gstResponsesView"
-        element={<GSTResponsesView/>}
+        element={<ProtectedRoute element={<GSTResponsesView/>} allowedTypes={['company_admin']} />}
       />
       <Route
         path="/gstReceiptsView"
-        element={<GSTReceiptsView/>}
+        element={<ProtectedRoute element={<GSTReceiptsView/>} allowedTypes={['company_admin']} />}
       />
     </Routes>
   );
