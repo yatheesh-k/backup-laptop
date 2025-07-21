@@ -8,9 +8,8 @@ import {
   FileEarmarkPdf as FiFilePdf,
   FileEarmarkWord as FiFileWord,
   FileEarmarkImage as FiFileImage,
-  Download as FiDownload,
   ArrowLeft as FiArrowLeft,
-  PencilSquare
+  PencilSquare,Eye
 } from 'react-bootstrap-icons';
 
 const CandidateDocumentsView = () => {
@@ -178,7 +177,7 @@ const CandidateDocumentsView = () => {
                   <div>
                     <button
                       onClick={() => navigate(-1)}
-                      className="btn btn-outline-secondary btn-sm"
+                      className="btn btn-outline-secondary btn-sm me-2 d-flex align-items-center"
                     >
                       <FiArrowLeft className="me-1" /> Back
                     </button>
@@ -227,13 +226,14 @@ const CandidateDocumentsView = () => {
                                 href={doc.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="btn btn-sm btn-outline-primary me-2"
+                                className="btn btn-sm btn-outline-primary me-2 d-inline-flex align-items-center"
                               >
-                                <FiDownload className="me-1" /> View
+                                <Eye className="me-1" /> View
                               </a>
+
                               <button
                                 onClick={() => handleEditDocument(doc.documentId)}
-                                className="btn btn-sm btn-outline-secondary"
+                                className="btn btn-sm btn-outline-secondary d-inline-flex align-items-center"
                               >
                                 <PencilSquare className="me-1" /> Edit
                               </button>

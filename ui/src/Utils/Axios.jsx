@@ -40,7 +40,13 @@ const attachTokenInterceptor = (config) => {
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-  }  
+  }
+  
+  // Only set Content-Type if it's not FormData
+  if (!(config.data instanceof FormData)) {
+    config.headers['Content-Type'] = 'application/json';
+  }
+  
   return config;
 };
 
@@ -353,6 +359,373 @@ export const EmployeeGetApi = () => {
    const company = localStorage.getItem("companyName")
   return axiosInstance.get(`/${company}/employee`)
 }
+
+export const EmployeePFDetailsGetAPI = () => {
+  const company = localStorage.getItem("companyName");
+  return axiosInstance.get(`/${company}/employee/accounts`);
+};
+
+// PF Api Files
+export const EmployeePFComparingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/pf/comparing`, formData, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
+export const RegisterPFEmployeeAPI = (employeeData) => {
+  const company = localStorage.getItem("companyName");
+  return microserviceAxiosInstance.post(`/${company}/employees/pf/register`, employeeData);
+};
+
+export const SubmitPFForProcessingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employees/pf`, formData, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+export const GetPFForMonthAndYearAPI = (month, year) => {
+  const company = localStorage.getItem("companyName"); 
+
+  return microserviceAxiosInstance.get(`/${company}/employee/account`, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
+export const AddPFReceiptsAPI = (data) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+
+  return microserviceAxiosInstance.post(`/${company}/pf/receipt`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const GetPFReceiptsAPI = (params) => {
+  const company = localStorage.getItem("companyName");
+  const { month, year } = params;
+  
+  return microserviceAxiosInstance.get(`/${company}/pf/receipt`, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+export const AddPFResponseAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  
+  return microserviceAxiosInstance.post(`/${companyName}/pf/response`, data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export const GetPFResponsesAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/pf/response`, {
+    params: {
+      ...(month && { month }),
+      ...(year && { year })
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+};
+
+// PT Api Files
+export const EmployeePTComparingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employee/pt`, formData, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
+export const SubmitPTForProcessingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employees/pt`, formData, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+export const AddPTReceiptsAPI = (data) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+
+  return microserviceAxiosInstance.post(`/${company}/pt/receipt`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const GetPTReceiptsAPI = (params) => {
+  const company = localStorage.getItem("companyName");
+  const { month, year } = params;
+  
+  return microserviceAxiosInstance.get(`/${company}/pt/receipt`, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+
+export const AddPTResponseAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  
+  return microserviceAxiosInstance.post(`/${companyName}/pt/response`, data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export const GetPTResponsesAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/pt/response`, {
+    params: {
+      ...(month && { month }),
+      ...(year && { year })
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+};
+
+// TDS Api Files
+export const EmployeeTDSComparingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employee/tds`, formData, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
+export const SubmitTDSForProcessingAPI = (month, year, file) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${company}/employees/tds`, formData, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+export const AddTDSReceiptsAPI = (data) => {
+  const company = localStorage.getItem("companyName");
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+
+  return microserviceAxiosInstance.post(`/${company}/tds/receipt`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const GetTDSReceiptsAPI = (params) => {
+  const company = localStorage.getItem("companyName");
+  const { month, year } = params;
+  
+  return microserviceAxiosInstance.get(`/${company}/tds/receipt`, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+
+export const AddTDSResponseAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  
+  return microserviceAxiosInstance.post(`/${companyName}/tds/response`, data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export const GetTDSResponsesAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/tds/response`, {
+    params: {
+      ...(month && { month }),
+      ...(year && { year })
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+};
+
+// GST Api Files
+export const GetCompanyInvoicesAPI = (companyId, filters = {}) => {
+  const params = {};
+  const { customerId, year, month } = filters;
+
+  if (customerId) params.customerId = customerId;
+  if (year) params.year = year;
+  if (month) params.month = month;
+
+  return axiosInstance.get(`/company/${companyId}/invoice`, { params });
+};
+
+export const GSTComparingAPI = (month, year, file) => {
+  const companyName = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${companyName}/gst/comparing`, formData, {
+    params: {
+      month: month,
+      year: year
+    },
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
+
+export const RegisterGSTAccountAPI = (month, year, file) => {
+  const companyName = localStorage.getItem("companyName");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return microserviceAxiosInstance.post(`/${companyName}/gst/upload`, formData, {
+    params: {
+      month: month,
+      year: year
+    },
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
+
+export const GetGSTAccountsByYearAndMonthAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/gst`, {
+    params: {
+      month: month,
+      year: year
+    }
+  });
+};
+
+export const AddGSTReceiptsAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  const formData = new FormData();
+
+  // Append all data fields to formData
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, value);
+    }
+  });
+
+  return microserviceAxiosInstance.post(`/${companyName}/gst/receipt`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const GetGSTReceiptsAPI = (params) => {
+  const company = localStorage.getItem("companyName");
+  const { month, year } = params;
+  
+  return microserviceAxiosInstance.get(`/${company}/gst/receipt`, {
+    params: {
+      month,
+      year
+    }
+  });
+};
+
+export const AddGSTResponseAPI = (data) => {
+  const companyName = localStorage.getItem("companyName");
+  
+  return microserviceAxiosInstance.post(`/${companyName}/gst/response`, data, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export const GetGSTResponsesAPI = (month, year) => {
+  const companyName = localStorage.getItem("companyName");
+
+  return microserviceAxiosInstance.get(`/${companyName}/gst/response`, {
+    params: {
+      ...(month && { month }),
+      ...(year && { year })
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+};
+
 
 export const EmployeeNoAttendanceGetAPI = (month, year) => {
   const company = localStorage.getItem("companyName");

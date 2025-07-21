@@ -1,20 +1,19 @@
 import React, { useState, useRef } from "react";
 import LayOut from "../../LayOut/LayOut";
 import {
-  GetCompanyInvoicesAPI,
-  GSTComparingAPI,
-  RegisterGSTAccountAPI,
-  AddGSTResponseAPI
+  EmployeePFDetailsGetAPI,
+  EmployeePTComparingAPI,
+  SubmitPTForProcessingAPI,
+  AddPTResponseAPI
 } from "../../Utils/Axios";
 import { toast } from "react-toastify";
 import { Download, Upload, PlusCircle, CheckCircle, ArrowClockwise } from "react-bootstrap-icons";
 import * as XLSX from "xlsx";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../Context/AuthContext";
+import { Link,useNavigate } from "react-router-dom";
 
-const CompanyGSTSubmission = () => {
+const CompanyPTSubmission = () => {
   const navigate = useNavigate();
-  const [invoices, setInvoices] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [comparisonFile, setComparisonFile] = useState(null);
   const [comparisonResult, setComparisonResult] = useState(null);
@@ -26,39 +25,29 @@ const CompanyGSTSubmission = () => {
   const [currentRemarkItem, setCurrentRemarkItem] = useState(null);
   const [remarks, setRemarks] = useState("");
   const [savedRemarks, setSavedRemarks] = useState({
-    "Company Customers Who are not in the Sheet": "",
-    "GST Mismatch Customers": ""
+    "Company Employees Who are not in the Sheet": "",
+    "PT Mismatch Employees": ""
   });
   const [fileName, setFileName] = useState("");
-  const { employee } = useAuth();
-  const companyId = employee?.companyId;
 
   const formRef = useRef(null);
 
-  const downloadGSTDetailsExcel = async () => {
+  const downloadPTDetailsExcel = async () => {
     setIsLoading(true);
     try {
-      const response = await GetCompanyInvoicesAPI(companyId);
-      
-      // Convert the response data to Excel format
-      const filteredData = response.data.data.map(item => ({
-        "Customer Name": item.customer.customerName,
-        "Customer GST No": item.customer.customerGstNo,
-        "Invoice Number": item.invoice.invoiceNo,
-        "Invoice Date": item.invoice.invoiceDate,
-        "Total Amount": item.invoice.grandTotal,
-        "subTotal": item.invoice.subTotal,
-        "IGST Amount": item.invoice.igst || "0.00",
-        "CGST Amount": item.invoice.cgst || "0.00",
-        "SGST Amount": item.invoice.sgst || "0.00",
+      const response = await EmployeePFDetailsGetAPI();
+      const filteredData = response.data.data.map(emp => ({
+        "Employee Name": `${emp.firstName} ${emp.lastName}`,
+        "PAN No": emp.panNo,
+        "Employee Salary": emp.employeeSalary
       }));
 
       const ws = XLSX.utils.json_to_sheet(filteredData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "GST Invoices");
-      XLSX.writeFile(wb, `GST_Invoices_Template.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, "PT Details");
+      XLSX.writeFile(wb, `PT_Details_Template.xlsx`);
 
-      setInvoices(filteredData);
+      setEmployees(filteredData);
       toast.success("Excel template downloaded successfully");
     } catch (error) {
       handleApiError(error);
@@ -80,12 +69,12 @@ const CompanyGSTSubmission = () => {
     setFileName(file.name);
     setComparisonResult(null);
     setSavedRemarks({
-      "Company Customers Who are not in the Sheet": "",
-      "GST Mismatch Customers": ""
+      "Company Employees Who are not in the Sheet": "",
+      "PT Mismatch Employees": ""
     });
   };
 
-  const compareGSTData = async () => {
+  const comparePTData = async () => {
     if (!comparisonFile) {
       toast.error("Please upload an Excel file first");
       return;
@@ -98,7 +87,7 @@ const CompanyGSTSubmission = () => {
 
     setIsComparing(true);
     try {
-      const response = await GSTComparingAPI(
+      const response = await EmployeePTComparingAPI(
         selectedMonth,
         selectedYear,
         comparisonFile
@@ -113,7 +102,8 @@ const CompanyGSTSubmission = () => {
     }
   };
 
-  const submitGSTForProcessing = async () => {
+
+  const submitPTForProcessing = async () => {
     if (!comparisonFile) {
       toast.error("Please upload an Excel file first");
       return;
@@ -127,34 +117,34 @@ const CompanyGSTSubmission = () => {
     setIsSubmitting(true);
     try {
       // First save the remarks
-      if (savedRemarks["Company Customers Who are not in the Sheet"] || 
-          savedRemarks["GST Mismatch Customers"]) {
+      if (savedRemarks["Company Employees Who are not in the Sheet"] ||
+        savedRemarks["PT Mismatch Employees"]) {
         const responseData = {
           month: selectedMonth,
           year: selectedYear,
-          missingCustomers: savedRemarks["Company Customers Who are not in the Sheet"] || "N/A",
-          gstMismatches: savedRemarks["GST Mismatch Customers"] || "N/A"
+          ignoredCompanyEmployees: savedRemarks["Company Employees Who are not in the Sheet"] || "N/A",
+          invalidPTAmounts: savedRemarks["PT Mismatch Employees"] || "N/A"
         };
 
-        await AddGSTResponseAPI(responseData);
+        await AddPTResponseAPI(responseData);
       }
 
       // Then submit for processing
-      const response = await RegisterGSTAccountAPI(
+      const response = await SubmitPTForProcessingAPI(
         selectedMonth,
         selectedYear,
         comparisonFile
       );
 
       if (response.data && response.data.message === "Success") {
-        toast.success("GST data submitted for processing successfully");
+        toast.success("Professional Tax submitted for processing successfully");
         setComparisonFile(null);
         setComparisonResult(null);
         setSelectedMonth("");
         setSelectedYear("");
         setSavedRemarks({
-          "Company Customers Who are not in the Sheet": "",
-          "GST Mismatch Customers": ""
+          "Company Employees Who are not in the Sheet": "",
+          "PT Mismatch Employees": ""
         });
         setFileName("");
       }
@@ -173,28 +163,32 @@ const CompanyGSTSubmission = () => {
 
   const saveRemarks = () => {
     if (!currentRemarkItem) return;
-    
+
     setSavedRemarks(prev => ({
       ...prev,
       [currentRemarkItem]: remarks
     }));
-    
+
     setShowRemarksModal(false);
     toast.success("Remarks saved successfully");
   };
 
   const allIssuesHaveRemarks = () => {
     if (!comparisonResult) return false;
-    
-    const hasMissingCustomerRemark = 
-      comparisonResult.data["Company Customers Who are not in the Sheet"]?.length > 0 && 
-      !savedRemarks["Company Customers Who are not in the Sheet"];
-    
-    const hasMismatchCustomerRemark = 
-      comparisonResult.data["GST Mismatch Customers"]?.length > 0 && 
-      !savedRemarks["GST Mismatch Customers"];
-    
-    return !hasMissingCustomerRemark && !hasMismatchCustomerRemark;
+
+    const categoriesToCheck = [
+      "Company Employees Who are not in the Sheet",
+      "Employees not in the PT sheet who are having PF",
+      "Employees in PT sheet but not having PF",
+      "PT Mismatch Employees"
+    ];
+
+    return categoriesToCheck.every(category => {
+      if (comparisonResult.data[category]?.length > 0) {
+        return !!savedRemarks[category];
+      }
+      return true;
+    });
   };
 
   const handleApiError = (error) => {
@@ -206,12 +200,12 @@ const CompanyGSTSubmission = () => {
   const handleReupload = () => {
     setComparisonResult(null);
     setSavedRemarks({
-      "Company Customers Who are not in the Sheet": "",
-      "GST Mismatch Customers": ""
+      "Company Employees Who are not in the Sheet": "",
+      "PT Mismatch Employees": ""
     });
     setFileName("");
     setComparisonFile(null);
-    
+
     if (formRef.current) {
       formRef.current.scrollIntoView({ behavior: 'smooth' });
     }
@@ -223,7 +217,7 @@ const CompanyGSTSubmission = () => {
         <div className="row d-flex align-items-center justify-content-between mt-1 mb-2">
           <div className="col">
             <h1 className="h3 mb-3">
-              <strong>Company GST Submission</strong>
+              <strong>Company Professional Tax Submission</strong>
             </h1>
           </div>
           <div className="col-auto" style={{ paddingBottom: "20px" }}>
@@ -233,7 +227,7 @@ const CompanyGSTSubmission = () => {
                   <Link to="/main" className="custom-link">Home</Link>
                 </li>
                 <li className="breadcrumb-item active">Finance</li>
-                <li className="breadcrumb-item active">GST Submission</li>
+                <li className="breadcrumb-item active">Professional Tax Submission</li>
               </ol>
             </nav>
           </div>
@@ -244,21 +238,21 @@ const CompanyGSTSubmission = () => {
             <div className="card">
               <div className="card-header">
                 <h5 className="card-title mb-0">
-                  GST Management
+                  Professional Tax Management
                 </h5>
               </div>
               <div className="card-body">
                 {/* Step 1: Download Template */}
                 <div className="mb-4">
-                  <h5 className="mb-3">1. Download Company GST Invoices</h5>
+                  <h5 className="mb-3">1. Download Employee Professional Tax Details</h5>
                   <div className="mb-3">
                     <button
                       className="btn btn-primary"
-                      onClick={downloadGSTDetailsExcel}
+                      onClick={downloadPTDetailsExcel}
                       disabled={isLoading}
                     >
                       <Download className="me-2 d-inline-flex align-items-center" />
-                      {isLoading ? 'Preparing...' : 'Download GST Invoices'}
+                      {isLoading ? 'Preparing...' : 'Download PT Details'}
                     </button>
                   </div>
                   <div className="alert alert-info">
@@ -266,9 +260,9 @@ const CompanyGSTSubmission = () => {
                   </div>
                 </div>
 
-                {/* Step 2: Compare GST Data */}
+                {/* Step 2: Compare PT Data */}
                 <div className="mb-4" ref={formRef}>
-                  <h5>2. Compare GST Data</h5>
+                  <h5>2. Compare Professional Tax Data</h5>
                   <div className="row g-3 align-items-end mb-3">
                     <div className="col-md-3">
                       <label className="form-label">Select Month</label>
@@ -308,11 +302,11 @@ const CompanyGSTSubmission = () => {
                           className="form-control"
                           accept=".xlsx"
                           onChange={handleComparisonFileUpload}
-                          id="gstFileUpload"
+                          id="ptFileUpload"
                           style={{ display: 'none' }}
                         />
-                        <label 
-                          htmlFor="gstFileUpload" 
+                        <label
+                          htmlFor="ptFileUpload"
                           className="btn btn-outline-secondary"
                         >
                           <Upload className="me-2 d-inline-flex align-items-center" />
@@ -331,7 +325,7 @@ const CompanyGSTSubmission = () => {
                     <div className="col-md-2">
                       <button
                         className="btn btn-primary"
-                        onClick={compareGSTData}
+                        onClick={comparePTData}
                         disabled={!comparisonFile || !selectedMonth || !selectedYear || isComparing}
                       >
                         {isComparing ? (
@@ -350,16 +344,16 @@ const CompanyGSTSubmission = () => {
                     <div className="mb-4">
                       <h5 className="mb-4">Comparison Results</h5>
 
-                      {/* Customers Not in Sheet (Company customers missing from uploaded file) */}
-                      {comparisonResult.data["Company Customers Who are not in the Sheet"]?.length > 0 && (
+                      {/* Employees Not in Sheet (Company employees missing from uploaded file) */}
+                      {comparisonResult.data["Company Employees Who are not in the Sheet"]?.length > 0 && (
                         <div className="card mb-3 border-danger">
                           <div className="card-header bg-danger text-white d-flex justify-content-between align-items-center">
-                            <span>Customers Missing from Uploaded Sheet ({comparisonResult.data["Company Customers Who are not in the Sheet"].length})</span>
+                            <span>Employees Missing from PT Sheet ({comparisonResult.data["Company Employees Who are not in the Sheet"].length})</span>
                             <button
                               className="btn btn-sm btn-light"
-                              onClick={() => openRemarksModal("Company Customers Who are not in the Sheet")}
+                              onClick={() => openRemarksModal("Company Employees Who are not in the Sheet")}
                             >
-                              {savedRemarks["Company Customers Who are not in the Sheet"] ? (
+                              {savedRemarks["Company Employees Who are not in the Sheet"] ? (
                                 <span>Edit Remarks</span>
                               ) : (
                                 <span>Add Remarks</span>
@@ -371,48 +365,164 @@ const CompanyGSTSubmission = () => {
                               <table className="table table-bordered">
                                 <thead>
                                   <tr>
-                                    <th>Customer Name</th>
-                                    <th>GST Number</th>
+                                    <th>Employee Name</th>
+                                    <th>PAN Number</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {comparisonResult.data["Company Customers Who are not in the Sheet"].map((customer, i) => (
-                                    <tr key={i}>
-                                      <td>{customer.customerName}</td>
-                                      <td>{customer.customerGstNo}</td>
-                                    </tr>
-                                  ))}
+                                  {comparisonResult.data["Company Employees Who are not in the Sheet"].map((emp, i) => {
+                                    const match = emp.match(/(.*?) \(PAN: (.*?)\)/);
+                                    return match ? (
+                                      <tr key={i}>
+                                        <td>{match[1]}</td>
+                                        <td>{match[2]}</td>
+                                      </tr>
+                                    ) : (
+                                      <tr key={i}>
+                                        <td colSpan="2">{emp}</td>
+                                      </tr>
+                                    );
+                                  })}
                                 </tbody>
                               </table>
                             </div>
-                            {savedRemarks["Company Customers Who are not in the Sheet"] && (
+                            {savedRemarks["Company Employees Who are not in the Sheet"] && (
                               <div className="mt-3">
                                 <strong className="me-2">Remarks:</strong>
-                                <span>{savedRemarks["Company Customers Who are not in the Sheet"]}</span>
+                                <span>{savedRemarks["Company Employees Who are not in the Sheet"]}</span>
                               </div>
                             )}
                           </div>
                         </div>
                       )}
 
-                      {/* Customers Not in Company (Uploaded customers not in company records) */}
-                      {comparisonResult.data["Customers Not existed in company"]?.length > 0 && (
+                      {/* Employees not in PT sheet but having PF */}
+                      {comparisonResult.data["Employees not in the PT sheet who are having PF"]?.length > 0 && (
                         <div className="card mb-3 border-warning">
                           <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-                            <span>Customers Not Found in Company Records ({comparisonResult.data["Customers Not existed in company"].length})</span>
+                            <span>Employees Not in PT Sheet But Having PF ({comparisonResult.data["Employees not in the PT sheet who are having PF"].length})</span>
+                            <button
+                              className="btn btn-sm btn-light"
+                              onClick={() => openRemarksModal("Employees not in the PT sheet who are having PF")}
+                            >
+                              {savedRemarks["Employees not in the PT sheet who are having PF"] ? (
+                                <span>Edit Remarks</span>
+                              ) : (
+                                <span>Add Remarks</span>
+                              )}
+                            </button>
+                          </div>
+                          <div className="card-body">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>Employee Name</th>
+                                    <th>PAN Number</th>
+                                    <th>UAN Number</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {comparisonResult.data["Employees not in the PT sheet who are having PF"].map((emp, i) => {
+                                    const match = emp.match(/(.*?) \(PAN: (.*?), UAN: (.*?)\)/);
+                                    return match ? (
+                                      <tr key={i}>
+                                        <td>{match[1]}</td>
+                                        <td>{match[2]}</td>
+                                        <td>{match[3]}</td>
+                                      </tr>
+                                    ) : (
+                                      <tr key={i}>
+                                        <td colSpan="3">{emp}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                            {savedRemarks["Employees not in the PT sheet who are having PF"] && (
+                              <div className="mt-3">
+                                <strong className="me-2">Remarks:</strong>
+                                <span>{savedRemarks["Employees not in the PT sheet who are having PF"]}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Employees in PT sheet but not having PF */}
+                      {comparisonResult.data["Employees in PT sheet but not having PF"]?.length > 0 && (
+                        <div className="card mb-3 border-warning">
+                          <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                            <span>Employees in PT Sheet Without PF ({comparisonResult.data["Employees in PT sheet but not having PF"].length})</span>
+                            <button
+                              className="btn btn-sm btn-light"
+                              onClick={() => openRemarksModal("Employees in PT sheet but not having PF")}
+                            >
+                              {savedRemarks["Employees in PT sheet but not having PF"] ? (
+                                <span>Edit Remarks</span>
+                              ) : (
+                                <span>Add Remarks</span>
+                              )}
+                            </button>
+                          </div>
+                          <div className="card-body">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>Employee Name</th>
+                                    <th>PAN Number</th>
+                                    <th>Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {comparisonResult.data["Employees in PT sheet but not having PF"].map((emp, i) => {
+                                    const match = emp.match(/(.*?) \(PAN: (.*?)\) has no PF \(UAN\)/);
+                                    return match ? (
+                                      <tr key={i}>
+                                        <td>{match[1]}</td>
+                                        <td>{match[2]}</td>
+                                        <td>No PF (UAN)</td>
+                                      </tr>
+                                    ) : (
+                                      <tr key={i}>
+                                        <td colSpan="3">{emp}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                            {savedRemarks["Employees in PT sheet but not having PF"] && (
+                              <div className="mt-3">
+                                <strong className="me-2">Remarks:</strong>
+                                <span>{savedRemarks["Employees in PT sheet but not having PF"]}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Employees Not in Company (Uploaded employees not in company records) */}
+                      {comparisonResult.data["Employees Not existed in company"]?.length > 0 && (
+                        <div className="card mb-3 border-warning">
+                          <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                            <span>Employees Not Found in Company Records ({comparisonResult.data["Employees Not existed in company"].length})</span>
                             <div>
                               <button
                                 className="btn btn-sm btn-light me-2"
                                 onClick={() => {
-                                  navigate("/customers/create");
+                                  // Navigate to employee register page
+                                  navigate("/employeeRegister");
                                 }}
                               >
                                 <PlusCircle className="me-1 d-inline-flex align-items-center" />
-                                Create Customer
+                                Register Employee
                               </button>
                               <button
                                 className="btn btn-sm btn-outline-secondary"
-                                onClick={downloadGSTDetailsExcel}
+                                onClick={downloadPTDetailsExcel}
                               >
                                 <Download className="me-1 d-inline-flex align-items-center" />
                                 Get Excel to Update
@@ -421,41 +531,31 @@ const CompanyGSTSubmission = () => {
                           </div>
                           <div className="card-body">
                             <div className="alert alert-info mb-3">
-                              <strong>Note:</strong> These customers are in your uploaded file but not in company records. 
-                              You can either create them as new customers or remove them from your Excel file and reupload.
+                              <strong>Note:</strong> These employees are in your uploaded file but not in company records. 
+                              You can either register them as new employees or remove them from your Excel file and reupload.
                             </div>
-                            <div className="table-responsive">
-                              <table className="table table-bordered">
-                                <thead>
-                                  <tr>
-                                    <th>Customer Name</th>
-                                    <th>GST Number</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {comparisonResult.data["Customers Not existed in company"].map((customer, i) => (
-                                    <tr key={i}>
-                                      <td>{customer.customerName}</td>
-                                      <td>{customer.customerGstNo}</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
+                            <ul className="list-group">
+                              {comparisonResult.data["Employees Not existed in company"].map((emp, i) => (
+                                <li key={i} className="list-group-item d-flex justify-content-between align-items-center">
+                                  <span>{emp}</span>
+                                  <small className="text-muted">Not in company records</small>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
                         </div>
                       )}
 
-                      {/* GST Mismatch Customers */}
-                      {comparisonResult.data["GST Mismatch Customers"]?.length > 0 && (
+                      {/* PT Mismatch Employees */}
+                      {comparisonResult.data["PT Mismatch Employees"]?.length > 0 && (
                         <div className="card mb-3 border-warning">
                           <div className="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-                            <span>GST Customer Mismatches ({comparisonResult.data["GST Mismatch Customers"].length})</span>
+                            <span>PT Amount Mismatches ({comparisonResult.data["PT Mismatch Employees"].length})</span>
                             <button
                               className="btn btn-sm btn-light"
-                              onClick={() => openRemarksModal("GST Mismatch Customers")}
+                              onClick={() => openRemarksModal("PT Mismatch Employees")}
                             >
-                              {savedRemarks["GST Mismatch Customers"] ? (
+                              {savedRemarks["PT Mismatch Employees"] ? (
                                 <span>Edit Remarks</span>
                               ) : (
                                 <span>Add Remarks</span>
@@ -467,34 +567,33 @@ const CompanyGSTSubmission = () => {
                               <table className="table table-bordered">
                                 <thead>
                                   <tr>
-                                    <th>Customer Name</th>
-                                    <th>Expected GST No</th>
-                                    <th>Uploaded GST No</th>
-                                    <th>Expected State</th>
-                                    <th>Uploaded State</th>
-                                    <th>Expected State Code</th>
-                                    <th>Uploaded State Code</th>
+                                    <th>Employee</th>
+                                    <th>Expected PT Amount</th>
+                                    <th>Uploaded PT Amount</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {comparisonResult.data["GST Mismatch Customers"].map((mismatch, i) => (
-                                    <tr key={i}>
-                                      <td>{mismatch.customerName}</td>
-                                      <td>{mismatch.expectedGstNo}</td>
-                                      <td>{mismatch.uploadedGstNo}</td>
-                                      <td>{mismatch.expectedState}</td>
-                                      <td>{mismatch.uploadedState}</td>
-                                      <td>{mismatch.expectedStateCode}</td>
-                                      <td>{mismatch.uploadedStateCode}</td>
-                                    </tr>
-                                  ))}
+                                  {comparisonResult.data["PT Mismatch Employees"].map((mismatch, i) => {
+                                    const match = mismatch.match(/(.*?) \(Expected: (.*?), Uploaded: (.*?)\)/);
+                                    return match ? (
+                                      <tr key={i}>
+                                        <td>{match[1]}</td>
+                                        <td>{match[2]}</td>
+                                        <td>{match[3]}</td>
+                                      </tr>
+                                    ) : (
+                                      <tr key={i}>
+                                        <td colSpan="3">{mismatch}</td>
+                                      </tr>
+                                    );
+                                  })}
                                 </tbody>
                               </table>
                             </div>
-                            {savedRemarks["GST Mismatch Customers"] && (
+                            {savedRemarks["PT Mismatch Employees"] && (
                               <div className="mt-3">
                                 <strong className="me-2">Remarks:</strong>
-                                <span>{savedRemarks["GST Mismatch Customers"]}</span>
+                                <span>{savedRemarks["PT Mismatch Employees"]}</span>
                               </div>
                             )}
                           </div>
@@ -508,7 +607,7 @@ const CompanyGSTSubmission = () => {
                           onClick={handleReupload}
                         >
                           <ArrowClockwise className="me-2 d-inline-flex align-items-center" />
-                           Reupload
+                          Reupload
                         </button>
                       </div>
 
@@ -524,7 +623,7 @@ const CompanyGSTSubmission = () => {
                         <div>
                           <button
                             className="btn btn-success"
-                            onClick={submitGSTForProcessing}
+                            onClick={submitPTForProcessing}
                             disabled={isSubmitting || !allIssuesHaveRemarks()}
                           >
                             <CheckCircle className="me-2 d-inline-flex align-items-center" />
@@ -589,4 +688,4 @@ const CompanyGSTSubmission = () => {
   );
 };
 
-export default CompanyGSTSubmission;
+export default CompanyPTSubmission;
