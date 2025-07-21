@@ -58,7 +58,7 @@ public class DueDatesController {
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(datesRequests), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "{companyName}/dates", method = RequestMethod.PATCH)
+    @RequestMapping(value = "{companyName}/date/{id}", method = RequestMethod.PATCH)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY)},
             summary = "${api.updateDueDates.tag}", description = "${api.updateDueDates.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -66,9 +66,9 @@ public class DueDatesController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String responseId,
+            @PathVariable String id,
             @Valid @RequestBody DueDatesRequest updateRequest) throws AccountantException {
-        return dueDatesService.updateDueDates(companyName, responseId, updateRequest);
+        return dueDatesService.updateDueDates(companyName, id, updateRequest);
     }
 
     @RequestMapping(value = "{companyName}/dates/{id}", method = RequestMethod.DELETE)
