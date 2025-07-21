@@ -170,7 +170,7 @@ const handleSaveRoles = async () => {
 
   try {
     const payload = { roles: rolesArray };
-    await companyRolesPatchByIdAPI(selectedCompanyId, payload);
+    await companyRolesPatchByIdAPI(payload);
     toast.success("Role updated successfully!");
     closeRoleModal();
     getUser(); // Refresh company list

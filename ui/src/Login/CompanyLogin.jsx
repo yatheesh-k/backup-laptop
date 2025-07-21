@@ -2,11 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import { Bounce, toast } from "react-toastify";
-import { CompanyloginApi, ValidateOtp, resendPasswordOTP } from "../Utils/Axios";
+import {
+  CompanyloginApi,
+  ValidateOtp,
+  resendPasswordOTP,
+} from "../Utils/Axios";
 import { Modal, ModalBody, ModalHeader, ModalTitle } from "react-bootstrap";
 import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../Context/AuthContext";
-import '../LayOut/NewLogin/Message.css'
+import "../LayOut/NewLogin/Message.css";
 import Loader from "../Utils/Loader";
 import { setAuthDetails } from "../Redux/AuthSlice";
 import { useDispatch } from "react-redux";
@@ -55,7 +59,7 @@ const CompanyLogin = () => {
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
   const sendOtp = (data) => {
@@ -72,16 +76,25 @@ const CompanyLogin = () => {
         if (token) {
           localStorage.setItem("token", token);
           const decodedToken = jwtDecode(token);
-          const { sub: userId, roles: userRole, company, employeeId,resourceType } = decodedToken;
-          dispatch(setAuthDetails({
-            userId,
-            userRole,
-            resourceType,
+          const {
+            sub: userId,
+            roles: userRole,
             company,
-            employeeId,
-            source: 'company',
-          }));
-          setAuthUser({ userId, userRole, company, employeeId,resourceType });
+            employee: employeeId,
+            resourceType,
+          } = decodedToken;
+
+          dispatch(
+            setAuthDetails({
+              userId,
+              userRole,
+              company,
+              employeeId,
+              resourceType,
+              source: "company",
+            })
+          );
+          setAuthUser({ userId, userRole, company, employeeId, resourceType });
           toast.success("OTP Sent Successfully");
           setOtpSent(true);
           setOtpExpired(false);
@@ -94,7 +107,8 @@ const CompanyLogin = () => {
       })
       .catch((error) => {
         setLoading(false);
-        const errorMessage = error.message || "Login failed. Please try again later.";
+        const errorMessage =
+          error.message || "Login failed. Please try again later.";
         setErrorMessage(errorMessage);
         setShowErrorModal(true);
       });
@@ -103,23 +117,25 @@ const CompanyLogin = () => {
   const resendOtp = () => {
     const currentValues = getValues();
     setLoading(true);
-    
+
     resendPasswordOTP({
       username: currentValues.username,
-      company: company
+      company: company,
     })
-    .then((response) => {
-      setLoading(false);
-      toast.success("New OTP Sent Successfully");
-      setOtpExpired(false);
-      setOtpTimeLimit(180);
-    })
-    .catch((error) => {
-      setLoading(false);
-      const errorMessage = error.response?.data?.message || "Failed to resend OTP. Please try again.";
-      setErrorMessage(errorMessage);
-      setShowErrorModal(true);
-    });
+      .then((response) => {
+        setLoading(false);
+        toast.success("New OTP Sent Successfully");
+        setOtpExpired(false);
+        setOtpTimeLimit(180);
+      })
+      .catch((error) => {
+        setLoading(false);
+        const errorMessage =
+          error.response?.data?.message ||
+          "Failed to resend OTP. Please try again.";
+        setErrorMessage(errorMessage);
+        setShowErrorModal(true);
+      });
   };
 
   const verifyOtpAndCompanyLogin = (data) => {
@@ -140,12 +156,16 @@ const CompanyLogin = () => {
           autoClose: 2000,
         });
         setTimeout(() => {
-          navigate("/main");        
+          navigate("/main");
         }, 1000);
       })
       .catch((error) => {
         setLoading(false);
-        if (error.response && error.response.data && error.response.data.error) {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.error
+        ) {
           setErrorMessage(error.response.data.error.message);
         } else {
           setErrorMessage("Login failed. Please try again later.");
@@ -180,7 +200,7 @@ const CompanyLogin = () => {
     if (value.includes(" ")) {
       errors.push("no spaces");
     }
-    
+
     if (errors.length > 0) {
       return `Password must contain ${errors.join(", ")}.`;
     }
@@ -195,31 +215,37 @@ const CompanyLogin = () => {
     }
   };
   const preventSpaces = (e) => {
-  if (e.key === ' ') {
-    e.preventDefault();
-  }
-};
+    if (e.key === " ") {
+      e.preventDefault();
+    }
+  };
 
   return (
     <div>
       <main className="newLoginMainWrapper">
-        {loading && <Loader/>}
+        {loading && <Loader />}
         <div className="newLoginWrapper">
           <div className="newLoginContainer">
             <div className="newLoginLeftSectionOuter">
-              <div className="newLoginLeftTitle">Welcome To <br/> Employee Management System</div>
-              <div className="newLoginLeftImgHolder"><img src="..\assets\img\left-img.png" alt='#' /></div>
+              <div className="newLoginLeftTitle">
+                Welcome To <br /> Employee Management System
+              </div>
+              <div className="newLoginLeftImgHolder">
+                <img src="..\assets\img\left-img.png" alt="#" />
+              </div>
             </div>
-            <div className='newLoginRightSectionOuter'>
+            <div className="newLoginRightSectionOuter">
               <div className="newLoginRightSection">
                 <div className="newLoginRightSecTitle">Login</div>
                 <div className="newLoginRightSecSelectLogin">
-                  <div className="loginBtn"><span>Continue With Company Login</span></div>
+                  <div className="loginBtn">
+                    <span>Continue With Company Login</span>
+                  </div>
                 </div>
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <div className="formgroup">
                     <label className="form-label">Email Id</label>
-                    <input 
+                    <input
                       className="form-control form-control-lg"
                       type="email"
                       placeholder="Email Id"
@@ -229,7 +255,8 @@ const CompanyLogin = () => {
                       {...register("username", {
                         required: "Email Id is Required.",
                         pattern: {
-                          value: /^[a-z][a-zA-Z0-9._+-]*@[a-zA-Z0-9.-]+\.(com|in|org|net|edu|gov)$/,
+                          value:
+                            /^[a-z][a-zA-Z0-9._+-]*@[a-zA-Z0-9.-]+\.(com|in|org|net|edu|gov)$/,
                           message: "Invalid Email Id Format",
                         },
                       })}
@@ -243,8 +270,8 @@ const CompanyLogin = () => {
                     <div className="formgroup">
                       <label className="form-label">Password</label>
                       <div className="password-input-container">
-                        <input 
-                          className="form-control form-control-lg" 
+                        <input
+                          className="form-control form-control-lg"
                           placeholder="Password"
                           autoComplete="off"
                           type={passwordShown ? "text" : "password"}
@@ -254,13 +281,16 @@ const CompanyLogin = () => {
                             required: "Password is Required",
                             minLength: {
                               value: 6,
-                              message: "Password must be at least 6 characters long",
+                              message:
+                                "Password must be at least 6 characters long",
                             },
-                            validate: validatePassword,  
+                            validate: validatePassword,
                           })}
                         />
                         <span
-                          className={`bi bi-eye field-icon pb-1 toggle-password ${passwordShown ? 'text-primary' : ''}`}
+                          className={`bi bi-eye field-icon pb-1 toggle-password ${
+                            passwordShown ? "text-primary" : ""
+                          }`}
                           onClick={togglePasswordVisibility}
                         ></span>
                       </div>
@@ -274,8 +304,8 @@ const CompanyLogin = () => {
                   ) : (
                     <div className="formgroup">
                       <label className="form-label">OTP</label>
-                      <input 
-                        className="form-control form-control-lg" 
+                      <input
+                        className="form-control form-control-lg"
                         placeholder="Enter Your OTP"
                         autoComplete="off"
                         disabled={otpExpired}
@@ -299,8 +329,8 @@ const CompanyLogin = () => {
                         ) : (
                           <div className="d-flex justify-content-between align-items-center">
                             <span className="text-danger">OTP expired</span>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               className="btn btn-link p-0 text-primary"
                               onClick={resendOtp}
                             >
@@ -313,10 +343,7 @@ const CompanyLogin = () => {
                   )}
 
                   <div className="d-grid gap-2 mt-3">
-                    <button 
-                      className="btn btn-lg btn-primary" 
-                      type="submit"
-                    >
+                    <button className="btn btn-lg btn-primary" type="submit">
                       {otpSent ? "Verify OTP" : "Sign in"}
                     </button>
                   </div>
@@ -331,7 +358,7 @@ const CompanyLogin = () => {
         show={showErrorModal}
         onHide={closeModal}
         centered
-        style={{ zIndex: "1050"}}
+        style={{ zIndex: "1050" }}
         className="custom-modal"
       >
         <ModalHeader>
@@ -341,11 +368,12 @@ const CompanyLogin = () => {
             className="text-dark"
             aria-label="Close"
             onClick={closeModal}
-          > X</button>
+          >
+            {" "}
+            X
+          </button>
         </ModalHeader>
-        <ModalBody className="text-center fs-bold">
-          {errorMessage}
-        </ModalBody>
+        <ModalBody className="text-center fs-bold">{errorMessage}</ModalBody>
       </Modal>
     </div>
   );

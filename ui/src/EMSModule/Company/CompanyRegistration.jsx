@@ -913,14 +913,14 @@ const CompanyRegistration = () => {
                           <input
                             type="radio"
                             name="userType"
-                            value="HRM"
+                            value="hrm"
                             style={{ marginRight: "10px" }}
                             {...register("userType", {
                               required: !editMode
                                 ? "Please Select Your User Type"
                                 : false,
                             })}
-                            checked={userType.includes("HRM")}
+                            checked={userType.includes("hrm")}
                             onChange={handleUserTypeChange}
                           />
                           HRM and Accountant
@@ -933,14 +933,14 @@ const CompanyRegistration = () => {
                         <input
                           type="radio"
                           name="userType"
-                          value="Accountant"
+                          value="tax_consultant"
                           style={{ marginRight: "10px" }}
                           {...register("userType", {
                             required: !editMode
                               ? "Please Select Your User Type"
                               : false,
                           })}
-                          checked={userType.includes("Accountant")}
+                          checked={userType.includes("tax_consultant")}
                           onChange={handleUserTypeChange}
                         />
                         Accountant

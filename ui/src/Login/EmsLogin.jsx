@@ -7,7 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../Context/AuthContext";
 import Loader from "../Utils/Loader";
 import { Modal, ModalBody, ModalHeader, ModalTitle } from "react-bootstrap";
-import '../LayOut/NewLogin/Message.css';
+import "../LayOut/NewLogin/Message.css";
 import { useDispatch } from "react-redux";
 import { setAuthDetails } from "../Redux/AuthSlice";
 
@@ -41,29 +41,33 @@ const EmsLogin = () => {
     try {
       const response = await loginApi(data);
       const token = response.data?.token;
-      console.log("token",token)
+      console.log("token", token);
       if (token) {
         try {
           const decodedToken = jwtDecode(token);
-          console.log("decodedToken",decodedToken)
+          console.log("decodedToken", decodedToken);
           const {
             sub: userId,
             roles: userRole,
             company,
-            employeeId,
+            employee: employeeId,
           } = decodedToken;
-          dispatch(setAuthDetails({
-            userId,
-            userRole,
-            company,
-            employeeId,
-            source: 'ems',
-          }));
+
+          dispatch(
+            setAuthDetails({
+              userId,
+              userRole,
+              company,
+              employeeId,
+              source: "ems",
+              // resourceType is undefined here and will default to null
+            })
+          );
           setAuthUser({ userId, userRole, company, employeeId });
           toast.success("Login Successful");
           setTimeout(() => {
             navigate("/main");
-          }, 500);  
+          }, 500);
         } catch (decodeError) {
           setErrorMessage("Failed to decode token. Ensure token is valid.");
           setShowErrorModal(true);
@@ -115,7 +119,6 @@ const EmsLogin = () => {
     return true; // Return true if all conditions are satisfied
   };
 
-
   return (
     <div>
       <main className="newLoginMainWrapper">
@@ -134,9 +137,9 @@ const EmsLogin = () => {
               <div className="newLoginRightSection">
                 <div className="newLoginRightSecTitle">Login</div>
                 <div className="newLoginRightSecSelectLogin">
-
-                  <div className="loginBtn"><span>Continue with EMS login</span></div>
-
+                  <div className="loginBtn">
+                    <span>Continue with EMS login</span>
+                  </div>
                 </div>
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <div className="formgroup">
@@ -182,8 +185,9 @@ const EmsLogin = () => {
                         })}
                       />
                       <span
-                        className={`bi bi-eye-fill field-icon pb-1 toggle-password ${passwordShown ? "text-primary" : ""
-                          }`}
+                        className={`bi bi-eye-fill field-icon pb-1 toggle-password ${
+                          passwordShown ? "text-primary" : ""
+                        }`}
                         onClick={togglePasswordVisibility}
                       ></span>
                     </div>
@@ -218,7 +222,9 @@ const EmsLogin = () => {
             className="text-dark"
             aria-label="Close"
             onClick={closeModal}
-          >X</button>
+          >
+            X
+          </button>
         </ModalHeader>
         <ModalBody className="text-center fs-bold">{errorMessage}</ModalBody>
       </Modal>

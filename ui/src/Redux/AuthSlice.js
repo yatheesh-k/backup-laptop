@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { jwtDecode } from "jwt-decode";
 
-// Decode token from localStorage once when this file loads
+// Decode token from localStorage
 let decodedToken = null;
 const token = localStorage.getItem("token");
 
@@ -13,14 +13,20 @@ if (token) {
   }
 }
 
-// Extract values from decoded token
+// Helper to always return roles as array
+const normalizeRoles = (roles) => {
+  if (!roles) return [];
+  return Array.isArray(roles) ? roles : [roles];
+};
+
+// Initial state setup
 const initialState = {
   userId: decodedToken?.sub || null,
-  userRole: decodedToken?.roles || [],
+  userRole: normalizeRoles(decodedToken?.roles),
   company: decodedToken?.company || null,
-  employee: decodedToken?.employee || null,
-  source: decodedToken ? "company" : null, // or 'ems' based on context
-  resourceType: decodedToken?.resourceType || null, // Add resourceType if available
+  employeeId: decodedToken?.employee || null,  // ✅ Use 'employee' key
+  source: token ? "company" : null,           // default guess; overridden by dispatch
+  resourceType: decodedToken?.resourceType || null,
 };
 
 const authSlice = createSlice({
@@ -30,19 +36,19 @@ const authSlice = createSlice({
     setAuthDetails: (state, action) => {
       console.log("🟢 Setting Auth Details in Redux:", action.payload);
       state.userId = action.payload.userId;
-      state.userRole = action.payload.userRole;
+      state.userRole = normalizeRoles(action.payload.userRole);
       state.company = action.payload.company;
-      state.employee = action.payload.employee;
-      state.source = action.payload.source;
-      state.resourceType = action.payload.resourceType || null; // Add resourceType if available
+      state.employeeId = action.payload.employeeId || null;
+      state.source = action.payload.source || null;
+      state.resourceType = action.payload.resourceType || null;
     },
     clearAuthDetails: (state) => {
       state.userId = null;
       state.userRole = [];
       state.company = null;
-      state.employee = null;
+      state.employeeId = null;
       state.source = null;
-      state.resourceType = null; // Clear resourceType as well
+      state.resourceType = null;
     },
   },
 });
