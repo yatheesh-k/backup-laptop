@@ -243,9 +243,10 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             String invoiceDate = getStringCellValue(row.getCell(3));
             String totalAmount = getStringCellValue(row.getCell(4));
             String subTotal = getStringCellValue(row.getCell(5));
-            String cGst = getStringCellValue(row.getCell(6));
-            String sGst = getStringCellValue(row.getCell(7));
-            String iGst = getStringCellValue(row.getCell(8));
+            String iGst = getStringCellValue(row.getCell(6));
+            String cGst = getStringCellValue(row.getCell(7));
+            String sGst = getStringCellValue(row.getCell(8));
+
 
             GSTAccountEntity entity = new GSTAccountEntity();
 
@@ -325,9 +326,10 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             String invoiceDate = getStringCellValue(row.getCell(3));
             String totalAmount = getStringCellValue(row.getCell(4));
             String subTotal = getStringCellValue(row.getCell(5));
-            String cGst = getStringCellValue(row.getCell(6));
-            String sGst = getStringCellValue(row.getCell(7));
-            String iGst = getStringCellValue(row.getCell(8));
+            String iGst = getStringCellValue(row.getCell(6));
+            String cGst = getStringCellValue(row.getCell(7));
+            String sGst = getStringCellValue(row.getCell(8));
+
 
             if (customerGstNo == null || customerGstNo.isBlank()) continue;
 
