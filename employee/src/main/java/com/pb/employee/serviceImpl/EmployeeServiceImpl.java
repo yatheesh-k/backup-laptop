@@ -1051,6 +1051,54 @@ public class EmployeeServiceImpl implements EmployeeService {
         return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
     }
 
+    @Override
+    public ResponseEntity<?> registerEmployeeForAccounts(String companyName, EmployeeReqPayload employeeReqPayload) throws EmployeeException, IOException {
+
+        try {
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Company not found for ID: {}", companyName);
+                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+            EmployeeEntity companyAdmin = openSearchOperations.getCompanyAdmin(companyName, Constants.INDEX_EMS);
+            if (!companyAdmin.getRoles().contains(Constants.ACCOUNTANT)) {
+                log.error("Company admin not found for company: {}", companyName);
+                throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNAUTHORIZED_ACCESS), HttpStatus.NOT_FOUND);
+            }
+            log.info("Processing employee accounts for company: {}", companyName);
+            String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
+            String resourceId = ResourceIdUtils.generateEmployeeResourceId(employeeReqPayload.getEmailId());
+            EmployeeEntity employee = openSearchOperations.getEmployeeById(resourceId, null, indexName);
+            if (employee != null) {
+                log.error("Employee with email {} already exists", employee.getEmailId());
+                throw new EmployeeException(
+                        String.format(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EMPLOYEE_EMAILID_ALREADY_EXISTS), employee.getEmailId()),
+                        HttpStatus.CONFLICT
+                );
+            }
+            EmployeeEntity entity = objectMapper.convertValue(employeeReqPayload, EmployeeEntity.class);
+            entity.setMobileNo(base64Encode(employeeReqPayload.getMobileNo()));
+            entity.setUanNo(base64Encode(employeeReqPayload.getUanNo()));
+            entity.setPanNo(base64Encode(employeeReqPayload.getPanNo()));
+            entity.setAadhaarId(base64Encode(employeeReqPayload.getAadhaarId()));
+            entity.setPfNo(base64Encode(employeeReqPayload.getPfNo()));
+            entity.setId(resourceId);
+            entity.setStatus(Constants.ACTIVE);
+            entity.setType(Constants.EMPLOYEE);
+            openSearchOperations.saveEntity(entity, resourceId, indexName);
+
+        }catch (EmployeeException e) {
+            log.error("Exception while fetching company details: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("An unexpected error occurred while fetching company details: {}", e.getMessage());
+            throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNABLE_GET_COMPANY), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(
+                ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+
+    }
+
 
 
 }
