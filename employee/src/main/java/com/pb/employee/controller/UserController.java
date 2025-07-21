@@ -4,6 +4,7 @@ import com.pb.employee.common.ResponseBuilder;
 import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.persistance.model.CompanyCalendarEntity;
 import com.pb.employee.persistance.model.UserEntity;
+import com.pb.employee.request.UpdateRolesRequest;
 import com.pb.employee.request.UserRequest;
 import com.pb.employee.request.UserUpdateRequest;
 import com.pb.employee.response.UserResponse;
@@ -86,5 +87,18 @@ public class UserController {
                                                 @PathVariable String companyName,@PathVariable String Id) throws EmployeeException {
         userService.deleteUser(companyName,Id);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.DELETED), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "{companyName}/user/{Id}/role", method = RequestMethod.PATCH)
+    @io.swagger.v3.oas.annotations.Operation(security = { @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.updateUserRoles.tag}", description = "${api.updateUserRoles.description}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "202", description= "Accepted")
+    public ResponseEntity<?> updateUserRoles(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+                                        @RequestHeader(Constants.AUTH_KEY) String authToken,
+                                        @PathVariable String companyName,
+                                        @PathVariable String Id,
+                                        @RequestBody @Valid UpdateRolesRequest updatePayload) throws IOException, EmployeeException {
+        return userService.updateUserRoles(companyName,Id, updatePayload);
     }
 }
