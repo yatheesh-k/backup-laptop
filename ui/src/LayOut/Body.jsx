@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import LayOut from './LayOut';
 import { useAuth } from '../Context/AuthContext';
-import { EmployeeGetApi } from '../Utils/Axios';
-import { toast } from 'react-toastify';
 import { PeopleFill, PersonFillCheck, PersonFillExclamation } from 'react-bootstrap-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEmployees } from '../Redux/EmployeeSlice';
@@ -19,7 +17,7 @@ const Body = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  const { authUser } = useAuth();
+    const { authUser } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

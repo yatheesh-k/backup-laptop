@@ -1,18 +1,29 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
-import { EmployeeGetApiById, getUserById, companyViewByIdApi, CandidateGetByIdApi } from "../Utils/Axios";
+import {
+  EmployeeGetApiById,
+  getUserById,
+  companyViewByIdApi,
+  CandidateGetByIdApi,
+} from "../Utils/Axios";
 
 // Create the context
 const AuthContext = createContext();
 
 // Create the Provider component
 export const AuthProvider = ({ children }) => {
-  const [authUser, setAuthUser] = useState(null);      // Stores decoded user info (e.g., userId, companyId)
-  const [employee, setEmployee] = useState(null);       // Stores employee/user details
-  const [company, setCompany] = useState(null);         // Stores company details
-  const [isInitialized, setIsInitialized] = useState(false); // Tells us when auth is ready (app booted or login done)
+  const [authUser, setAuthUser] = useState(null);        // Decoded token info
+  const [employee, setEmployee] = useState(null);        // Fetched user details
+  const [company, setCompany] = useState(null);          // Fetched company details
+  const [isInitialized, setIsInitialized] = useState(false); // Ready flag
 
-  // Runs once on app start or refresh
+  // Normalize roles (ensure always array)
+  const normalizeRoles = (roles) => {
+    if (!roles) return [];
+    return Array.isArray(roles) ? roles : [roles];
+  };
+
+  // On app load
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -22,20 +33,19 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const decoded = jwtDecode(token);
-      // Optionally validate expiration
       if (decoded.exp * 1000 < Date.now()) {
+        console.warn("Token expired");
         localStorage.removeItem("token");
         setIsInitialized(true);
         return;
       }
 
-      // Save essential info to state
       setAuthUser({
         userId: decoded.sub,
-        roles: decoded.roles || [],
-        companyId: decoded.companyId,
-        employeeId: decoded.employee,
-        company: decoded.company
+        roles: normalizeRoles(decoded.roles),
+        company: decoded.company || null,
+        employeeId: decoded.employee || null,
+        resourceType: decoded.resourceType || null,
       });
     } catch (err) {
       console.error("Invalid token", err);
@@ -44,94 +54,91 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Fetch employee/user + company when authUser changes (login or after app initializes)
-useEffect(() => {
-  if (!authUser) {
-    setEmployee(null);
-    setCompany(null);
-    setIsInitialized(true);
-    return;
-  }
-
-  const fetchEmployeeOrUserOrCandidate = async (userId) => {
-    try {
-      const empRes = await EmployeeGetApiById(userId);
-      return empRes?.data?.data;
-    } catch {}
-
-    try {
-      const userRes = await getUserById(userId);
-      const userData = userRes?.data?.data;
-      return Array.isArray(userData) && userData.length > 0 ? userData[0] : userData;
-    } catch {}
-
-    try {
-      const candidateRes = await CandidateGetByIdApi(userId);
-      return candidateRes?.data?.data;
-    } catch (err) {
-      console.error("Failed to fetch candidate details", err);
-      return null;
-    }
-  };
-
-  const fetchDetails = async () => {
-    try {
-      const empData = await fetchEmployeeOrUserOrCandidate(authUser.userId);
-      setEmployee(empData);
-
-      const companyId = empData?.companyId || authUser?.companyId;
-
-      if (companyId) {
-        try {
-          const compRes = await companyViewByIdApi(companyId);
-          setCompany(compRes?.data?.data);
-        } catch (err) {
-          console.error("Failed to fetch company details", err);
-        }
-      }
-         // ✅ Log both employee and company data
-    console.log("Fetched employee/user/candidate:", empData);
-
-    } catch (error) {
-      console.error("Unexpected error fetching employee or company", error);
-    } finally {
+  // Fetch details based on user type
+  useEffect(() => {
+    if (!authUser) {
+      setEmployee(null);
+      setCompany(null);
       setIsInitialized(true);
+      return;
     }
-  };
-    console.log("Fetched company:", company);
-  fetchDetails();
-}, [authUser]);
 
-  // Function to handle login and token storage
+    const fetchEmployeeOrUserOrCandidate = async (userId) => {
+      try {
+        const empRes = await EmployeeGetApiById(userId);
+        return empRes?.data?.data;
+      } catch {}
+
+      try {
+        const userRes = await getUserById(userId);
+        const userData = userRes?.data?.data;
+        return Array.isArray(userData) && userData.length > 0 ? userData[0] : userData;
+      } catch {}
+
+      try {
+        const candidateRes = await CandidateGetByIdApi(userId);
+        return candidateRes?.data?.data;
+      } catch (err) {
+        console.error("Candidate fetch failed:", err);
+        return null;
+      }
+    };
+
+    const fetchDetails = async () => {
+      try {
+        const userId = authUser.userId;
+        const empData = await fetchEmployeeOrUserOrCandidate(userId);
+        setEmployee(empData);
+
+        // Try to get company ID from data or authUser
+        const companyId = empData?.companyId || authUser.company;
+
+        if (companyId) {
+          try {
+            const compRes = await companyViewByIdApi(companyId);
+            setCompany(compRes?.data?.data);
+          } catch (err) {
+            console.error("Company fetch failed:", err);
+          }
+        }
+
+        console.log("✅ User/candidate/employee fetched:", empData);
+      } catch (err) {
+        console.error("Unexpected error fetching user details:", err);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+
+    fetchDetails();
+  }, [authUser]);
+
+  // Login handler
   const login = (token) => {
     try {
       localStorage.setItem("token", token);
       const decoded = jwtDecode(token);
 
       const userId = decoded.sub;
-      const roles = decoded.roles || [];
-      const companyId = decoded.companyId;
-      const company = decoded.company;
-      const employeeId = decoded.employee;
+      const roles = normalizeRoles(decoded.roles);
+      const company = decoded.company || null;
+      const employeeId = decoded.employee || null;
+      const resourceType = decoded.resourceType || null;
 
-      console.log("roles", roles);
-
-      // Set authUser object (triggers fetch effect above)
       setAuthUser({
         userId,
         roles,
-        companyId,
         company,
-        employeeId
+        employeeId,
+        resourceType,
       });
 
-      setIsInitialized(false); // Reset while loading fresh data
+      setIsInitialized(false); // Trigger re-fetch
     } catch (err) {
-      console.error("Login failed - invalid token", err);
+      console.error("Login failed: invalid token", err);
     }
   };
-
-  // Function to logout user and clear all state
+  // Logout
   const logout = () => {
     localStorage.removeItem("token");
     setAuthUser(null);
@@ -149,7 +156,7 @@ useEffect(() => {
         company,
         isInitialized,
         login,
-        logout
+        logout,
       }}
     >
       {children}
@@ -157,5 +164,5 @@ useEffect(() => {
   );
 };
 
-// Custom hook to use auth context
+// Hook
 export const useAuth = () => useContext(AuthContext);
