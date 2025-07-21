@@ -17,7 +17,18 @@ const SideNav = () => {
     const hasResource = types.includes("all") || types.includes(resourceType);
     return hasRole && hasResource;
   };
-
+useEffect(() => {
+  console.log("userRole:", userRole, "resourceType:", resourceType);
+  routeConfig.forEach(route => {
+    if (route.children) {
+      route.children.forEach(child => {
+        console.log("Child:", child.label, "Allowed:", isRouteAllowed(child));
+      });
+    } else {
+      console.log("Route:", route.label, "Allowed:", isRouteAllowed(route));
+    }
+  });
+}, [userRole, resourceType]);
   useEffect(() => {
     const expandParents = (routes, parentKey = "") => {
       const result = {};
@@ -43,7 +54,7 @@ const SideNav = () => {
 
   const getPortalName = () => {
     if (userRole.includes("ems_admin")) return "EMS Admin";
-    if (userRole.includes("HRM") && resourceType === "company_admin")
+    if (userRole.includes("hrm") && resourceType === "company_admin")
       return `HRM Portal`;
     if (userRole.includes("tax_consultant"))
       return `Tax Portal`;

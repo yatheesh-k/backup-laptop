@@ -569,6 +569,7 @@ const salaryDetailFields = [
                               <td>
                                 <a
                                   href={doc.url}
+                                  target="_blank"
                                   className="btn btn-sm btn-outline-primary me-2"
                                 >
                                   <Download className="me-1" /> View

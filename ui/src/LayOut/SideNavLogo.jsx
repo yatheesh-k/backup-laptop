@@ -25,7 +25,7 @@ const SideNavLogo = () => {
             role="button"
             style={{ cursor: "pointer", maxHeight: "50px" }}
           />
-          <span className="ms-2 fw-semibold">EMS Admin Portal</span>
+         
         </>
       );
     }
@@ -41,9 +41,6 @@ const SideNavLogo = () => {
             role="button"
             style={{ cursor: "pointer", maxHeight: "50px" }}
           />
-          <span className="ms-2 fw-semibold">
-            {company?.companyShortName || "Company Portal"}
-          </span>
         </>
       ) : (
         <Link to="/profile" className="text-decoration-none text-primary fw-semibold">
