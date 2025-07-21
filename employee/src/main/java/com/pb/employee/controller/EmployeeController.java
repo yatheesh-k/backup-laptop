@@ -3,10 +3,7 @@ package com.pb.employee.controller;
 import com.pb.employee.common.ResponseBuilder;
 import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
-import com.pb.employee.request.EmployeeDetailsDownloadRequest;
-import com.pb.employee.request.EmployeeIdRequest;
-import com.pb.employee.request.EmployeeRequest;
-import com.pb.employee.request.EmployeeUpdateRequest;
+import com.pb.employee.request.*;
 import com.pb.employee.service.EmployeeService;
 import com.pb.employee.util.Constants;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -185,5 +182,16 @@ public class EmployeeController {
                                                        @RequestHeader(Constants.AUTH_KEY) String authToken,
                                                        @PathVariable String companyName, @RequestParam("file") MultipartFile file) throws EmployeeException, IOException {
         return employeeService.registerEmployeeForAccounts(companyName, file);
+    }
+
+    @RequestMapping(value = "{companyName}/employee", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY)},
+            summary = "${api.registerEmployees.tag}", description = "${api.registerEmployees.description}")
+    @ResponseStatus(HttpStatus.OK)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Employee Image fetched Successfully")
+    public ResponseEntity<?> registerEmployeeForAccounts(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef}")
+                                                         @RequestHeader(Constants.AUTH_KEY) String authToken,
+                                                         @PathVariable String companyName, @RequestBody @Valid EmployeeReqPayload reqPayload) throws EmployeeException, IOException {
+        return employeeService.registerEmployeeForAccounts(companyName, reqPayload);
     }
 }
