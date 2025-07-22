@@ -18,9 +18,11 @@ const AddUser = () => {
       }
     });
   } catch (err) {
-    console.error('Error adding user:', err);
-    toast.error('email already exists');
-  }
+  console.error('Error adding user:', err);
+  const errorMessage =
+    err?.response?.data?.error?.message || "Something went wrong!";
+  toast.error(errorMessage);
+}
 };
 
   return (

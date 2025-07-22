@@ -142,12 +142,7 @@ const routeConfig = [
   },
   // Company Admin-specific
 
-  {
-    path: "/companySalaryStructure",
-    element: <CompanySalaryStructure />,
-    allowedRoles: ["hrm", "Admin"],
-    allowedResourceTypes: ["company_admin"],
-  },
+
 
   {
     path: "/editUser/:id",
@@ -203,22 +198,12 @@ const routeConfig = [
   icon: "file-earmark-text", // bi-file-earmark-text - for viewing files
 },
 
-  // HR-specific
-
-  {
-    path: "/documentUpload",
-    element: <CandidateDocumentUpload />,
-    allowedRoles: ["candidate"],
-    allowedResourceTypes: ["candidate"],
-    label: "Document Upload",
-    icon: "file-earmark-arrow-up", // Suggested Bootstrap icon
-  },
 
   // Company Admin & HR Shared
   {
     path: "/department",
     element: <Department />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
     label: "Department",
     icon: "diagram-3", // Bootstrap icon
@@ -230,7 +215,7 @@ const routeConfig = [
       {
         path: "/candidateRegistration",
         element: <CandidateRegistration />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Register Candidate",
         icon: "person-plus", // bi-person-plus
@@ -238,7 +223,7 @@ const routeConfig = [
       {
         path: "/candidatesView",
         element: <CandidatesView />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR"],
         label: "View Candidates",
         icon: "people", // bi-people
@@ -252,7 +237,7 @@ const routeConfig = [
       {
         path: "/employeeRegister",
         element: <EmployeeRegister />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Register Employee",
         icon: "person-plus", // bi-person-plus
@@ -260,7 +245,7 @@ const routeConfig = [
       {
         path: "/employeeView",
         element: <EmployeeView />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "View Employees",
         icon: "person-lines-fill", // bi-person-lines-fill
@@ -274,7 +259,7 @@ const routeConfig = [
       {
         path: "/addAttendance",
         element: <ManageAttendance />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Add Attendance",
         icon: "clipboard-plus", // bi-clipboard-plus
@@ -282,7 +267,7 @@ const routeConfig = [
       {
         path: "/attendanceReport",
         element: <AttendanceReport />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Attendance Report",
         icon: "bar-chart-line", // bi-bar-chart-line
@@ -292,22 +277,22 @@ const routeConfig = [
   {
     path: "/candidate-to-employee/:id",
     element: <CandidateToEmployee />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
 
   {
     path: "/offerLetterForm",
     element: <OfferLetterForm />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
-    label: "Offer Letter",
+    label: "Offer Letter Form",
     icon: "file-earmark-text", // Bootstrap icon (bi-file-earmark-text)
   },
   {
     path: "/offerLetterPreview",
     element: <OfferLetterPreview />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
 
@@ -318,7 +303,7 @@ const routeConfig = [
       {
         path: "/experienceForm",
         element: <ExperienceForm />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Experience Form",
         icon: "journal-text", // bi-journal-text
@@ -332,7 +317,7 @@ const routeConfig = [
       {
         path: "/relievingSummary",
         element: <ExistsEmployesView />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Relieving Summary",
         icon: "card-list", // Bootstrap icon: bi-card-list
@@ -340,7 +325,7 @@ const routeConfig = [
       {
         path: "/relievingProcess",
         element: <ExistsEmpRegistration />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Relieving Process",
         icon: "box-arrow-right", // Bootstrap icon: bi-box-arrow-right
@@ -350,23 +335,10 @@ const routeConfig = [
   {
     path: "/relivingReview",
     element: <Preview />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
-  {
-    label: "Appraisal Mangement",
-    icon: "bar-chart-line", // Bootstrap icon suggestion: bi-person-vcard
-    children: [
-      {
-        path: "/appraisalLetter",
-        element: <AddIncrement />,
-        allowedRoles: ["hrm"],
-        allowedResourceTypes: ["company_admin", "HR", "Admin"],
-        label: "Appraisal Letter",
-        icon: "file-earmark-text", // Bootstrap icon: bi-graph-up-arrow
-      },
-    ]
-  },
+
   {
     label: "Internship",
     icon: "award", // Bootstrap icon: bi-mortarboard
@@ -374,7 +346,7 @@ const routeConfig = [
       {
         path: "/internOfferForm",
         element: <InternOfferForm />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Intern Offer Form",
         icon: "file-earmark-plus", // bi-file-earmark-plus
@@ -382,7 +354,7 @@ const routeConfig = [
       {
         path: "/internsLetter",
         element: <InternShipForm />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Internship Certificate",
         icon: "journal-richtext", // bi-journal-richtext
@@ -392,7 +364,7 @@ const routeConfig = [
   {
     path: "/internPrev",
     element: <InternOfferPrev />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
   {
@@ -402,7 +374,7 @@ const routeConfig = [
       {
         path: "/employeeSalaryStructure",
         element: <EmployeeSalaryStructure />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Add Salary Structure",
         icon: "file-earmark-plus", // bi-file-earmark-plus
@@ -410,15 +382,23 @@ const routeConfig = [
       {
         path: "/employeeSalaryList",
         element: <EmployeeSalaryStructureView/>,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Employee Salary List",
         icon: "file-earmark-spreadsheet" // Bootstrap icon: bi-file-earmark-spreadsheet
       },
+       {
+        path: "/appraisalLetter",
+        element: <AddIncrement />,
+        allowedRoles: ["hrm","hr_management"],
+        allowedResourceTypes: ["company_admin", "HR", "Admin"],
+        label: "Appraisal Form",
+        icon: "file-earmark-text", // Bootstrap icon: bi-graph-up-arrow
+      },
       {
         path: "/payslipGeneration",
         element: <GeneratePaySlip />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Generate Payslip",
         icon: "file-earmark-ruled", // bi-file-earmark-ruled
@@ -426,7 +406,7 @@ const routeConfig = [
       {
         path: "/payslipsList",
         element: <ViewPaySlips />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Payslip List",
         icon: "file-earmark-spreadsheet", // bi-file-earmark-spreadsheet
@@ -436,31 +416,31 @@ const routeConfig = [
   {
     path: "/employeeSalaryList",
     element: <EmployeeSalaryList />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
   {
     path: "/payslipUpdate1",
     element: <PayslipUpdate1 />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
   {
     path: "/payslipUpdate2",
     element: <PayslipUpdate2 />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
   {
     path: "/payslipUpdate3",
     element: <PayslipUpdate3 />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
   {
     path: "/payslipUpdate4",
     element: <PayslipUpdate4 />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
   {
@@ -488,13 +468,13 @@ const routeConfig = [
   {
     path: "/employeeSalaryUpdate",
     element: <EmployeeSalaryUpdate />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
   {
     path: "/getTaxSlab",
     element: <GetTaxSlab />,
-    allowedRoles: ["hrm", "tax_consultant"],
+    allowedRoles: ["hrm", "tax_consultant","hr_management","invoice_management","ca","employee"],
     allowedResourceTypes: [
       "company_admin",
       "HR",
@@ -506,7 +486,7 @@ const routeConfig = [
   {
     path: "/companyTdsView",
     element: <CompanyTdsView />,
-    allowedRoles: ["hrm", "tax_consultant"],
+    allowedRoles: ["hrm", "tax_consultant","hr_management","invoice_management","ca"],
     allowedResourceTypes: [
       "company_admin",
       "HR",
@@ -518,13 +498,13 @@ const routeConfig = [
   {
     path: "/addTaxSlab",
     element: <AddTaxSlab />,
-    allowedRoles: ["hrm", "tax_consultant"],
+    allowedRoles: ["hrm", "tax_consultant","invoice_management"],
     allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
   },
   {
     path: "/employeeSalaryList",
     element: <EmployeeSalaryList />,
-    allowedRoles: ["hrm"],
+    allowedRoles: ["hrm","hr_management"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
 
@@ -537,7 +517,7 @@ const routeConfig = [
       {
         path: "/customerRegistration",
         element: <CustomersRegistration />,
-        allowedRoles: ["hrm", "tax_consulatant"],
+        allowedRoles: ["hrm", "tax_consulatant","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
         label: "Client Registration",
         icon: "person-plus" // bi-person-plus
@@ -545,7 +525,7 @@ const routeConfig = [
       {
         path: "/customersView",
         element: <CustomersView />,
-        allowedRoles: ["hrm", "tax_consulatant"],
+        allowedRoles: ["hrm", "tax_consulatant","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
         label: "View Clients",
         icon: "people" // bi-people
@@ -559,7 +539,7 @@ const routeConfig = [
       {
         path: "/invoiceRegistration",
         element: <InvoiceRegistration />,
-        allowedRoles: ["hrm", "tax_consulatant"],
+        allowedRoles: ["hrm", "tax_consulatant","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
         label: "Generate Invoice",
         icon: "file-earmark-plus" // bi-file-earmark-plus
@@ -568,7 +548,7 @@ const routeConfig = [
       {
         path: "/invoiceView",
         element: <InvoiceView />,
-        allowedRoles: ["hrm", "tax_consulatant"],
+        allowedRoles: ["hrm", "tax_consulatant","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
         label: "View Invoices",
         icon: "file-earmark-ruled" // bi-file-earmark-ruled
@@ -584,7 +564,7 @@ const routeConfig = [
       element: <CompanyPFSubmission />,
       label: "PF Submission",
       icon: "file-earmark-arrow-down", // For document submission
-      allowedRoles: ["hrm", "tax_consultant"],
+      allowedRoles: ["hrm", "tax_consultant","invoice_management"],
       allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
     },
     {
@@ -592,7 +572,7 @@ const routeConfig = [
       element: <PFProcessing />,
       label: "PF Processing",
       icon: "funnel", // Processing/filtering icon
-      allowedRoles: ["hrm", "tax_consultant"],
+      allowedRoles: ["hrm", "tax_consultant","ca"],
       allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
     },
     {
@@ -600,7 +580,7 @@ const routeConfig = [
       element: <PFResponsesView />,
       label: "PF Response View",
       icon: "chat-left-text", // Message/response icon
-      allowedRoles: ["hrm", "tax_consultant"],
+      allowedRoles: ["hrm", "tax_consultant","invoice_management"],
       allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
     },
     {
@@ -608,7 +588,7 @@ const routeConfig = [
       element: <PFReceiptsView />,
       label: "PF Receipts View",
       icon: "file-earmark", // General document/receipt icon
-      allowedRoles: ["hrm", "tax_consultant"],
+      allowedRoles: ["hrm", "tax_consultant","invoice_management","ca"],
       allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
     }
   ]
@@ -622,7 +602,7 @@ const routeConfig = [
         element: <CompanyPTSubmission/>,
         label: "PT Submission",
         icon: "file-earmark-arrow-down",
-        allowedRoles: ["hrm", "tax_consultant"],
+        allowedRoles: ["hrm", "tax_consultant","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
       },
       {
@@ -630,7 +610,7 @@ const routeConfig = [
         element: <PTProcessing/>,
         label: "PT Processing",
         icon: "funnel",
-        allowedRoles: ["hrm", "tax_consultant"],
+        allowedRoles: ["hrm", "tax_consultant","ca"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
       },
       {
@@ -638,7 +618,7 @@ const routeConfig = [
         element: <PTResponsesView/>,
         label: "PT Response View",
         icon: "chat-left-text",
-        allowedRoles: ["hrm", "tax_consultant"],
+        allowedRoles: ["hrm", "tax_consultant","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
       },
       {
@@ -646,7 +626,7 @@ const routeConfig = [
         element: <PTReceiptsView/>,
         label: "PT Receipts View",
         icon: "file-earmark",
-        allowedRoles: ["hrm", "tax_consultant"],
+        allowedRoles: ["hrm", "tax_consultant","ca","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
       }
     ]
@@ -660,7 +640,7 @@ const routeConfig = [
       element: <CompanyTDSSubmission />,
       label: "TDS Submission",
       icon: "file-earmark-arrow-down", // Document upload
-      allowedRoles: ["hrm", "tax_consultant"],
+      allowedRoles: ["hrm", "tax_consultant","invoice_management"],
       allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
     },
     {
@@ -668,7 +648,7 @@ const routeConfig = [
       element: <TDSProcessing />,
       label: "TDS Processing",
       icon: "funnel", // Processing/filtering
-      allowedRoles: ["hrm", "tax_consultant"],
+      allowedRoles: ["hrm", "tax_consultant","ca"],
       allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
     },
     {
@@ -676,7 +656,7 @@ const routeConfig = [
       element: <TDSResponsesView />,
       label: "TDS Response View",
       icon: "chat-left-text", // Feedback/responses
-      allowedRoles: ["hrm", "tax_consultant"],
+      allowedRoles: ["hrm", "tax_consultant","invoice_management"],
       allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
     },
     {
@@ -684,7 +664,7 @@ const routeConfig = [
       element: <TDSReceiptsView />,
       label: "TDS Receipts View",
       icon: "file-earmark", // Generic receipt/document
-      allowedRoles: ["hrm", "tax_consultant"],
+      allowedRoles: ["hrm", "tax_consultant","invoice_management","ca"],
       allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
     }
   ]
@@ -696,7 +676,7 @@ const routeConfig = [
       {
         path: "/companyGSTSubmission",
         element: <CompanyGSTSubmission/>,
-        allowedRoles: ["hrm", "tax_consultant"],
+        allowedRoles: ["hrm", "tax_consultant","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
         label: "GST Submission",
         icon: "file-earmark-text" // Invoice-like icon
@@ -704,15 +684,15 @@ const routeConfig = [
       {
         path:"/gstProcessing",
         element: <GSTProcessing />,
-        allowedRoles: ["hrm", "tax_consultant"],
-        allowedResourceTypes: ["company_admin", "Admin", "Accountant","ca"],
+        allowedRoles: ["hrm", "tax_consultant","ca"],
+        allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
         label: "GST Processing",
         icon: "funnel" // Summary-style financial icon
       },
       {
         path: "/gstResponsesView",
         element: <GSTResponsesView />,
-        allowedRoles: ["hrm", "tax_consultant"],
+        allowedRoles: ["hrm", "tax_consultant","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
         label: "GST Response View",
         icon: "chat-left-text" // Summary-style financial icon
@@ -720,7 +700,7 @@ const routeConfig = [
       {
         path: "/gstReceiptsView",
         element: <GSTReceiptsView/>,
-        allowedRoles: ["hrm", "tax_consultant"],
+        allowedRoles: ["hrm", "tax_consultant","invoice_management","ca"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant","ca"],
         label: "GST Receipts View",
         icon: "file-earmark" // Summary-style financial icon
@@ -754,19 +734,19 @@ const routeConfig = [
   {
     path: "/invoicePdf",
     element: <InvoicePdf />,
-    allowedRoles: ["hrm", "tax_consulatant"],
+    allowedRoles: ["hrm", "tax_consulatant","invoice_management"],
     allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
   },
   {
     path: "/invoiceTemplate1",
     element: <InvoiceTemplate1 />,
-    allowedRoles: ["hrm", "tax_consulatant"],
+    allowedRoles: ["hrm", "tax_consulatant","invoice_management"],
     allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
   },
   {
     path: "/invoiceTemplate2",
     element: <InvoiceTemplate2 />,
-    allowedRoles: ["hrm", "tax_consulatant"],
+    allowedRoles: ["hrm", "tax_consulatant","invoice_management"],
     allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
   },
 
@@ -775,7 +755,7 @@ const routeConfig = [
   {
     path: "/payslipDoc1",
     element: <PayslipDoc1 />,
-    allowedRoles: ["hrm", "tax_consulatant"],
+    allowedRoles: ["hrm", "tax_consulatant","hr_management",],
     allowedResourceTypes: ["company_admin", "Admin", "HR", "employee"],
   },
   {
@@ -787,13 +767,13 @@ const routeConfig = [
   {
     path: "/payslipDoc3",
     element: <PayslipDoc3 />,
-    allowedRoles: ["hrm", "tax_consulatant"],
+    allowedRoles: ["hrm", "tax_consulatant","hr_management"],
     allowedResourceTypes: ["company_admin", "Admin", "HR", "employee"],
   },
   {
     path: "/payslipDoc4",
     element: <PayslipDoc4 />,
-    allowedRoles: ["hrm", "tax_consulatant"],
+    allowedRoles: ["hrm", "tax_consulatant","hr_management"],
     allowedResourceTypes: ["company_admin", "Admin", "HR", "employee"],
   },
   // {
@@ -829,22 +809,30 @@ const routeConfig = [
   {
     path: "/employeeList/:status",
     element: <EmployeeList />,
-    allowedRoles: ["hrm", "tax_consulatant"],
-    allowedResourceTypes: ["company_admin", "Admin", "HR", "Accountant"],
+    allowedRoles: ["hrm", "tax_consulatant","hr_management"],
+    allowedResourceTypes: ["company_admin", "Admin", "HR"],
   },
 
   // Candidate-specific
   {
     path: "/candidateProfile",
     element: <CandidateProfile />,
-    allowedRoles: ["candiadte"],
+    allowedRoles: ["candidate"],
     allowedResourceTypes: ["candidate"],
+  },
+  {
+    path: "/documentUpload",
+    element: <CandidateDocumentUpload />,
+    allowedRoles: ["candidate"],
+    allowedResourceTypes: ["candidate"],
+    label: "Document Upload",
+    icon: "file-earmark-arrow-up", // Suggested Bootstrap icon
   },
   {
     path: "/candidateDocumentsView",
     element: <CandidateDocumentsView />,
-    allowedRoles: ["hrm", "candidate"],
-    allowedResourceTypes: ["company_admin", "Admin", "HR", "candidate"],
+    allowedRoles: ["candidate"],
+    allowedResourceTypes: ["candidate"],
     label:"Documents View",
     icon: "file-earmark-check",
   },
@@ -857,7 +845,7 @@ const routeConfig = [
       {
         path: "/viewUser",
         element: <ViewUser />,
-        allowedRoles: ["hrm", "tax_consultant", "Admin"],
+        allowedRoles: ["hrm", "tax_consultant", "hr_management","invoice_management"],
         allowedResourceTypes: ["company_admin", "Admin"],
         label: "View Users",
         icon: "person-lines-fill",
@@ -865,7 +853,7 @@ const routeConfig = [
       {
         path: "/addUser",
         element: <AddUser />,
-        allowedRoles: ["hrm", "tax_consultant", "Admin"],
+        allowedRoles: ["hrm", "tax_consultant"],
         allowedResourceTypes: ["company_admin"],
         label: "Add User",
         icon: "person-plus",
@@ -892,7 +880,7 @@ const routeConfig = [
             path: "/accountsView",
             element: <AccountsView />,
             allowedRoles: ["hrm", "tax_consultant", "Admin"],
-            allowedResourceTypes: ["company_admin", "Accountant"],
+            allowedResourceTypes: ["company_admin"],
             label: "View Accounts",
             icon: "person-lines-fill",
           },
@@ -901,98 +889,96 @@ const routeConfig = [
       {
         path: "/AddEvent",
         element: <EventForm />,
-        allowedRoles: ["hrm", "tax_consultant"],
-        allowedResourceTypes: ["company_admin", "HR", "Admin"],
+        allowedRoles: ["hrm", "tax_consultant","hr_management","invoice_management","ca"],
+        allowedResourceTypes: ["company_admin", "Admin"],
         label: "Add Event",
         icon: "calendar-plus" // Bootstrap icon: bi-calendar-plus
       },
       {
       path: "/companyTdsView",
       element: <CompanyTdsView />, // Replace with your actual component
-      allowedRoles: ["hrm", "tax_consultant"],
+      allowedRoles: ["hrm", "tax_consultant","hr_management"],
       allowedResourceTypes: ["company_admin", "Accountant","Admin"],
       label: "Add TDS",
       icon: "file-earmark-spreadsheet", // Suggested: bi-file-earmark-spreadsheet
     },
+    {
+        label: "Company Salary Structure",
+        icon: "wallet", // or "file-invoice-dollar" if using FontAwesome
+        children: [
       {
         path: "/companySalaryView",
         element: <CompanySalaryView />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
-        label: "Company Salary Structure",
+        label: "Company Salary View",
         icon: "cash", // Suggested Bootstrap icon: bi-currency-dollar
       },
-      {
-        path: "/offerLetterTemplate",
-        element: <OfferLetters />,
-        allowedRoles: ["hrm"],
-        allowedResourceTypes: ["company_admin", "HR", "Admin"],
-        label: "Offer Templates",
-        icon: "file-earmark-richtext", // Bootstrap icon (bi-file-earmark-richtext)
-      },
-      {
-        path: "/experieceTemplates",
-        element: <ExperienceLetter />,
-        allowedRoles: ["hrm"],
-        allowedResourceTypes: ["company_admin", "HR", "Admin"],
-        label: "Experience Templates",
-        icon: "file-earmark-richtext", // Bootstrap icon: bi-file-earmark-richtext
-      },
-      {
-        path: "/relievingTemplates",
-        element: <RelievingLetter />,
-        allowedRoles: ["hrm"],
-        allowedResourceTypes: ["company_admin", "HR", "Admin"],
-        label: "Relieving Templates",
-        icon: "file-earmark-text", // Bootstrap icon: bi-file-earmark-text
-      },
+  {
+    path: "/companySalaryStructure",
+    element: <CompanySalaryStructure />,
+    allowedRoles: ["hrm"],
+    allowedResourceTypes: ["company_admin"],
+    label:"Add Company Salary Structure",
+    icon:"cash"
+  },
+]
+    },
       {
         path: "/internOfferTemplate",
         element: <InternOfferLetter />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Intern Offer Template",
         icon: "file-earmark-text", // bi-file-earmark-text
       },
       {
-        path: "/appraisalTemplates",
-        element: <AppraisalTemplate />,
-        allowedRoles: ["hrm"],
+        path: "/offerLetterTemplate",
+        element: <OfferLetters />,
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
-        label: "Appraisal Templates",
-        icon: "award", // bi-award
-      },
-      {
-        path: "/experienceLetter",
-        element: <ExperienceLetter />,
-        allowedRoles: ["hrm"],
-        allowedResourceTypes: ["company_admin", "HR", "Admin"],
-        label: "Experience Letter",
-        icon: "briefcase", // bi-briefcase
-      },
-      {
-        path: "/internsTemplates",
-        element: <InternShipTemplates />,
-        allowedRoles: ["hrm"],
-        allowedResourceTypes: ["company_admin", "HR", "Admin"],
-        label: "Internship Templates",
-        icon: "person-badge", // bi-mortarboard
+        label: "Offer Templates",
+        icon: "file-earmark-richtext", // Bootstrap icon (bi-file-earmark-richtext)
       },
       {
         path: "/payslipTemplates",
         element: <PayslipTemplates />,
-        allowedRoles: ["hrm"],
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
         label: "Payslip Templates",
         icon: "file-earmark-ruled", // bi-file-earmark-ruled
       },
       {
-        path: "/template",
-        element: <Template />,
-        allowedRoles: ["hrm"],
+        path: "/internsTemplates",
+        element: <InternShipTemplates />,
+        allowedRoles: ["hrm","hr_management"],
         allowedResourceTypes: ["company_admin", "HR", "Admin"],
-        label: "Offer Letter Template",
-        icon: "file-text", // bi-file-text
+        label: "Internship Templates",
+        icon: "person-badge", // bi-mortarboard
+      },
+      {
+        path: "/appraisalTemplates",
+        element: <AppraisalTemplate />,
+        allowedRoles: ["hrm","hr_management"],
+        allowedResourceTypes: ["company_admin", "HR", "Admin"],
+        label: "Appraisal Templates",
+        icon: "award", // bi-award
+      },
+      {
+        path: "/relievingTemplates",
+        element: <RelievingLetter />,
+        allowedRoles: ["hrm","hr_management"],
+        allowedResourceTypes: ["company_admin", "HR", "Admin"],
+        label: "Relieving Templates",
+        icon: "file-earmark-text", // Bootstrap icon: bi-file-earmark-text
+      },
+      {
+        path: "/experienceLetter",
+        element: <ExperienceLetter />,
+        allowedRoles: ["hrm","hr_management"],
+        allowedResourceTypes: ["company_admin", "HR", "Admin"],
+        label: "Experience Letter",
+        icon: "briefcase", // bi-briefcase
       },
       {
         path: "/invoiceTemplates",
@@ -1005,7 +991,7 @@ const routeConfig = [
       {
         path: "/passwordManager",
         element: <PasswordManagementSummary />,
-        allowedRoles: ["hrm", "tax_consultant"],
+        allowedRoles: ["hrm", "tax_consultant","ca"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
         label: "Password Manager",
         icon: "key" // Bootstrap Icon: https://icons.getbootstrap.com/icons/key/

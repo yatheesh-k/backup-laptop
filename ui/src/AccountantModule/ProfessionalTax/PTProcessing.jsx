@@ -303,7 +303,7 @@ const PTProcessing = () => {
                         </button>
 
                         <a 
-                          href="https://www.tgct.gov.in/tgportal/" 
+                          href="https://tgct.gov.in/tgportal/HelpDocuments/PTReturnsHelp.aspx" 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="btn btn-info"

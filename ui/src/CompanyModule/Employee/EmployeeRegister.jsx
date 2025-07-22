@@ -728,11 +728,11 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.mobileNo?.message}</small>
                     </div>
                     <div className="col-md-4">
-                      <label htmlFor="alternateNumber" placeholder='Enter Alternate Number' className="form-label">Alternate Number <span className="text-danger">*</span></label>
+                      <label htmlFor="alternateNumber" placeholder='Enter Alternate Number' className="form-label">Alternate Number (Optional)</label>
                       <input type="tel" className="form-control" defaultValue="+91 "
                         {...register("alternateNo", {
-                          required: "Alternate Number is required",
-                          validate: validatePhoneNumber,
+                          // required: "Alternate Number is required",
+                          // validate: validatePhoneNumber,
                         })}
                       />
                       <small className="text-danger">{errors.alternateNo?.message}</small>

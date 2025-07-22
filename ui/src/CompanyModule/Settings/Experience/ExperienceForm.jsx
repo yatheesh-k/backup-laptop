@@ -301,6 +301,7 @@ const ExperienceForm = () => {
       dateOfHiring: "",
       experienceDate: "",
       aboutEmployee: "",
+      generatedDate: "",
       draft: "",
     });
   };

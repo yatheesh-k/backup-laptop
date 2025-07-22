@@ -1,79 +1,70 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { DepartmentGetApi } from "../../Utils/Axios";
 import {
   toInputTitleCase,
   validateEmail,
   validateFirstName,
   validateLastName,
 } from "../../Utils/Validate";
-import Loader from "../../Utils/Loader";
-
 const USER_TYPES = [
   { id: "Admin", name: "Admin" },
   { id: "Accountant", name: "Accountant" },
   { id: "HR", name: "HR" },
 ];
-
-const UserForm = ({ onSubmit, defaultValues = {}, isEdit = false }) => {
+// Role mapping per userType
+const ROLES_BY_USER_TYPE = {
+  Admin: ["hr_management", "invoice_management", "ca"],
+  HR: ["hr_management"],
+  Accountant: ["invoice_management", "ca"],
+};
+// Role labels for UI
+const ROLE_LABELS = {
+  hr_management: 'HR Management',
+  invoice_management: 'Invoice Management',
+  ca: 'Chartered Accountant',
+};
+const UserForm = ({
+  onSubmit,
+  defaultValues = {},
+  isEdit = false,
+  userRole,
+  resourceType,
+}) => {
   const {
     register,
     handleSubmit,
-    setValue,
-    reset,
+    reset,setValue,
     formState: { errors },
     watch,
   } = useForm({
     defaultValues,
     mode: "onChange",
   });
-
-  const [departments, setDepartments] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showEmployee, setShowEmployee] = useState(false); // ← control employee visibility
-  const departmentWatch = watch("department");
-
   const employee = defaultValues?.employee;
-
+  const userTypeWatch = watch("userType");
+    // Reset roles when userType changes
   useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await DepartmentGetApi();
-        setDepartments(res.data.data);
-      } catch (err) {
-        console.error("Error fetching departments:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDepartments();
-  }, []);
-
+    setValue('roles', []);
+  }, [userTypeWatch, setValue]);
+  // Get allowed roles based on selected userType
+  const roleOptions = userTypeWatch ? ROLES_BY_USER_TYPE[userTypeWatch] || [] : [];
   useEffect(() => {
     if (defaultValues && Object.keys(defaultValues).length > 0) {
       reset(defaultValues);
     }
   }, [defaultValues, reset]);
-
-  useEffect(() => {
-    if (departmentWatch) {
-      setValue("designation", "");
-    }
-  }, [departmentWatch, setValue]);
-
-  if (loading) return <Loader />;
-
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="p-4 border rounded bg-light"
+      className="p-4"
     >
       {/* Basic User Fields */}
       <div className="row">
         <div className="mb-3 col-md-6">
           <label className="form-label">First Name</label>
           <input
-            className={`form-control ${errors.firstName ? "is-invalid" : ""}`}
+            className={`form-control bg-white ${errors.firstName ? "is-invalid" : ""}`}
             onInput={toInputTitleCase}
             {...register("firstName", {
               required: "First Name is required",
@@ -82,11 +73,10 @@ const UserForm = ({ onSubmit, defaultValues = {}, isEdit = false }) => {
           />
           <div className="invalid-feedback">{errors.firstName?.message}</div>
         </div>
-
         <div className="mb-3 col-md-6">
           <label className="form-label">Last Name</label>
           <input
-            className={`form-control ${errors.lastName ? "is-invalid" : ""}`}
+            className={`form-control bg-white ${errors.lastName ? "is-invalid" : ""}`}
             onInput={toInputTitleCase}
             {...register("lastName", {
               required: "Last Name is required",
@@ -96,63 +86,57 @@ const UserForm = ({ onSubmit, defaultValues = {}, isEdit = false }) => {
           <div className="invalid-feedback">{errors.lastName?.message}</div>
         </div>
       </div>
-
       <div className="row">
         <div className="mb-3 col-md-6">
           <label className="form-label">Email</label>
           <input
             type="email"
-            className={`form-control ${errors.emailId ? "is-invalid" : ""}`}
+            className={`form-control bg-white ${errors.emailId ? "is-invalid" : ""}`}
             {...register("emailId", {
               required: "Email is required",
               validate: validateEmail,
             })}
             onKeyPress={(e) => {
-              if (e.key === ' ') e.preventDefault();
+              if (e.key === " ") e.preventDefault();
             }}
             disabled={isEdit}
           />
           <div className="invalid-feedback">{errors.emailId?.message}</div>
         </div>
-
         <div className="mb-3 col-md-6">
           <label className="form-label">User Type</label>
           <select
-            {...register("userType", { required: "User Type is required" })}
-            className={`form-select ${errors.userType ? "is-invalid" : ""}`}
+            {...register("userType", { required: "User type is required" })}
+            className="form-select"
           >
             <option value="">Select User Type</option>
-            {USER_TYPES.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.name}
+            {USER_TYPES.map((role) => (
+              <option key={role.id} value={role.id}>
+                {role.name}
               </option>
             ))}
           </select>
           <div className="invalid-feedback">{errors.userType?.message}</div>
         </div>
       </div>
-
-      <div className="row">
-        <div className="mb-3 col-md-6">
-          <label className="form-label">Department</label>
-          <select
-            {...register("department", {
-              required: "Department is required",
-              onChange: () => setValue("designation", ""),
-            })}
-            className={`form-select ${errors.department ? "is-invalid" : ""}`}
-          >
-            <option value="">Select Department</option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.name}
-              </option>
-            ))}
-          </select>
-          <div className="invalid-feedback">{errors.department?.message}</div>
-        </div>
-      </div>
-
+{roleOptions.length > 0 && (
+          <div className="mb-3">
+            <label>Roles</label>
+            <div>
+              {roleOptions.map((role) => (
+                <div key={role} className="form-check form-check-inline">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    value={role}
+                    {...register('roles')}
+                  />
+                  <label className="form-check-label">{ROLE_LABELS[role]}</label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       {/* Radio Button to toggle employee view */}
       {isEdit && (
         <div className="form-check form-switch mb-3">
@@ -193,7 +177,6 @@ const UserForm = ({ onSubmit, defaultValues = {}, isEdit = false }) => {
                   />
                 </div>
               </div>
-
               <div className="row">
                 <div className="mb-3 col-md-6">
                   <label className="form-label">Mobile No</label>
@@ -212,7 +195,6 @@ const UserForm = ({ onSubmit, defaultValues = {}, isEdit = false }) => {
                   />
                 </div>
               </div>
-
               <div className="row">
                 <div className="mb-3 col-md-6">
                   <label className="form-label">PAN No</label>
@@ -239,7 +221,6 @@ const UserForm = ({ onSubmit, defaultValues = {}, isEdit = false }) => {
           )}
         </>
       )}
-
       {/* Submit Button */}
       <div className="row">
         <div className="col-12 text-end">
@@ -251,5 +232,12 @@ const UserForm = ({ onSubmit, defaultValues = {}, isEdit = false }) => {
     </form>
   );
 };
-
 export default UserForm;
+
+
+
+
+
+
+
+

@@ -345,7 +345,7 @@ const GSTProcessing = () => {
                                                 </button>
 
                                                 <a
-                                                    href="https://www.gst.gov.in/"
+                                                    href="https://services.gst.gov.in/services/login"
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="btn btn-info"
