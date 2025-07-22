@@ -145,8 +145,8 @@ const routeConfig = [
   {
     path: "/editUser/:id",
     element: <UpdateUser />,
-    allowedRoles: ["hrm", "tax_consultant"],
-    allowedResourceTypes: ["company_admin"],
+    allowedRoles: ["hrm", "tax_consultant","hr_management","invoice_management","ca"],
+    allowedResourceTypes: ["company_admin","Accountant","HR","Admin"],
   },
   {
     path: "/profile",
@@ -155,14 +155,12 @@ const routeConfig = [
     allowedResourceTypes: ["company_admin"],
   },
   // Employee-specific
-  // {
-  //   path: "/employeeProfile",
-  //   element: <EmployeeProfile />,
-  //   allowedRoles: ["employee"],
-  //   allowedResourceTypes: ["employee"],
-  //   label: "My Profile",
-  //   icon: "person-badge", // Bootstrap icon suggestion: bi-person-badge
-  // },
+  {
+    path: "/employeeProfile",
+    element: <EmployeeProfile />,
+    allowedRoles: ["employee"],
+    allowedResourceTypes: ["employee"],
+  },
   {
   path: "/employeeSalariesView",
   element: <EmployeeSalaryById />,
