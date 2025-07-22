@@ -107,7 +107,7 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
                 tdsReceipts.setTdsTotalAmount(base64getDecode(tdsReceipts.getTdsTotalAmount()));
                 if (tdsReceipts.getTdsReceiptFileName() != null) {
                     String baseUrl = getBaseUrl(request);
-                    String filePath = baseUrl+folderPath + tdsReceipts.getTdsReceiptFileName();
+                    String filePath = baseUrl+"/var/www/ems/assets/img/" + tdsReceipts.getTdsReceiptFileName();
                     tdsReceipts.setTdsReceiptFileName(filePath);
                 }
             }

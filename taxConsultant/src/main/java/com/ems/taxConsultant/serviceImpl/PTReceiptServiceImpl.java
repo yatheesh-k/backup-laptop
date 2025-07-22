@@ -128,7 +128,7 @@ public class PTReceiptServiceImpl implements PTReceiptService {
                 ptReceipts.setPtTotalAmount(base64getDecode(ptReceipts.getPtTotalAmount()));
                 if (ptReceipts.getPtReceiptFileName() != null && request!=null) {
                     String baseUrl = getBaseUrl(request);
-                    String filePath = baseUrl+folderPath + ptReceipts.getPtReceiptFileName();
+                    String filePath = baseUrl+"/var/www/ems/assets/img/" + ptReceipts.getPtReceiptFileName();
                     ptReceipts.setPtReceiptFileName(filePath);
                 }
             }

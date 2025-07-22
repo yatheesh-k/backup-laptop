@@ -118,7 +118,7 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
                 gstReceiptsEntity.setGstTotalAmount(base64getDecode(gstReceiptsEntity.getGstTotalAmount()));
                 if (gstReceiptsEntity.getGstReceiptFileName() != null && request!=null) {
                     String baseUrl = getBaseUrl(request);
-                    String filePath = baseUrl+folderPath + gstReceiptsEntity.getGstReceiptFileName();
+                    String filePath = baseUrl+"/var/www/ems/assets/img/" + gstReceiptsEntity.getGstReceiptFileName();
                     gstReceiptsEntity.setGstReceiptFileName(filePath);
                 }
             }
