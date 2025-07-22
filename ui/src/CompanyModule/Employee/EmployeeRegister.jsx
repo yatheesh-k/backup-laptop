@@ -538,8 +538,8 @@ export default function EmployeeRegister() {
                   <h3 className="mb-3">Step 1: Employee Details <span className='text-danger'>*</span></h3>
                   <div className="row">
                     <div className="col-md-6 mb-2">
-                      <label>Employee First Name</label>
-                      <input type="text" className="form-control" name='firstName' onInput={toInputTitleCase}
+                      <label>Employee First Name <span className="text-danger">*</span></label>
+                      <input type="text" className="form-control" placeholder='Enter Employee First Name' name='firstName' onInput={toInputTitleCase}
                         readOnly={!!location.state?.id} // Set readOnly if employee ID exists
                         {...register("firstName", {
                           required: "First Name is required",
@@ -549,8 +549,8 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.firstName?.message}</small>
                     </div>
                     <div className="col-md-6 mb-2">
-                      <label>Employee Last Name</label>
-                      <input type="text" className="form-control" name='lastName' onInput={toInputTitleCase}
+                      <label>Employee Last Name <span className="text-danger">*</span></label>
+                      <input type="text" className="form-control" placeholder='Enter Employee Last Name' name='lastName' onInput={toInputTitleCase}
                         readOnly={!!location.state?.id} // Set readOnly if employee ID exists
                         {...register("lastName", {
                           required: "Last Name is required",
@@ -560,8 +560,8 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.lastName?.message}</small>
                     </div>
                     <div className="col-md-6 mb-2 mt-2">
-                      <label>Employee ID</label> {!location.state?.id && `Last ID: ${lastEmployeeId}`}
-                      <input type="text" className="form-control" name='employeeId'
+                      <label>Employee ID <span className="text-danger">*</span></label> {!location.state?.id && `Last ID: ${lastEmployeeId}`}
+                      <input type="text" className="form-control" placeholder='Enter Employee ID' name='employeeId'
                         readOnly={!!location.state?.id} // Set readOnly if employee ID exists
                         {...register("employeeId", {
                           required: "Employee ID is required",
@@ -571,7 +571,7 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.employeeId?.message}</small>
                     </div>
                     <div className="col-md-6 mb-2 mt-2">
-                      <label>Employee Type</label>
+                      <label>Employee Type <span className="text-danger">*</span></label>
                       <select className="form-select" id='employeeType' name='employeeType'
                         {...register("employeeType", { required: "Select Employee Type" })}
                       >
@@ -583,7 +583,7 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.employeeType?.message}</small>
                     </div>
                     <div className="col-md-6 mb-2 mt-2">
-                      <label>Department</label>
+                      <label>Department <span className="text-danger">*</span></label>
                       <select
                         className="form-select"
                         id='department'
@@ -611,7 +611,7 @@ export default function EmployeeRegister() {
                     </div>
 
                     <div className="col-md-6 mb-2 mt-2">
-                      <label>Designation</label>
+                      <label>Designation <span className="text-danger">*</span></label>
                       <select
                         className="form-select"
                         id='designation'
@@ -636,8 +636,8 @@ export default function EmployeeRegister() {
                       </small>
                     </div>
                     <div className="col-md-6 mb-2 mt-2">
-                      <label>Employee Mail ID</label>
-                      <input type="email" className="form-control"
+                      <label>Employee Mail ID <span className="text-danger">*</span></label>
+                      <input type="email" className="form-control" placeholder='Enter Employee Mail ID'
                         readOnly={!!location.state?.id} // Set readOnly if employee ID exists
                         {...register("emailId", {
                           required: "Email is required",
@@ -650,7 +650,7 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.emailId?.message}</small>
                     </div>
                     <div className="col-md-6 mb-2 mt-2">
-                      <label>Manager</label>
+                      <label>Manager <span className="text-danger">*</span></label>
                       <select className="form-select" id='manager' name='manager'
                         {...register("manager", { required: "Select Manager" })}
                       >
@@ -662,7 +662,7 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.manager?.message}</small>
                     </div>
                     <div className="col-md-6 mb-2 mt-2">
-                      <label>Date of Hiring</label>
+                      <label>Date of Hiring <span className="text-danger">*</span></label>
                       <input type="date" className="form-control"
                         readOnly={!!location.state?.id} // Set readOnly if employee ID exists
                         onClick={(e) => e.target.showPicker()}
@@ -674,8 +674,8 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.dateOfHiring?.message}</small>
                     </div>
                     <div className="col-md-6 mb-2 mt-2">
-                      <label>Branch Location</label>
-                      <input type="text" className="form-control" onInput={toInputAddressCase}
+                      <label>Branch Location <span className="text-danger">*</span></label>
+                      <input type="text" placeholder='Enter Branch Location' className="form-control" onInput={toInputAddressCase}
                         {...register("location", {
                           required: "Branch Location is required",
                           validate: validateLocation
@@ -684,7 +684,7 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.location?.message}</small>
                     </div>
                     <div className="col-md-6 mb-2 mt-2">
-                      <label>Status</label>
+                      <label>Status <span className="text-danger">*</span></label>
                       <select className="form-select" id='status' name='status'
                         {...register("status", { required: "Select Status" })}
                       >
@@ -706,7 +706,7 @@ export default function EmployeeRegister() {
                   <h5>Personal Details</h5>
                   <div className="row mb-3">
                     <div className="col-md-4">
-                      <label htmlFor="dob" className="form-label">Date of Birth</label>
+                      <label htmlFor="dob" className="form-label">Date of Birth <span className="text-danger">*</span></label>
                       <input type="date" className="form-control" id="dob"
                         readOnly={!!location.state?.id} // Set readOnly if employee ID exists
                         onClick={(e) => e.target.showPicker()}
@@ -718,8 +718,8 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.dateOfBirth?.message}</small>
                     </div>
                     <div className="col-md-4">
-                      <label htmlFor="mobileNumber" className="form-label">Mobile Number</label>
-                      <input type="tel" className="form-control" id="mobileNumber" defaultValue="+91 "
+                      <label htmlFor="mobileNumber" className="form-label">Mobile Number <span className="text-danger">*</span></label>
+                      <input type="tel" placeholder='Enter Mobile Number' className="form-control" id="mobileNumber" defaultValue="+91 "
                         {...register("mobileNo", {
                           required: "Mobile Number is required",
                           validate: validatePhoneNumber
@@ -728,11 +728,11 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.mobileNo?.message}</small>
                     </div>
                     <div className="col-md-4">
-                      <label htmlFor="alternateNumber" className="form-label">Alternate Number</label>
+                      <label htmlFor="alternateNumber" placeholder='Enter Alternate Number' className="form-label">Alternate Number (Optional)</label>
                       <input type="tel" className="form-control" defaultValue="+91 "
                         {...register("alternateNo", {
-                          required: "Alternate Number is required",
-                          validate: validatePhoneNumber,
+                          // required: "Alternate Number is required",
+                          // validate: validatePhoneNumber,
                         })}
                       />
                       <small className="text-danger">{errors.alternateNo?.message}</small>
@@ -740,7 +740,7 @@ export default function EmployeeRegister() {
                   </div>
                   <div className="row mb-3">
                     <div className="col-md-6">
-                      <label htmlFor="maritalStatus" className="form-label">Marital Status</label>
+                      <label htmlFor="maritalStatus" className="form-label">Marital Status <span className="text-danger">*</span></label>
                       <select
                         className="form-select"
                         id="maritalStatus"
@@ -755,8 +755,8 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.maritalStatus?.message}</small>
                     </div>
                     <div className="col-md-6">
-                      <label htmlFor="aadharNumber" className="form-label">Aadhar Number</label>
-                      <input type="text" className="form-control" id="aadhaarId"
+                      <label htmlFor="aadharNumber" className="form-label">Aadhar Number <span className="text-danger">*</span></label>
+                      <input type="text" placeholder='Enter Aadhar Number' className="form-control" id="aadhaarId"
                         readOnly={!!location.state?.id} // Set readOnly if employee ID exists
                         {...register("aadhaarId", {
                           required: "Aadhar Number is required",
@@ -769,8 +769,8 @@ export default function EmployeeRegister() {
 
                   <div className="row mb-3">
                     <div className="col-md-6">
-                      <label htmlFor="panNumber" className="form-label">PAN Number</label>
-                      <input type="text" className="form-control" id="panNo"
+                      <label htmlFor="panNumber" className="form-label">PAN Number <span className="text-danger">*</span></label>
+                      <input type="text" placeholder='Enter PAN Number' className="form-control" id="panNo"
                         readOnly={!!location.state?.id} // Set readOnly if employee ID exists
                         {...register("panNo", {
                           required: "PAN Number is required",
@@ -780,7 +780,7 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.panNo?.message}</small>
                     </div>
                     <div className="col-md-6">
-                      <label htmlFor="uanNumber" className="form-label">UAN Number (Optional)</label>
+                      <label htmlFor="uanNumber" placeholder='Enter UAN Number' className="form-label">UAN Number (Optional)</label>
                       <input type="text" className="form-control" id="uanNumber"
                         {...register("uanNo", {
                           validate: validateUAN
@@ -792,7 +792,7 @@ export default function EmployeeRegister() {
                   </div>
                   <div className="row mb-3">
                     <div className="col-md-6">
-                      <label htmlFor="pfNo" className="form-label">PF Number (Optional)</label>
+                      <label htmlFor="pfNo" placeholder='Enter PF Number' className="form-label">PF Number (Optional)</label>
                       <input type="text" className="form-control" id="pfNo"
                         {...register("pfNo", {
                           validate: validatePFNumber
@@ -801,7 +801,7 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.pfNo?.message}</small>
                     </div>
                     <div className="col-md-6">
-                      <label htmlFor="permanentAddress" className="form-label">Permanent Address</label>
+                      <label htmlFor="permanentAddress" placeholder='Enter Permanent Address' className="form-label">Permanent Address <span className="text-danger">*</span></label>
                       <textarea type="text" className="form-control" onInput={toInputAddressCase}
                         {...register("permanentAddress", {
                           required: "Permanent Address is required",
@@ -811,7 +811,7 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.permanentAddress?.message}</small>
                     </div>
                     <div className="col-md-6">
-                      <label htmlFor="tempAddress" className="form-label">Temporary Address</label>
+                      <label htmlFor="tempAddress" placeholder='Enter Temporary Address' className="form-label">Temporary Address <span className="text-danger">*</span></label>
                       <textarea type="text" className="form-control" onInput={toInputAddressCase}
                         {...register("tempAddress", {
                           validate: validateTempAddress
@@ -865,8 +865,8 @@ export default function EmployeeRegister() {
                   {educationFields.map((edu, index) => (
                     <div key={edu.id} className="row mb-2">
                       <div className="col-md-4">
-                        <label>Education Level</label>
-                        <input type="text" className="form-control" onInput={toInputTitleCase}
+                        <label>Education Level <span className="text-danger">*</span></label>
+                        <input type="text" placeholder='Enter Education Level' className="form-control" onInput={toInputTitleCase}
                           {...register(`employeeEducation.${index}.educationLevel`, {
                             required: "Education Level is required",
                             pattern: { value: /^[A-Za-z0-9\s]+$/, message: "Only letters allowed" }
@@ -876,8 +876,8 @@ export default function EmployeeRegister() {
                       </div>
 
                       <div className="col-md-4">
-                        <label>Name of Institution/University</label>
-                        <input type="text" className="form-control" onInput={toInputTitleCase}
+                        <label>Name of Institution/University <span className="text-danger">*</span></label>
+                        <input type="text" placeholder='Enter Name of Institution/University' className="form-control" onInput={toInputTitleCase}
                           {...register(`employeeEducation.${index}.instituteName`, {
                             required: "Institution is required",
                             pattern: { value: /^[A-Za-z\s,.()\[\]]+$/, message: "Only letters allowed" }
@@ -887,8 +887,8 @@ export default function EmployeeRegister() {
                       </div>
 
                       <div className="col-md-4">
-                        <label>Board of Study</label>
-                        <input type="text" className="form-control" onInput={toInputTitleCase}
+                        <label>Board of Study <span className="text-danger">*</span></label>
+                        <input type="text" placeholder='Enter Board of Study' className="form-control" onInput={toInputTitleCase}
                           {...register(`employeeEducation.${index}.boardOfStudy`, {
                             required: "Board of Study is required",
                             pattern: { value: /^[A-Za-z\s,.()\[\]]+$/, message: "Only letters allowed" }
@@ -898,8 +898,8 @@ export default function EmployeeRegister() {
                       </div>
 
                       <div className="col-md-4">
-                        <label>Branch/Specialization</label>
-                        <input type="text" className="form-control" onInput={toInputAddressCase}
+                        <label>Branch/Specialization <span className="text-danger">*</span></label>
+                        <input type="text" placeholder='Enter Branch/Specialization' className="form-control" onInput={toInputAddressCase}
                           {...register(`employeeEducation.${index}.branch`, {
                             required: "Branch is required",
                             pattern: { value: /^[A-Za-z\s,.()\[\]]+$/, message: "Only letters allowed" }
@@ -909,8 +909,8 @@ export default function EmployeeRegister() {
                       </div>
 
                       <div className="col-md-4">
-                        <label>Year of Pass Out</label>
-                        <input type="text" className="form-control"
+                        <label>Year of Pass Out <span className="text-danger">*</span></label>
+                        <input type="text" placeholder='Enter Year of Pass Out' className="form-control"
                           {...register(`employeeEducation.${index}.year`, {
                             required: "Year is required",
                             pattern: { value: /^(19|20)\d{2}$/, message: "Enter a valid 4-digit year (1900-2099)" }
@@ -920,8 +920,8 @@ export default function EmployeeRegister() {
                       </div>
 
                       <div className="col-md-4">
-                        <label>Percentage</label>
-                        <input type="text" className="form-control"
+                        <label>Percentage <span className="text-danger">*</span></label>
+                        <input type="text" placeholder='Enter Percentage' className="form-control"
                           {...register(`employeeEducation.${index}.percentage`, {
                             required: "Percentage is required",
                             pattern: { value: /^(100|[0-9]{1,2}(\.\d{1,2})?)$/, message: "Enter a valid percentage (0-100)" }
@@ -949,7 +949,7 @@ export default function EmployeeRegister() {
                       <div key={exp.id} className="row mb-2">
                         <div className="col-md-3">
                           <label>Company Name</label>
-                          <input type="text" className="form-control" onInput={toInputAddressCase}
+                          <input type="text" placeholder='Enter Company Name' className="form-control" onInput={toInputAddressCase}
                             {...register(`employeeExperience.${index}.companyName`, {
                               validate: validateCompanyName
                             })}
@@ -959,7 +959,7 @@ export default function EmployeeRegister() {
 
                         <div className="col-md-3">
                           <label>Designation/Role</label>
-                          <input type="text" className="form-control" onInput={toInputAddressCase}
+                          <input type="text" placeholder='Enter Designation/Role' className="form-control" onInput={toInputAddressCase}
                             {...register(`employeeExperience.${index}.positionOrTitle`, {
                               validate: validateCompanyName
                             })}
@@ -1013,7 +1013,7 @@ export default function EmployeeRegister() {
                   <h3 className="mb-3">Step 5: Personal & Bank Details <span className='text-danger'>*</span></h3>
                   <div className="row">
                     <div className="col-md-6">
-                      <label>Bank Name</label>
+                      <label>Bank Name <span className="text-danger">*</span></label>
                       <select className="form-select"  {...register("bankName", { required: "Bank Name is required" })}>
                         <option value="">Select Bank</option>
                         {bank.map((bank, index) => (
@@ -1025,8 +1025,8 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.bankName?.message}</small>
                     </div>
                     <div className="col-md-6">
-                      <label>Account Number</label>
-                      <input type="text" className="form-control" name='accountNo'
+                      <label>Account Number <span className="text-danger">*</span></label>
+                      <input type="text" placeholder='Enter Account Number' className="form-control" name='accountNo'
                         {...register("accountNo", {
                           required: "Account Number is required",
                           pattern: {
@@ -1038,8 +1038,8 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.accountNo?.message}</small>
                     </div>
                     <div className="col-md-6 mt-2">
-                      <label>IFSC Code</label>
-                      <input type="text" className="form-control"
+                      <label>IFSC Code <span className="text-danger">*</span></label>
+                      <input type="text" placeholder='Enter IFSC Code' className="form-control"
                         {...register("ifscCode", {
                           required: "IFSC Code is required",
                           pattern: {
@@ -1051,8 +1051,8 @@ export default function EmployeeRegister() {
                       <small className="text-danger">{errors.ifscCode?.message}</small>
                     </div>
                     <div className="col-md-6 mt-2">
-                      <label>Branch</label>
-                      <input type="text" className="form-control" onInput={toInputAddressCase}
+                      <label>Branch <span className="text-danger">*</span></label>
+                      <input type="text" placeholder='Enter Branch' className="form-control" onInput={toInputAddressCase}
                         {...register("bankBranch", {
                           required: "Branch Name is required",
                           validate: validateLocation
@@ -1069,15 +1069,9 @@ export default function EmployeeRegister() {
                     Previous
                   </button>
                 )}
-                {location.state && location.state.id ? (
-                  <button type="button" className="btn btn-warning me-2" onClick={handleClearNewEmployee}>
-                    Add New Employee
-                  </button>
-                ) : (
-                  <button type="button" className="btn btn-warning me-2" onClick={handleClear}>
-                    Clear
-                  </button>
-                )}
+                <button type="button" className="btn btn-warning me-2" onClick={handleClear}>
+                  Clear
+                </button>
                 {step < 5 ? (
                   <button type="button" className="btn btn-primary" onClick={onNext}>
                     Next

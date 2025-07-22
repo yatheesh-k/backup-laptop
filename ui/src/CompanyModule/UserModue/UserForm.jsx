@@ -6,27 +6,23 @@ import {
   validateFirstName,
   validateLastName,
 } from "../../Utils/Validate";
-
 const USER_TYPES = [
   { id: "Admin", name: "Admin" },
   { id: "Accountant", name: "Accountant" },
   { id: "HR", name: "HR" },
 ];
-
 // Role mapping per userType
 const ROLES_BY_USER_TYPE = {
   Admin: ["hr_management", "invoice_management", "ca"],
   HR: ["hr_management"],
   Accountant: ["invoice_management", "ca"],
 };
-
 // Role labels for UI
 const ROLE_LABELS = {
   hr_management: 'HR Management',
   invoice_management: 'Invoice Management',
   ca: 'Chartered Accountant',
 };
-
 const UserForm = ({
   onSubmit,
   defaultValues = {},
@@ -84,7 +80,6 @@ const UserForm = ({
           />
           <div className="invalid-feedback">{errors.firstName?.message}</div>
         </div>
-
         <div className="mb-3 col-md-6">
           <label className="form-label">Last Name</label>
           <input
@@ -98,7 +93,6 @@ const UserForm = ({
           <div className="invalid-feedback">{errors.lastName?.message}</div>
         </div>
       </div>
-
       <div className="row">
         <div className="mb-3 col-md-6">
           <label className="form-label">Email</label>
@@ -116,7 +110,6 @@ const UserForm = ({
           />
           <div className="invalid-feedback">{errors.emailId?.message}</div>
         </div>
-
         <div className="mb-3 col-md-6">
           <label className="form-label">User Type</label>
           <select
@@ -191,7 +184,6 @@ const UserForm = ({
                   />
                 </div>
               </div>
-
               <div className="row">
                 <div className="mb-3 col-md-6">
                   <label className="form-label">Mobile No</label>
@@ -210,7 +202,6 @@ const UserForm = ({
                   />
                 </div>
               </div>
-
               <div className="row">
                 <div className="mb-3 col-md-6">
                   <label className="form-label">PAN No</label>
@@ -237,7 +228,6 @@ const UserForm = ({
           )}
         </>
       )}
-
       {/* Submit Button */}
       <div className="row">
         <div className="col-12 text-end">
@@ -249,5 +239,12 @@ const UserForm = ({
     </form>
   );
 };
-
 export default UserForm;
+
+
+
+
+
+
+
+

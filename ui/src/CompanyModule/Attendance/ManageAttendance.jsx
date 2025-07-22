@@ -193,7 +193,7 @@ const ManageAttendance = () => {
         Fetch Data
       </button>
     ) : employees.length > 0 ? (
-      <button type="button" className="btn btn-outline-primary" onClick={downloadExcel}>
+      <button type="button" className="btn btn-outline-primary d-inline-flex align-items-center" onClick={downloadExcel}>
         Download Excel <Download size={20} className="ml-1" />
       </button>
     ) : (

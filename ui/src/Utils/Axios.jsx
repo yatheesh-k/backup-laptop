@@ -221,7 +221,9 @@ export const updateCompanyStatusApi = (id, status) => {
 export const companyPasswordUpdateById = async (companyId) => {
   axiosInstance.patch(`/company/password/${companyId}`);
 }
-
+export const CompanyValidateApi = (companyName) => {
+  return axiosInstance.post(`/company/${companyName}/validate`);
+};
 export const DepartmentGetApi = () => {
   const company = localStorage.getItem("companyName")
   return axiosInstance.get(`${company}/department`);

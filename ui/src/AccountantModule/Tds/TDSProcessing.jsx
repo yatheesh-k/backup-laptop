@@ -301,14 +301,14 @@ const TDSProcessing = () => {
                           Download TDS List
                         </button>
 
-                        {/* <a
-                          href="https://tdspro.gov.in"
+                        <a
+                          href="https://contents.tdscpc.gov.in/"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="btn btn-info"
                         >
                           Proceed to TDS Portal
-                        </a> */}
+                        </a>
                       </div>
                     </>
                   )}

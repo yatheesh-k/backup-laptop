@@ -209,8 +209,8 @@ const EmployeeDocumentView = () => {
                                                         <td>
                                                             <a
                                                                 href={doc.url}
-                                                                download
-                                                                className="btn btn-sm btn-outline-primary me-2 d-flex align-items-center"
+                                                                target="_blank"
+                                                                className="btn btn-sm btn-outline-primary me-2 d-inline-flex align-items-center"
                                                             >
                                                                 <Eye className="me-1"/> View
                                                             </a>

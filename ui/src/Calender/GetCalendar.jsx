@@ -26,7 +26,7 @@ const GetCalendar = ({ events, year, month, onEventClick, today }) => {
   const firstDay = new Date(year, month, 1).getDay();
   const currentDate = new Date();
 
-  const todayStr = today.toISOString().split('T')[0];
+const todayStr = (today ?? new Date()).toISOString().split('T')[0];
 
   const groupedEvents = groupEventsByDate(events);
 

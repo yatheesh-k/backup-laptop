@@ -32,7 +32,6 @@ const { authUser } = useAuth(); // ✅ access the logged-in user
     err?.response?.data?.error?.message || "Something went wrong!";
   toast.error(errorMessage);
 }
-
 };
 
   return (
