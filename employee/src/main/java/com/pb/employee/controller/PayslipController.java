@@ -117,8 +117,7 @@ public class PayslipController {
                                                                   @PathVariable String payslipId,
                                                                   @PathVariable String employeeId,
                                                                   HttpServletRequest request) throws EmployeeException {
-        byte[] pdfBytes = payslipService.downloadPayslip(companyName, payslipId, employeeId, request);
-        return new ResponseEntity<>(pdfBytes, HttpStatus.OK);
+        return payslipService.downloadPayslip(companyName, payslipId, employeeId, request);
     }
 
     @RequestMapping(value = "/payslip", method = RequestMethod.POST)

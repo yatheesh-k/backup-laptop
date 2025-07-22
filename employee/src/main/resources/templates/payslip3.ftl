@@ -361,6 +361,7 @@
             <div class="address">
                 <hr />
                 <p>
+                    CompanyName: ${company.companyName}<br />
                     Company Address: ${company.companyAddress}<br />
                     <!-- Mobile No: ${company.mobileNo}<br />
                     Email ID: ${company.emailId} -->

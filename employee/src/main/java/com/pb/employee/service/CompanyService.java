@@ -31,4 +31,6 @@ public interface CompanyService {
     ResponseEntity<?> passwordResetForEmployee(EmployeePasswordReset employeePasswordReset, String id) throws EmployeeException;
 
     ResponseEntity<?> updateCompanyRoles(String companyName, UpdateRolesRequest updatePayload) throws EmployeeException;
+
+    ResponseEntity<?> companyValidate(String shortName) throws EmployeeException;
 }
