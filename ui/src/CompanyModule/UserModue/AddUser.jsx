@@ -4,23 +4,35 @@ import { useNavigate,Link } from 'react-router-dom';
 import LayOut from '../../LayOut/LayOut';
 import { UserPostApi } from '../../Utils/Axios';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../Context/AuthContext';
 
 const AddUser = () => {
   const navigate = useNavigate();
+const { authUser } = useAuth(); // ✅ access the logged-in user
+  const userRole = authUser?.roles?.[0]; // assuming single role
+  const resourceType=authUser?.resourceType?.[0];
 
   const onSubmit = async (data) => {
+    const payload = {
+    ...data,
+    department: "", // or "NA" or any default if required by backend
+    roles: Array.isArray(data.roles) ? data.roles : [data.roles],
+  };
   try {
-    await UserPostApi(data);
+    await UserPostApi(payload);
     toast.success('User added successfully!', {
       autoClose: 2000, // Show for 2 seconds
       onClose: () => {
         navigate('/viewUser', { state: { refresh: Date.now() } });
       }
     });
-  } catch (err) {
-    console.error('Error adding user:', err);
-    toast.error('email already exists');
-  }
+  }  catch (err) {
+  console.error('Error adding user:', err);
+  const errorMessage =
+    err?.response?.data?.error?.message || "Something went wrong!";
+  toast.error(errorMessage);
+}
+
 };
 
   return (
@@ -51,8 +63,9 @@ const AddUser = () => {
                 <div className="card">
                   <div className="card-header">
                     <h5 className="card-title text-dark">Add User</h5>
+                     <hr/>
                   </div>
-                  <UserForm onSubmit={onSubmit} />
+                  <UserForm onSubmit={onSubmit} userRole={userRole} resourceType={resourceType}/>
                 </div>
               </div>
             </div>

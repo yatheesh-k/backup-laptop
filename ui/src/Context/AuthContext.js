@@ -7,23 +7,21 @@ import {
   CandidateGetByIdApi,
 } from "../Utils/Axios";
 
-// Create the context
+// Create Context
 const AuthContext = createContext();
 
-// Create the Provider component
+// Provider
 export const AuthProvider = ({ children }) => {
-  const [authUser, setAuthUser] = useState(null);        // Decoded token info
-  const [employee, setEmployee] = useState(null);        // Fetched user details
-  const [company, setCompany] = useState(null);          // Fetched company details
-  const [isInitialized, setIsInitialized] = useState(false); // Ready flag
+  const [authUser, setAuthUser] = useState(null);
+  const [employee, setEmployee] = useState(null);
+  const [company, setCompany] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Normalize roles (ensure always array)
   const normalizeRoles = (roles) => {
     if (!roles) return [];
     return Array.isArray(roles) ? roles : [roles];
   };
 
-  // On app load
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -40,12 +38,21 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
+      const roles = normalizeRoles(decoded.roles);
+
       setAuthUser({
         userId: decoded.sub,
-        roles: normalizeRoles(decoded.roles),
+        roles,
         company: decoded.company || null,
         employeeId: decoded.employee || null,
         resourceType: decoded.resourceType || null,
+        isEmsAdmin: roles.includes("ems_admin"),
+        isCompanyAdmin: decoded.resourceType === "company_admin",
+        isAccountant: decoded.resourceType === "Accountant",
+        isHR: decoded.resourceType === "HR",
+        isAdmin: decoded.resourceType === "Admin",
+        isEmployee: decoded.resourceType === "employee",
+        isCandidate: decoded.resourceType === "candidate",
       });
     } catch (err) {
       console.error("Invalid token", err);
@@ -54,7 +61,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Fetch details based on user type
   useEffect(() => {
     if (!authUser) {
       setEmployee(null);
@@ -86,13 +92,10 @@ export const AuthProvider = ({ children }) => {
 
     const fetchDetails = async () => {
       try {
-        const userId = authUser.userId;
-        const empData = await fetchEmployeeOrUserOrCandidate(userId);
+        const empData = await fetchEmployeeOrUserOrCandidate(authUser.userId);
         setEmployee(empData);
 
-        // Try to get company ID from data or authUser
         const companyId = empData?.companyId || authUser.company;
-
         if (companyId) {
           try {
             const compRes = await companyViewByIdApi(companyId);
@@ -101,8 +104,6 @@ export const AuthProvider = ({ children }) => {
             console.error("Company fetch failed:", err);
           }
         }
-
-        console.log("✅ User/candidate/employee fetched:", empData);
       } catch (err) {
         console.error("Unexpected error fetching user details:", err);
       } finally {
@@ -113,32 +114,33 @@ export const AuthProvider = ({ children }) => {
     fetchDetails();
   }, [authUser]);
 
-  // Login handler
   const login = (token) => {
     try {
       localStorage.setItem("token", token);
       const decoded = jwtDecode(token);
-
-      const userId = decoded.sub;
       const roles = normalizeRoles(decoded.roles);
-      const company = decoded.company || null;
-      const employeeId = decoded.employee || null;
-      const resourceType = decoded.resourceType || null;
 
       setAuthUser({
-        userId,
+        userId: decoded.sub,
         roles,
-        company,
-        employeeId,
-        resourceType,
+        company: decoded.company || null,
+        employeeId: decoded.employee || null,
+        resourceType: decoded.resourceType || null,
+        isEmsAdmin: roles.includes("ems_admin"),
+        isCompanyAdmin: decoded.resourceType === "company_admin",
+        isAccountant: decoded.resourceType === "Accountant",
+        isHR: decoded.resourceType === "HR",
+        isAdmin: decoded.resourceType === "Admin",
+        isEmployee: decoded.resourceType === "employee",
+        isCandidate: decoded.resourceType === "candidate",
       });
 
-      setIsInitialized(false); // Trigger re-fetch
+      setIsInitialized(false);
     } catch (err) {
       console.error("Login failed: invalid token", err);
     }
   };
-  // Logout
+
   const logout = () => {
     localStorage.removeItem("token");
     setAuthUser(null);
@@ -146,6 +148,10 @@ export const AuthProvider = ({ children }) => {
     setCompany(null);
     setIsInitialized(true);
   };
+
+  const hasRole = (role) => authUser?.roles?.includes(role);
+  const hasAnyRole = (roles) => roles.some((r) => hasRole(r));
+  const isResourceType = (type) => authUser?.resourceType === type;
 
   return (
     <AuthContext.Provider
@@ -157,6 +163,9 @@ export const AuthProvider = ({ children }) => {
         isInitialized,
         login,
         logout,
+        hasRole,
+        hasAnyRole,
+        isResourceType,
       }}
     >
       {children}
@@ -164,5 +173,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook
 export const useAuth = () => useContext(AuthContext);

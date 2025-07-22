@@ -65,7 +65,6 @@ import EmployeeSalaryStructureView from "../CompanyModule/PayRoll/EmployeeSalary
 import InternOfferLetter from "../CompanyModule/Settings/Internship/InternOfferLetter/InternOfferLetter";
 import InternOfferPrev from "../CompanyModule/Settings/Internship/InternOfferLetter/InternOfferPrev";
 import InternOfferForm from "../CompanyModule/Settings/Internship/InternOfferLetter/InternOfferForm";
-import ForbiddenPage from "./ForbiddenPage";
 import GetCalendar from "../Calender/GetCalendar";
 import EventForm from "../Calender/EventForm";
 import GetTaxSlab from "../CompanyModule/TDS/GetTaxSlab";
@@ -80,7 +79,6 @@ import CandidateRegistration from "../CompanyModule/Candidate/CandidateRegistrat
 import CandidatesView from "../CompanyModule/Candidate/CandidatesView";
 import CandidateDocumentUpload from "../CompanyModule/Candidate/CandidateDocumentUpload";
 import UploadSuccess from "../CompanyModule/Candidate/UploadSuccess";
-import CandidateLogin from "../Login/CandidateLogin";
 import CandidateProfile from "../CompanyModule/Candidate/CandidateProfile";
 import CandidateDocumentsView from "../CompanyModule/Candidate/CandidateDocumentsView";
 import InvoiceTemplate1 from "../CompanyModule/Settings/InvoiceTemplates/InvoiceTemplate1";
@@ -89,14 +87,21 @@ import EmployeeDocumentUpload from "../CompanyModule/Employee/EmployeeDocumentUp
 import EmployeeDocumentView from "../CompanyModule/Employee/EmployeeDocumentView";
 import InvoiceTemplates from "../CompanyModule/Settings/InvoiceTemplates/InvoiceTemplates";
 import CandidateToEmployee from "../CompanyModule/Candidate/CandidateToEmployee";
-import CompanyPTSubmission from "../AccountantModule/ProfessionalTax/CompanyPTSubmission";
-import PTProcessing from "../AccountantModule/ProfessionalTax/PTProcessing";
 import CompanyGSTSubmission from "../AccountantModule/GST/CompanyGSTSubmission";
 import EmployeeManager from "../CompanyModule/Employee/EmployeeManager/EmployeeManager";
 import EmployeeSummary from "../CompanyModule/Employee/EmployeeManager/EmployeeSummary";
 import GSTCustomerRegistration from "../AccountantModule/GST/GSTCustomerRegistration";
 import InvoiceAccountsSummary from "../AccountantModule/GST/InvoiceAccountsSummary";
 import PasswordManagementSummary from "../CredentialsManagement/PasswordManagementSummary";
+import TimelineForm from "../CompanyModule/Settings/TimeLine/TimeLineDates";
+import GSTProcessing from "../AccountantModule/GST/GSTProcessing";
+import GSTReceiptView from "../AccountantModule/GST/GSTReceiptsView";
+import TDSProcessing from "../AccountantModule/Tds/TDSProcessing";
+import TDSReceiptsView from "../AccountantModule/Tds/TDSReceiptsView";
+import PTProcessing from "../AccountantModule/ProfessionalTax/PTProcessing";
+import PTReceiptsView from "../AccountantModule/ProfessionalTax/PTReceiptsView";
+import PFProcessing from "../AccountantModule/PF/PFProcessing";
+import PFReceiptsView from "../AccountantModule/PF/PFReceiptsView";
 
 const routeConfig = [
 {
@@ -114,14 +119,14 @@ const routeConfig = [
       {
         path: "/companyRegistration",
         element: <CompanyRegistration />,
-        allowedRoles: ["ems_admin"],
+        allowedRoles: ["system_admin"],
         allowedResourceTypes: ["ems_admin"],
         label: "Register Company",
       },
       {
         path: "/companyView",
         element: <CompanyView />,
-        allowedRoles: ["ems_admin"],
+        allowedRoles: ["system_admin"],
         allowedResourceTypes: ["ems_admin"],
         label: "View Companies",
       },
@@ -461,36 +466,38 @@ const routeConfig = [
     allowedRoles: ["HRM"],
     allowedResourceTypes: ["company_admin", "HR", "Admin"],
   },
-  {
-  label: "Employees Data",
-  icon: "people",
-  children: [
-    {
-      path: "/employeeMangement",
-      label: "Employee Management",
-      icon: "people-fill",
-      allowedRoles: ["HRM", "tax_consultant"],
-      allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
-    },
-    {
-      path: "/employeeSummary",
-      label: "Employee Summary",
-      icon: "clipboard-data",
-      allowedRoles: ["HRM", "tax_consultant"],
-      allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
-    },
-  ]
-},
 {
-  label: "Invoice",
+    label: "Employees Data",
+    icon: "people",
+    children: [
+      {
+        path: "/employeeMangement",
+        element:<EmployeeManager/>,
+        label: "Employee Management",
+        icon: "people-fill",
+        allowedRoles: ["tax_consultant","invoice_management"],
+        allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
+      },
+      {
+        path: "/employeeSummary",
+        element:<EmployeeSummary/>,
+        label: "Employee Summary",
+        icon: "clipboard-data",
+        allowedRoles: ["tax_consultant","invoice_management"],
+        allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
+      },
+    ]
+  },
+{
+  label: "GST Management",
   icon: "receipt",
   children: [
 {
   path: "/invoicesAccountsManagment",
   element: <GSTCustomerRegistration />,
-  allowedRoles: ["HRM", "tax_consultant"],
+  allowedRoles: ["HRM", "tax_consultant","invoice_management"],
   allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
-  label: "Invoices & Accounts",
+  label: "Gst Submission",
   icon: "file-text" // Invoice-like icon
 },
 {
@@ -498,12 +505,11 @@ const routeConfig = [
   element: <InvoiceAccountsSummary />,
   allowedRoles: ["HRM", "tax_consultant"],
   allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
-  label: "Invoice Summary",
+  label: "GST Data",
   icon: "file-bar-graph" // Summary-style financial icon
 }, 
   ],
 },
-
   {
     path: "/employeeSalaryUpdate",
     element: <EmployeeSalaryUpdate />,
@@ -694,7 +700,7 @@ const routeConfig = [
 {
   path: "/totalEmployees",
   element: <TotalEmployees />,
-  allowedRoles: ["HRM", "tax_consulatant"],
+  allowedRoles: ["HRM", "tax_consulatant","hr_management","invoice_management"],
   allowedResourceTypes: ["company_admin", "Admin", "HR", "Accountant"],
   label: "Total Employees",
   icon: "people" // Bootstrap Icon: https://icons.getbootstrap.com/icons/people/
@@ -764,14 +770,87 @@ const routeConfig = [
     }
   ]
 },
-{
-  path: "/companyGSTSubmission",
-  element: <CompanyGSTSubmission />,
-  allowedRoles: ["HRM", "tax_consultant"],
-  allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
-  label: "GST Submission",
-  icon: "file-earmark-bar-graph" // GST/financial icon
-},
+
+ {
+    label: "GST Filing",
+    icon: "receipt",
+    children: [
+      {
+        path: "/gstProcessing",
+        label: "GST Processing",
+        element: <GSTProcessing />,
+        allowedRoles: ["HRM", "tax_consultant"],
+        allowedResourceTypes: ["company_admin","Accountant", "ca"],
+      },
+      {
+        path: "/gstReceiptsView",
+        label: "GST Receipts",
+        element: <GSTReceiptView />,
+        allowedRoles: ["HRM", "tax_consultant"],
+        allowedResourceTypes: ["company_admin", "Admin", "Accountant", "ca"],
+      },
+    ],
+  },
+  {
+    label: "TDS Filings",
+    icon: "file-earmark-font",
+    children: [
+      {
+        path: "/tdsProcessing",
+        label: "TDS Processing",
+        element: <TDSProcessing />,
+        allowedRoles: ["HRM", "tax_consultant"],
+        allowedResourceTypes: ["company_admin", "Accountant", "ca"],
+      },
+      {
+        path: "/tdsReceiptsView",
+        label: "TDS Receipts",
+        element: <TDSReceiptsView />,
+        allowedRoles: ["HRM", "tax_consultant"],
+        allowedResourceTypes: ["company_admin", "Admin", "Accountant", "ca"],
+      },
+    ],
+  },
+  {
+    label: "PT Filings",
+    icon: "receipt-cutoff",
+    children: [
+      {
+        path: "/ptProcessing",
+        label: "PT Processing",
+        element: <PTProcessing />,
+        allowedRoles: ["HRM", "tax_consultant"],
+        allowedResourceTypes: ["company_admin","Accountant", "ca"],
+      },
+      {
+        path: "/ptReceiptsView",
+        label: "PT Receipts",
+        element: <PTReceiptsView />,
+        allowedRoles: ["HRM", "tax_consultant"],
+        allowedResourceTypes: ["company_admin", "Admin", "Accountant", "ca"],
+      },
+    ],
+  },
+  {
+    label: "PF Filings",
+    icon: "file-earmark-ppt",
+    children: [
+      {
+        path: "/pfProcessing",
+        label: "PF Processing",
+        element: <PFProcessing />,
+        allowedRoles: ["HRM", "tax_consultant"],
+        allowedResourceTypes: ["company_admin","Accountant", "ca"],
+      },
+      {
+        path: "/pfReceiptsView",
+        label: "PF Receipts",
+        element: <PFReceiptsView />,
+        allowedRoles: ["HRM", "tax_consultant"],
+        allowedResourceTypes: ["company_admin", "Admin", "Accountant", "ca"],
+      },
+    ],
+  },
 {
   label: "Users",
   icon: "person", // Bootstrap Icon (bi-person); use "people" for multiple users
@@ -828,9 +907,17 @@ const routeConfig = [
   path: "/AddEvent",
   element: <EventForm />,
   allowedRoles: ["HRM", "tax_consultant"],
-  allowedResourceTypes: ["company_admin", "HR", "Admin"],
+  allowedResourceTypes: ["company_admin","Admin"],
   label: "Add Event",
   icon: "calendar-plus" // Bootstrap icon: bi-calendar-plus
+},
+{
+  path: "/AddTimeLine",
+  element: <TimelineForm />,
+  allowedRoles: ["HRM", "tax_consultant"],
+  allowedResourceTypes: ["company_admin","Admin"],
+  label: "Add Time Lines",
+  icon: "calendar4-range" // Bootstrap icon: bi-calendar-plus
 },
  {
   path: "/offerLetterTemplate",
