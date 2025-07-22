@@ -198,9 +198,9 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
     private void storeEmployeeGstReceipts(MultipartFile file, String companyName, GSTReceiptEntity receipts) throws IOException {
         if(!file.isEmpty()){
             String companyFolderPath = folderPath + companyName;
-            String filename = companyFolderPath+Constants.SLASH+companyName+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+file.getOriginalFilename();
+            String filename = companyFolderPath+Constants.SLASH+Constants.GST_RECEIPT+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+file.getOriginalFilename();
             file.transferTo(new File(filename));
-            receipts.setGstReceiptFileName(companyName+Constants.SLASH+Constants.GST_RECEIPT+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+"_"+file.getOriginalFilename());
+            receipts.setGstReceiptFileName(companyName+Constants.SLASH+Constants.GST_RECEIPT+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+file.getOriginalFilename());
             ResponseEntity.ok(filename);
         }
 
