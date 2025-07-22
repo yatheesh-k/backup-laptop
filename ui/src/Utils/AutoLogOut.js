@@ -9,30 +9,32 @@ const AutoLogout = ({
 }) => {
   const [showWarning, setShowWarning] = useState(false);
   const [showFinalPopup, setShowFinalPopup] = useState(false);
-  const { userRole, company } = useSelector((state) => state.auth);
+  const { resourceType,roles=[]} = useSelector((state) => state.auth);
+  const company=localStorage.getItem("companyName")
   const warningTimerRef = useRef(null);
   const logoutTimerRef = useRef(null);
   const navigate = useNavigate();
 
   const logout = useCallback(() => {
-    // Clear any existing timers
     if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
     if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
 
-    // Determine the correct logout path based on user role and company
-    if (userRole?.includes('ems_admin')) {
+    // Routing logic
+    if (roles.includes("ems_admin")) {
       navigate("/login", { replace: true });
     } else if (
-      userRole?.some(role => ['company_admin', 'Accountant', 'HR', 'Admin'].includes(role)) &&
+      ["company_admin", "Accountant", "HR", "Admin"].includes(resourceType) ||
       company
     ) {
-      navigate(`/${company.toLowerCase()}/login`, { replace: true });
+      navigate(`/${company?.toLowerCase() || 'company'}/login`, { replace: true });
+    } else if (resourceType === "candidate") {
+      navigate(`/${company?.toLowerCase() || 'company'}/candidateLogin`, { replace: true });
     } else {
       navigate("/", { replace: true });
     }
-    
+
     toast.error("You have been logged out due to inactivity.");
-  }, [navigate, userRole, company]);
+  }, [navigate, resourceType, roles,company]);
 
   const resetTimers = useCallback(() => {
     // Clear existing timers
