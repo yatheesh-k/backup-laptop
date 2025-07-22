@@ -33,7 +33,7 @@ public class UserRequest {
     private String emailId;
 
     @Schema(example = "userType")
-    @Pattern(regexp = "^(admin|hr|accountant)$", message = "{user.type}")
+    @Pattern(regexp = "^(Admin|HR|Accountant)$", message = "{user.type}")
     @Size(min = 2, max = 20, message = "{userType.size.message}")
     private String userType;
 
