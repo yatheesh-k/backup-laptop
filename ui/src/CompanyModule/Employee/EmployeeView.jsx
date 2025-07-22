@@ -343,17 +343,26 @@ const salaryDetailFields = [
   ];
 
   const filteredEmployees = employees?.filter((employee) => {
-    const nameMatch =
-      (employee.firstName?.toLowerCase().includes(search.toLowerCase()) || "") ||
-      (employee.lastName?.toLowerCase().includes(search.toLowerCase()) || "") ||
-      (employee.emailId?.toLowerCase().includes(search.toLowerCase()) || "");
+  const searchTerm = search.toLowerCase();
+  
+  // Create a string that combines all the data from displayed columns
+  const searchableString = [
+    employee.firstName || '',
+    employee.lastName || '',
+    employee.employeeId || '',
+    employee.emailId || '',
+    employee.departmentName || '',
+    employee.dateOfHiring || '',
+    employee.status || '',
+    // Add any other fields that are displayed in your table
+  ].join(' ').toLowerCase();
 
-    const hireDate = employee.dateOfHiring ? new Date(employee.dateOfHiring) : null;
-    const monthMatch = selectedMonth ? hireDate?.getMonth() + 1 === parseInt(selectedMonth) : true;
-    const yearMatch = selectedYear ? hireDate?.getFullYear().toString() === selectedYear : true;
+  const hireDate = employee.dateOfHiring ? new Date(employee.dateOfHiring) : null;
+  const monthMatch = selectedMonth ? hireDate?.getMonth() + 1 === parseInt(selectedMonth) : true;
+  const yearMatch = selectedYear ? hireDate?.getFullYear().toString() === selectedYear : true;
 
-    return nameMatch && monthMatch && yearMatch;
-  });
+  return searchableString.includes(searchTerm) && monthMatch && yearMatch;
+});
 
   const toInputTitleCase = (e) => {
     const input = e.target;
