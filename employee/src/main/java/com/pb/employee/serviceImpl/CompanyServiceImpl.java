@@ -556,4 +556,19 @@ public class CompanyServiceImpl implements CompanyService {
         }
     }
 
+    @Override
+    public ResponseEntity<?> companyValidate(String shortName) throws EmployeeException {
+        log.info("Validating company with short name: {}", shortName);
+
+        CompanyEntity company = openSearchOperations.getCompanyByCompanyName(shortName, Constants.INDEX_EMS);
+
+        if (company == null) {
+            log.error("Company not found for short name: {}", shortName);
+            throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+        }
+
+        log.info("Company validation successful for short name: {}", shortName);
+        return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
+    }
+
 }
