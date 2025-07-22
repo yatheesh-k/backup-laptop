@@ -105,9 +105,9 @@ public class PTReceiptServiceImpl implements PTReceiptService {
     private void storeEmployeePTReceipts(MultipartFile file, String companyName, PTReceiptEntity receipts) throws IOException {
         if(!file.isEmpty()){
             String companyFolderPath = folderPath + companyName;
-            String filename = companyFolderPath+Constants.SLASH+companyName+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+file.getOriginalFilename();
+            String filename = companyFolderPath+Constants.SLASH+Constants.PT_RECEIPT+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+file.getOriginalFilename();
             file.transferTo(new File(filename));
-            receipts.setPtReceiptFileName(companyName+Constants.SLASH+Constants.PF_RECEIPT+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+"_"+file.getOriginalFilename());
+            receipts.setPtReceiptFileName(companyName+Constants.SLASH+Constants.PT_RECEIPT+"_"+receipts.getMonth()+"_"+ receipts.getYear()+"_"+file.getOriginalFilename());
             ResponseEntity.ok(filename);
         }
 
@@ -128,7 +128,7 @@ public class PTReceiptServiceImpl implements PTReceiptService {
                 ptReceipts.setPtTotalAmount(base64getDecode(ptReceipts.getPtTotalAmount()));
                 if (ptReceipts.getPtReceiptFileName() != null && request!=null) {
                     String baseUrl = getBaseUrl(request);
-                    String filePath = baseUrl+folderPath + ptReceipts.getPtReceiptFileName();
+                    String filePath = baseUrl+"/var/www/ems/assets/img/" + ptReceipts.getPtReceiptFileName();
                     ptReceipts.setPtReceiptFileName(filePath);
                 }
             }
