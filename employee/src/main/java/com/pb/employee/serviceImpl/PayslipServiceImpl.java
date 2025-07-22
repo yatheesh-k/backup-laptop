@@ -5,9 +5,11 @@ import com.pb.employee.common.ResponseBuilder;
 import com.pb.employee.exception.EmployeeErrorMessageKey;
 import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.exception.ErrorMessageHandler;
+import com.pb.employee.model.ResourceType;
 import com.pb.employee.opensearch.OpenSearchOperations;
 import com.pb.employee.persistance.model.*;
 import com.pb.employee.request.EmployeeStatus;
+import com.pb.employee.request.ExperienceLetterFieldsRequest;
 import com.pb.employee.request.PayslipRequest;
 import com.pb.employee.request.PayslipUpdateRequest;
 import com.pb.employee.request.TDSPayload.TDSResPayload;
@@ -24,7 +26,10 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -116,7 +121,7 @@ public class PayslipServiceImpl implements PayslipService {
             openSearchOperations.saveEntity(payslipProperties, paySlipId, index);
 
             EmployeeEntity finalEmployee = employee;
-            byte[] pdfBytes = downloadPayslip(payslipRequest.getCompanyName(), paySlipId, employeeId, request);
+            byte[] pdfBytes = payslipPDF(payslipRequest.getCompanyName(), paySlipId, employeeId, request);
 
             CompletableFuture.runAsync(()->{
                 try {
@@ -260,7 +265,7 @@ public class PayslipServiceImpl implements PayslipService {
                 for (PayslipEntity payslipProperties : payslipPropertiesList) {
                     openSearchOperations.saveEntity(payslipProperties, paySlipId, index);
 
-                    byte[] pdfBytes = downloadPayslip(payslipRequest.getCompanyName(), paySlipId, employee.getEmployeeId(), request);
+                    byte[] pdfBytes = payslipPDF(payslipRequest.getCompanyName(), paySlipId, employee.getEmployeeId(), request);
 
                     CompletableFuture.runAsync(()-> {
                         try {
@@ -442,7 +447,22 @@ public class PayslipServiceImpl implements PayslipService {
 
     }
 
-    public byte[] downloadPayslip(String companyName, String payslipId, String employeeId, HttpServletRequest request) {
+    @Override
+    public ResponseEntity<byte[]> downloadPayslip(String companyName, String payslipId, String employeeId, HttpServletRequest request) {
+        try {
+            byte[] pdfBytes = payslipPDF(companyName, payslipId, employeeId, request);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=payslip_" + employeeId + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            log.error("Error downloading payslip: {}", e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public byte[] payslipPDF(String companyName, String payslipId, String employeeId, HttpServletRequest request) {
         String index = ResourceIdUtils.generateCompanyIndex(companyName);
         EmployeeEntity employee;
         PayslipEntity entity;
@@ -874,7 +894,7 @@ public class PayslipServiceImpl implements PayslipService {
             PayslipEntity payslipProperties = PayslipUtils.maskEmployeePayslipUpdateProperties(payslipsRequest, payslipId, employeeId);
             openSearchOperations.saveEntity(payslipProperties, payslipId, index);
 
-            byte[] pdfBytes = downloadPayslip(payslipsRequest.getCompanyName(), payslipId, employeeId, request);
+            byte[] pdfBytes = payslipPDF(payslipsRequest.getCompanyName(), payslipId, employeeId, request);
 
             CompletableFuture.runAsync(()-> {
                 try {
