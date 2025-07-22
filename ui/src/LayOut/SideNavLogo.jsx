@@ -10,11 +10,11 @@ const SideNavLogo = () => {
   const resourceType = authUser?.resourceType || "";
 
   const renderContent = () => {
-    if (role === "candidate") {
+    if (resourceType === "candidate") {
       return <span className="fw-bold text-muted">Candidate Portal</span>;
     }
 
-    if (role === "ems_admin") {
+    if (resourceType === "ems_admin") {
       return (
         <>
           <img
@@ -54,7 +54,7 @@ const SideNavLogo = () => {
       );
     }
 
-    return <span className="fw-semibold text-muted">EMS Portal</span>;
+    return <span className="fw-semibold text-muted">CUB Application</span>;
   };
 
   return (

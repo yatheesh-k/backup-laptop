@@ -117,11 +117,17 @@ const UserForm = ({
             className="form-select"
           >
             <option value="">Select User Type</option>
-            {USER_TYPES.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
+           {USER_TYPES
+    .filter((role) => {
+      // 👇 hide "HR" for tax_consultant
+      if (userRole === "tax_consultant" && role.id === "HR") return false;
+      return true;
+    })
+    .map((role) => (
+      <option key={role.id} value={role.id}>
+        {role.name}
+      </option>
+    ))}
           </select>
           <div className="invalid-feedback">{errors.userType?.message}</div>
         </div>

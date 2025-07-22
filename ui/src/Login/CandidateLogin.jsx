@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Bounce, toast } from "react-toastify";
 import {
   CandidateloginApi,
-  CompanyloginApi,
   ValidateOtp,
 } from "../Utils/Axios";
 import { Modal, ModalBody, ModalHeader, ModalTitle } from "react-bootstrap";
@@ -15,7 +14,7 @@ import Loader from "../Utils/Loader";
 import { setAuthDetails } from "../Redux/AuthSlice";
 import { useDispatch } from "react-redux";
 
-const CompanyLogin = () => {
+const CandidateLogin = () => {
   const {
     register,
     handleSubmit,
@@ -33,7 +32,6 @@ const CompanyLogin = () => {
   const { setAuthUser } = useAuth();
   const { company } = useParams();
   const navigate = useNavigate();
-  const [passwordShown, setPasswordShown] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showOtpField, setShowOtpField] = useState(false);
@@ -91,7 +89,7 @@ const CompanyLogin = () => {
             })
           );
           console.log("Dispatched User Role:", userRole); // Log this to verify
-          setAuthUser({ userId, userRole, company, employeeId });
+          setAuthUser({ userId, userRole, company, employeeId,resourceType });
           toast.success("OTP Sent Successfully");
           setOtpSent(true);
           setOtpExpired(false);
@@ -171,10 +169,6 @@ const CompanyLogin = () => {
     setErrorMessage("");
   };
 
-  const togglePasswordVisibility = () => {
-    setPasswordShown(!passwordShown);
-  };
-
   const handleEmailChange = (e) => {
     if (e.keyCode === 32) {
       e.preventDefault();
@@ -212,10 +206,10 @@ const CompanyLogin = () => {
                   </div>
                 </div>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                  <div class="formgroup">
-                    <label class="form-label">Email Id</label>
+                  <div className="formgroup">
+                    <label className="form-label">Email Id</label>
                     <input
-                      class="form-control form-control-lg"
+                      className="form-control form-control-lg"
                       type="email"
                       name="email"
                       placeholder="Email Id"
@@ -239,10 +233,10 @@ const CompanyLogin = () => {
                   </div>
 
                   {otpSent && !otpExpired && (
-                    <div class="formgroup">
-                      <label class="form-label">OTP</label>
+                    <div className="formgroup">
+                      <label className="form-label">OTP</label>
                       <input
-                        class="form-control form-control-lg"
+                        className="form-control form-control-lg"
                         type="text"
                         name="otp"
                         id="otp"
@@ -271,17 +265,17 @@ const CompanyLogin = () => {
                     </div>
                   )}
 
-                  <div class="d-grid gap-2 mt-3">
+                  <div className="d-grid gap-2 mt-3">
                     {otpExpired ? (
                       <button
-                        class="btn btn-lg btn-primary"
+                        className="btn btn-lg btn-primary"
                         type="button"
                         onClick={resendOtp}
                       >
                         Resend OTP
                       </button>
                     ) : (
-                      <button class="btn btn-lg btn-primary" type="submit">
+                      <button className="btn btn-lg btn-primary" type="submit">
                         {otpSent ? "Verify OTP" : "Sign in"}
                       </button>
                     )}
@@ -318,4 +312,4 @@ const CompanyLogin = () => {
   );
 };
 
-export default CompanyLogin;
+export default CandidateLogin;

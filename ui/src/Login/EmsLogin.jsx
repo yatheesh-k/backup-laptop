@@ -51,6 +51,7 @@ const EmsLogin = () => {
             roles: userRole,
             company,
             employee: employeeId,
+            resourceType
           } = decodedToken;
 
           dispatch(
@@ -60,10 +61,11 @@ const EmsLogin = () => {
               company,
               employeeId,
               source: "ems",
+              resourceType
               // resourceType is undefined here and will default to null
             })
           );
-          setAuthUser({ userId, userRole, company, employeeId });
+          setAuthUser({ userId, userRole, company, employeeId,resourceType });
           toast.success("Login Successful");
           setTimeout(() => {
             navigate("/main");

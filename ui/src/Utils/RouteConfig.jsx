@@ -125,14 +125,14 @@ const routeConfig = [
       {
         path: "/companyRegistration",
         element: <CompanyRegistration />,
-        allowedRoles: ["system_admin"],
+        allowedRoles: ["ems_admin"],
         allowedResourceTypes: ["ems_admin"],
         label: "Register Company",
       },
       {
         path: "/companyView",
         element: <CompanyView />,
-        allowedRoles: ["system_admin"],
+        allowedRoles: ["ems_admin"],
         allowedResourceTypes: ["ems_admin"],
         label: "View Companies",
       },
@@ -445,6 +445,7 @@ const routeConfig = [
     children: [
       {
         path: "/employeeMangement",
+        element:<EmployeeManager/>,
         label: "Employee Management",
         icon: "people-fill",
         allowedRoles: ["tax_consultant"],
@@ -453,13 +454,13 @@ const routeConfig = [
       {
         path: "/employeeSummary",
         label: "Employee Summary",
+        element:<EmployeeSummary/>,
         icon: "clipboard-data",
         allowedRoles: ["tax_consultant"],
         allowedResourceTypes: ["company_admin", "Admin", "Accountant"],
       },
     ]
   },
-
 
   {
     path: "/employeeSalaryUpdate",

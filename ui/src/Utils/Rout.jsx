@@ -27,16 +27,6 @@ const flattenRoutes = (routes) => {
   return flatRoutes;
 };
 const Routing = () => {
- useEffect(() => {
-    console.log("Loaded routeConfig:");
-    routeConfig.forEach(({ path, allowedRoles, allowedResourceTypes }, index) => {
-      console.log(`Route[${index}]:`, {
-        path,
-        allowedRoles,
-        allowedResourceTypes
-      });
-    });
-  }, []);
     const allRoutes = flattenRoutes(routeConfig);
   return (
  <Routes>
