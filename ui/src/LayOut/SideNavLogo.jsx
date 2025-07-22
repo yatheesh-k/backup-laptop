@@ -25,7 +25,6 @@ const SideNavLogo = () => {
             role="button"
             style={{ cursor: "pointer", maxHeight: "50px" }}
           />
-         
         </>
       );
     }

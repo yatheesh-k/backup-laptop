@@ -65,7 +65,6 @@ import EmployeeSalaryStructureView from "../CompanyModule/PayRoll/EmployeeSalary
 import InternOfferLetter from "../CompanyModule/Settings/Internship/InternOfferLetter/InternOfferLetter";
 import InternOfferPrev from "../CompanyModule/Settings/Internship/InternOfferLetter/InternOfferPrev";
 import InternOfferForm from "../CompanyModule/Settings/Internship/InternOfferLetter/InternOfferForm";
-import ForbiddenPage from "./ForbiddenPage";
 import GetCalendar from "../Calender/GetCalendar";
 import EventForm from "../Calender/EventForm";
 import GetTaxSlab from "../CompanyModule/TDS/GetTaxSlab";
@@ -80,7 +79,6 @@ import CandidateRegistration from "../CompanyModule/Candidate/CandidateRegistrat
 import CandidatesView from "../CompanyModule/Candidate/CandidatesView";
 import CandidateDocumentUpload from "../CompanyModule/Candidate/CandidateDocumentUpload";
 import UploadSuccess from "../CompanyModule/Candidate/UploadSuccess";
-import CandidateLogin from "../Login/CandidateLogin";
 import CandidateProfile from "../CompanyModule/Candidate/CandidateProfile";
 import CandidateDocumentsView from "../CompanyModule/Candidate/CandidateDocumentsView";
 import InvoiceTemplate1 from "../CompanyModule/Settings/InvoiceTemplates/InvoiceTemplate1";
@@ -89,8 +87,6 @@ import EmployeeDocumentUpload from "../CompanyModule/Employee/EmployeeDocumentUp
 import EmployeeDocumentView from "../CompanyModule/Employee/EmployeeDocumentView";
 import InvoiceTemplates from "../CompanyModule/Settings/InvoiceTemplates/InvoiceTemplates";
 import CandidateToEmployee from "../CompanyModule/Candidate/CandidateToEmployee";
-import CompanyPTSubmission from "../AccountantModule/ProfessionalTax/CompanyPTSubmission";
-import PTProcessing from "../AccountantModule/ProfessionalTax/PTProcessing";
 import CompanyGSTSubmission from "../AccountantModule/GST/CompanyGSTSubmission";
 import EmployeeManager from "../CompanyModule/Employee/EmployeeManager/EmployeeManager";
 import EmployeeSummary from "../CompanyModule/Employee/EmployeeManager/EmployeeSummary";
@@ -103,6 +99,8 @@ import GSTProcessing from "../AccountantModule/GST/GSTProcessing";
 import PTResponsesView from "../AccountantModule/ProfessionalTax/PTResponsesView";
 import PTReceiptsView from "../AccountantModule/ProfessionalTax/PTReceiptsView";
 import CompanyPFSubmission from "../AccountantModule/PF/CompanyPFSubmission";
+import CompanyPTSubmission from "../AccountantModule/ProfessionalTax/CompanyPTSubmission"
+import PTProcessing from "../AccountantModule/ProfessionalTax/PTProcessing"
 import PFProcessing from "../AccountantModule/PF/PFProcessing";
 import PFReceiptsView from "../AccountantModule/PF/PFReceiptsView";
 import PFResponsesView from "../AccountantModule/PF/PFResponsesView";
@@ -127,14 +125,14 @@ const routeConfig = [
       {
         path: "/companyRegistration",
         element: <CompanyRegistration />,
-        allowedRoles: ["ems_admin"],
+        allowedRoles: ["system_admin"],
         allowedResourceTypes: ["ems_admin"],
         label: "Register Company",
       },
       {
         path: "/companyView",
         element: <CompanyView />,
-        allowedRoles: ["ems_admin"],
+        allowedRoles: ["system_admin"],
         allowedResourceTypes: ["ems_admin"],
         label: "View Companies",
       },
@@ -798,19 +796,17 @@ const routeConfig = [
   //   label: "Tax Slabs",
   //   icon: "percent" // Bootstrap Icons: https://icons.getbootstrap.com/icons/percent/
   // },
-  // {
-  //   path: "/totalEmployees",
-  //   element: <TotalEmployees />,
-  //   allowedRoles: ["hrm", "tax_consulatant"],
-  //   allowedResourceTypes: ["company_admin", "Admin", "HR", "Accountant"],
-  //   label: "Total Employees",
-  //   icon: "people" // Bootstrap Icon: https://icons.getbootstrap.com/icons/people/
-  // },
+  {
+    path: "/totalEmployees",
+    element: <TotalEmployees />,
+    allowedRoles: ["hrm", "tax_consulatant","hr_management"],
+    allowedResourceTypes: ["company_admin", "Admin", "HR", "Accountant"],
+  },
   {
     path: "/employeeList/:status",
     element: <EmployeeList />,
     allowedRoles: ["hrm", "tax_consulatant","hr_management"],
-    allowedResourceTypes: ["company_admin", "Admin", "HR"],
+    allowedResourceTypes: ["company_admin", "Admin", "HR", "Accountant"],
   },
 
   // Candidate-specific

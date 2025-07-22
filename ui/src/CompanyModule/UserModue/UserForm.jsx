@@ -40,25 +40,32 @@ const UserForm = ({
     defaultValues,
     mode: "onChange",
   });
+
   const [showEmployee, setShowEmployee] = useState(false); // ← control employee visibility
+
   const employee = defaultValues?.employee;
   const userTypeWatch = watch("userType");
     // Reset roles when userType changes
   useEffect(() => {
     setValue('roles', []);
   }, [userTypeWatch, setValue]);
+
   // Get allowed roles based on selected userType
   const roleOptions = userTypeWatch ? ROLES_BY_USER_TYPE[userTypeWatch] || [] : [];
+
   useEffect(() => {
     if (defaultValues && Object.keys(defaultValues).length > 0) {
       reset(defaultValues);
     }
   }, [defaultValues, reset]);
+
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="p-4"
     >
+    
       {/* Basic User Fields */}
       <div className="row">
         <div className="mb-3 col-md-6">

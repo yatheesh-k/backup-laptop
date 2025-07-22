@@ -3980,13 +3980,23 @@ fieldset:disabled .btn {
 	white-space: nowrap;
 }
 
+/* Bootstrap override */
+.nav-link.dropdown-toggle::after {
+  transition: transform 0.3s ease;
+}
+
+/* Rotate arrow when dropdown is open */
+.nav-link.dropdown-toggle.rotate-arrow::after {
+  transform: rotate(180deg);
+}
+
 .dropdown-toggle:after {
 	border-bottom: 0;
 	border-left: 0.3em solid transparent;
 	border-right: 0.3em solid transparent;
 	border-top: 0.3em solid;
 	content: "";
-	margin-left: 0.255em;
+	margin-left: -0.155em;
 	vertical-align: 0.255em;
 }
 
@@ -13509,13 +13519,6 @@ fieldset:disabled .btn {
 	}
 }
 
-.dropdown-toggle:after {
-	border: solid;
-	border-width: 0 2px 2px 0;
-	display: inline-block;
-	padding: 2px;
-	transform: rotate(45deg);
-}
 
 .dropdown-item {
 	transition: background 0.1s ease-in-out, color 0.1s ease-in-out;
@@ -17540,6 +17543,44 @@ nav.companyNavOuter .nav-tabs .nav-link.hover{
 .candidate-welcome:hover span {
   transform: scale(1.05);
   transition: transform 0.2s ease;
+}
+.due-item {
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.due-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+}
+
+.due-today {
+  background-color: #fff3cd;
+  color: #856404;
+  font-weight: 600;
+}
+
+.due-upcoming {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.due-overdue {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.due-day {
+  background-color: #ffffff;
+  color: #000;
+  border: 1px solid #ddd;
+  font-weight: 600;
+  padding: 0.5em 1em;
+}
+
+.due-label {
+  font-size: 1rem;
 }
 
 /* Pre Loadder css End */

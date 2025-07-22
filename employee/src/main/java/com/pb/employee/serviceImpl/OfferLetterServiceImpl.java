@@ -87,16 +87,29 @@ public class OfferLetterServiceImpl implements OfferLetterService {
 
             if (!request.isDraft()) {
                 String imageUrl = rawCompany.getImageFile();
-                BufferedImage image = ImageIO.read(new URL(imageUrl));
-                if (image == null) {
-                    log.error("Unable to get the company Image");
-                    throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EMPTY_FILE), HttpStatus.INTERNAL_SERVER_ERROR);
+                if (imageUrl == null || imageUrl.isBlank() || imageUrl.contains("base64string")) {
+                    log.error("Invalid or missing company logo image for companyId: {}", request.getCompanyId());
+                    throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EMPTY_LOGO), HttpStatus.BAD_REQUEST);
                 }
-                BufferedImage watermark = CompanyUtils.applyOpacity(image, 0.1f, 1.6d, 30);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(watermark, "png", baos);
-                model.put(Constants.BLURRED_IMAGE, Constants.DATA + Base64.getEncoder().encodeToString(baos.toByteArray()));
+
+                try {
+                    BufferedImage image = ImageIO.read(new URL(imageUrl));
+                    if (image == null) {
+                        log.error("Unable to read the company logo image from URL: {}", imageUrl);
+                        throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EMPTY_LOGO), HttpStatus.BAD_REQUEST);
+                    }
+
+                    BufferedImage watermark = CompanyUtils.applyOpacity(image, 0.1f, 1.6d, 30);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(watermark, "png", baos);
+                    model.put(Constants.BLURRED_IMAGE, Constants.DATA + Base64.getEncoder().encodeToString(baos.toByteArray()));
+
+                } catch (IOException e) {
+                    log.error("Error while reading or processing company logo image for companyId: {}", request.getCompanyId(), e);
+                    throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.EMPTY_LOGO), HttpStatus.INTERNAL_SERVER_ERROR);
+                }
             }
+
 
             Collection<OfferLetterEntity> offerLetters = offerLetterDao.getOfferLetter(rawCompany.getShortName(), null);
             if (offerLetters != null && !offerLetters.isEmpty()) {

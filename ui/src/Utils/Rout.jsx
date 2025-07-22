@@ -4,7 +4,6 @@ import EmsLogin from '../Login/EmsLogin';
 import CompanyLogin from '../Login/CompanyLogin';
 import CandidateLogin from '../Login/CandidateLogin';
 import AnonymousCmpRegistration from '../EMSModule/Company/AnonymousCmpRegistration';
-import LayOut from '../LayOut/LayOut';
 import routeConfig from './RouteConfig';
 import LandingPage from '../Website/LandingPage';
 import Reset from '../LayOut/Reset';
@@ -14,7 +13,6 @@ import ProtectedRoute from './ProtectedRoute';
 
 const flattenRoutes = (routes) => {
   const flatRoutes = [];
-
   const recurse = (items) => {
     items.forEach((route) => {
       if (route.path && route.element) {
@@ -25,11 +23,9 @@ const flattenRoutes = (routes) => {
       }
     });
   };
-
   recurse(routes);
   return flatRoutes;
 };
-
 const Routing = () => {
  useEffect(() => {
     console.log("Loaded routeConfig:");
@@ -42,7 +38,6 @@ const Routing = () => {
     });
   }, []);
     const allRoutes = flattenRoutes(routeConfig);
-
   return (
  <Routes>
            <Route path="/" element={<LandingPage />} />
@@ -69,6 +64,4 @@ const Routing = () => {
     </Routes>
   );
 };
-
 export default Routing;
-
