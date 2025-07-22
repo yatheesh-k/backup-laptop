@@ -39,6 +39,7 @@ public class JwtTokenUtil {
                 .setIssuedAt(new Date())
                 .claim(Constants.ROLES, roles)
                 .claim(Constants.EMPLOYEE, username)
+                .claim(Constants.RESOURCE_TYPE, Constants.EMS_ADMIN)
                 .setExpiration(new Date(System.currentTimeMillis() +10800000))
                 .signWith(key)
                 .compact();
