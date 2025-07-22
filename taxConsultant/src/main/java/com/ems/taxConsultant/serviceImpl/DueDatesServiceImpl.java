@@ -6,13 +6,14 @@ import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
 import com.ems.taxConsultant.exception.AccountantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
-import com.ems.taxConsultant.persistance.CompanyEntity;
-import com.ems.taxConsultant.persistance.DueDatesEntity;
+import com.ems.taxConsultant.persistance.*;
 import com.ems.taxConsultant.request.DueDatesRequest;
-import com.ems.taxConsultant.service.DueDatesService;
+import com.ems.taxConsultant.request.TaxStatusResponse;
+import com.ems.taxConsultant.service.*;
 import com.ems.taxConsultant.utils.Constants;
 import com.ems.taxConsultant.utils.ResourceIdUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -24,7 +25,14 @@ import org.springframework.stereotype.Service;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 @Service
@@ -36,6 +44,18 @@ public class DueDatesServiceImpl implements DueDatesService {
 
     @Autowired
     private DueDatesDao dao;
+
+    @Autowired
+    private PFReceiptsService pfReceiptsService;
+
+    @Autowired
+    private PTReceiptService ptReceiptService;
+
+    @Autowired
+    private TDSReceiptsService tdsReceiptsService;
+
+    @Autowired
+    private GSTReceiptService gstReceiptService;
 
     @Autowired
     private OpenSearchOperations openSearchOperations;
@@ -152,6 +172,99 @@ public class DueDatesServiceImpl implements DueDatesService {
             throw new AccountantException(
                     ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE_DUE_DATES), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Override
+    public List<TaxStatusResponse> getDueDatesValidation(String companyName, HttpServletRequest request) throws AccountantException {
+        try {
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Company not found for name: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+
+            // Get current month and year
+            LocalDate today = LocalDate.now();
+            String month = today.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+            String year = String.valueOf(today.getYear());
+
+            // Get due dates
+            Collection<DueDatesEntity> dueDatesEntities = dao.getDueDate(companyName, companyEntity.getId(), null);
+            if (dueDatesEntities == null || dueDatesEntities.isEmpty()) {
+                log.error("Due Dates not found for company {}", companyName);
+                throw new AccountantException("Due dates not found", HttpStatus.NOT_FOUND);
+            }
+
+            DueDatesEntity dueDates = dueDatesEntities.iterator().next();
+
+            // Get receipt data
+            PFReceiptsEntity pfReceipt = pfReceiptsService.getPfReceipts(companyName, null, month, year, request)
+                    .stream().findFirst().orElse(null);
+            PTReceiptEntity ptReceipt = ptReceiptService.getPTReceipts(companyName, null, month, year, request)
+                    .stream().findFirst().orElse(null);
+            TDSReceiptEntity tdsReceipt = tdsReceiptsService.getTDSReceipts(companyName, null, month, year, request)
+                    .stream().findFirst().orElse(null);
+            GSTReceiptEntity gstReceipt = gstReceiptService.getGstReceipts(companyName, null, month, year, request)
+                    .stream().findFirst().orElse(null);
+
+            // Build response
+            List<TaxStatusResponse> response = new ArrayList<>();
+            response.add(getReceiptStatus("PF", dueDates.getPfDay(), pfReceipt != null));
+            response.add(getReceiptStatus("PT", dueDates.getPtDay(), ptReceipt != null));
+            response.add(getReceiptStatus("TDS", dueDates.getTdsDay(), tdsReceipt != null));
+            response.add(getReceiptStatus("GST", dueDates.getGstDay(), gstReceipt != null));
+
+            return response;
+
+        } catch (AccountantException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
+    private TaxStatusResponse getReceiptStatus(String type, String dueDay, boolean isSubmitted) {
+        String status;
+
+        if (isSubmitted) {
+            status = "success";
+        } else if (dueDay != null && !dueDay.trim().isEmpty()) {
+            try {
+                int dueDayOfMonth = Integer.parseInt(dueDay.trim());
+
+                LocalDate today = LocalDate.now();
+                LocalDate dueDate = LocalDate.of(today.getYear(), today.getMonth(), dueDayOfMonth);
+
+                if (dueDate.isBefore(today)) {
+                    status = "danger";
+                } else {
+                    long daysLeft = ChronoUnit.DAYS.between(today, dueDate);
+
+                    if (daysLeft > 14) {
+                        status = "primary";
+                    } else if (daysLeft >= 7) {
+                        status = "warning";
+                    } else {
+                        status = "danger";
+                    }
+                }
+
+            } catch (DateTimeException | NumberFormatException e) {
+                status = "unknown";
+            }
+        } else {
+            status = "unknown";
+        }
+
+        return TaxStatusResponse.builder()
+                .type(type)
+                .submitted(isSubmitted)
+                .dueDate(dueDay)
+                .status(status)
+                .build();
     }
 
 

@@ -4,9 +4,11 @@ import com.ems.taxConsultant.common.ResponseBuilder;
 import com.ems.taxConsultant.exception.AccountantException;
 import com.ems.taxConsultant.persistance.DueDatesEntity;
 import com.ems.taxConsultant.request.DueDatesRequest;
+import com.ems.taxConsultant.request.TaxStatusResponse;
 import com.ems.taxConsultant.service.DueDatesService;
 import com.ems.taxConsultant.utils.Constants;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,4 +83,17 @@ public class DueDatesController {
                 HttpStatus.OK
         );
     }
+
+    @RequestMapping(value = "{companyName}/taxStatus", method = RequestMethod.GET)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.getTaxesStatus.tag}", description = "${api.getTaxesStatus.description}")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
+    public ResponseEntity<?> getDueDatesValidation(
+            @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+            @RequestHeader(Constants.AUTH_KEY) String authToken,
+            @PathVariable String companyName, HttpServletRequest request) throws AccountantException {
+        Collection<TaxStatusResponse> datesRequests = dueDatesService.getDueDatesValidation(companyName, request);
+        return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(datesRequests), HttpStatus.OK);
+    }
+
 }
