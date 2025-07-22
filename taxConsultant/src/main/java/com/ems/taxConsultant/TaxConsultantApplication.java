@@ -13,10 +13,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 @Import(FeignAutoConfiguration.class)
 @EnableFeignClients
-public class AccountantApplication {
+public class TaxConsultantApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AccountantApplication.class, args);
+		SpringApplication.run(TaxConsultantApplication.class, args);
 	}
 
 	@Bean
