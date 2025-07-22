@@ -26,7 +26,7 @@ public class UserUpdateRequest {
     private String lastName;
 
     @Schema(example = "userType")
-    @Pattern(regexp = "^(admin|hr|accountant)$", message = "{user.type}")
+    @Pattern(regexp = "^(Admin|HR|Accountant)$", message = "{user.type}")
     @Size(min = 2, max = 20, message = "{userType.size.message}")
     private String userType;
 
