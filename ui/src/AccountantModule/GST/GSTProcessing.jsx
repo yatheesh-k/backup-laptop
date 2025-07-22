@@ -148,14 +148,6 @@ const GSTProcessing = () => {
             formData.append("gstReceiptDate", data.gstReceiptDate);
             formData.append("file", data.file[0]);
 
-            console.log("Data being sent to AddGSTReceiptsAPI:");
-            console.log("Month:", approvalMonth);
-            console.log("Year:", approvalYear);
-            console.log("GST Total Amount:", data.gstTotalAmount);
-            console.log("GST Receipt Number:", data.gstReceiptNumber);
-            console.log("GST Receipt Date:", data.gstReceiptDate);
-            console.log("File:", data.file[0]);
-
             // To see all entries in FormData (since FormData isn't directly console.log-able)
             for (let [key, value] of formData.entries()) {
                 console.log(key, value);
