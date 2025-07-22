@@ -162,4 +162,13 @@ public class CompanyController {
         return companyService.updateCompanyRoles(companyName, request);
     }
 
+    @PostMapping("/{companyName}/validate")
+    @io.swagger.v3.oas.annotations.Operation(security = { @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.companyValidate.tag}", description = "${api.companyValidate.description}")
+    @ResponseStatus(HttpStatus.CREATED)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description= "CREATED")
+    public ResponseEntity<?> companyValidate(@PathVariable String companyName) throws EmployeeException {
+        return companyService.companyValidate(companyName);
+    }
+
 }

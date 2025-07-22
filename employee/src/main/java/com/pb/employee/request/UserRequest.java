@@ -1,5 +1,6 @@
 package com.pb.employee.request;
 
+import com.pb.employee.validations.RoleValidation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -7,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Getter
 @Setter
@@ -31,10 +33,13 @@ public class UserRequest {
     private String emailId;
 
     @Schema(example = "userType")
-    @Pattern(regexp = "^(?!.*\\\\b([A-Z])\\\\s\\\\1\\\\s\\\\1)(?:[A-Z][a-z]+(?: [A-Z][a-z]+)*|[A-Z](?:\\\\.? ?[A-Z])? ?[A-Z][a-z]+)$|^[A-Z][a-zA-Z]*$", message = "{user.type}")
+    @Pattern(regexp = "^(Admin|HR|Accountant)$", message = "{user.type}")
     @Size(min = 2, max = 20, message = "{userType.size.message}")
     private String userType;
 
     private String department;
+
+    @RoleValidation
+    private List<String> roles;
 }
 

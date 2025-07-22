@@ -4,6 +4,7 @@ import com.pb.employee.common.ResponseBuilder;
 import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.persistance.model.CompanyCalendarEntity;
 import com.pb.employee.persistance.model.UserEntity;
+import com.pb.employee.request.UpdateRolesRequest;
 import com.pb.employee.request.UserRequest;
 import com.pb.employee.request.UserUpdateRequest;
 import com.pb.employee.response.UserResponse;
@@ -87,4 +88,5 @@ public class UserController {
         userService.deleteUser(companyName,Id);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.DELETED), HttpStatus.OK);
     }
+
 }

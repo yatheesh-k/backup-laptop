@@ -34,4 +34,6 @@ public interface EmployeeService {
     List<EmployeeAccountsResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException, IOException;
 
     ResponseEntity<?> registerEmployeeForAccounts(String companyName, MultipartFile file) throws EmployeeException, IOException;
+
+    ResponseEntity<?> registerEmployeeForAccounts(String companyName, EmployeeReqPayload employeeReqPayload) throws EmployeeException, IOException;
 }
