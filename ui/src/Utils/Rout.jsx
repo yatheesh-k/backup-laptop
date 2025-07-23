@@ -10,6 +10,7 @@ import Reset from '../LayOut/Reset';
 import ForgotPassword from '../Login/ForgotPassword';
 import ForbiddenPage from './ForbiddenPage';
 import ProtectedRoute from './ProtectedRoute';
+import CompanyRegistration from '../EMSModule/Company/CompanyRegistration';
 
 const flattenRoutes = (routes) => {
   const flatRoutes = [];
@@ -30,7 +31,7 @@ const Routing = () => {
     const allRoutes = flattenRoutes(routeConfig);
   return (
  <Routes>
-           <Route path="/" element={<LandingPage />} />
+           <Route path="/" element={<CompanyRegistration/>} />
       <Route path='/:company/candidateLogin' element={<CandidateLogin/>}/>
       <Route path='/login' element={<EmsLogin/>}/>
       <Route path='/:company/login' element={<CompanyLogin/>}/>

@@ -199,8 +199,8 @@ const routeConfig = [
   {
     path: "/department",
     element: <Department />,
-    allowedRoles: ["hrm","hr_management"],
-    allowedResourceTypes: ["company_admin", "HR", "Admin"],
+    // allowedRoles: ["hrm","hr_management"],
+    // allowedResourceTypes: ["company_admin", "HR", "Admin"],
     label: "Department",
     icon: "diagram-3", // Bootstrap icon
   },
