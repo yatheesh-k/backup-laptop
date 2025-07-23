@@ -99,47 +99,47 @@ const CandidatesView = () => {
     };
 
     const handleViewDocuments = async (candidate) => {
-    try {
-        setSelectedCandidate(candidate);
-        setDocumentsLoading(true);
+        try {
+            setSelectedCandidate(candidate);
+            setDocumentsLoading(true);
 
-        const response = await getDocumentByIdAPI(candidate.id);
+            const response = await getDocumentByIdAPI(candidate.id);
 
-        if (response?.data?.documentEntities) {
-            setDocuments(transformApiResponse(response.data));
-        } else {
-            setDocuments([]);
-            toast.info('No documents found for this candidate');
-        }
-    } catch (error) {
-        console.error('Error fetching documents:', error);
-
-        if (error.response) {
-            const status = error.response.status;
-
-            switch (status) {
-                case 404:
-                    toast.warning('Documents not found for this candidate.');
-                    break;
-                case 401:
-                    toast.error('Unauthorized access. Please log in again.');
-                    break;
-                case 500:
-                    toast.error('Server error. Please try again later.');
-                    break;
-                default:
-                    toast.error(`Unexpected error (${status}). Please try again.`);
+            if (response?.data?.documentEntities) {
+                setDocuments(transformApiResponse(response.data));
+            } else {
+                setDocuments([]);
+                toast.info('No documents found for this candidate');
             }
-        } else {
-            toast.error('Network error or server not reachable.');
-        }
+        } catch (error) {
+            console.error('Error fetching documents:', error);
 
-        setDocuments([]);
-    } finally {
-        setDocumentsLoading(false);
-        setShowDocumentsModal(true);
-    }
-};
+            if (error.response) {
+                const status = error.response.status;
+
+                switch (status) {
+                    case 404:
+                        toast.warning('Documents not found for this candidate.');
+                        break;
+                    case 401:
+                        toast.error('Unauthorized access. Please log in again.');
+                        break;
+                    case 500:
+                        toast.error('Server error. Please try again later.');
+                        break;
+                    default:
+                        toast.error(`Unexpected error (${status}). Please try again.`);
+                }
+            } else {
+                toast.error('Network error or server not reachable.');
+            }
+
+            setDocuments([]);
+        } finally {
+            setDocumentsLoading(false);
+            setShowDocumentsModal(true);
+        }
+    };
 
 
     const transformApiResponse = (apiData) => {
@@ -256,7 +256,13 @@ const CandidatesView = () => {
                         style={{ backgroundColor: "transparent", border: "none" }}
                         onClick={() => navigate(`/candidate-to-employee/${row.id}`, {
                             state: {
-                                candidate: row
+                                candidate: {
+                                    // Only pass basic details (no email)
+                                    id: row.id,
+                                    firstName: row.firstName,
+                                    lastName: row.lastName,
+                                    mobileNo: row.mobileNo
+                                }
                             }
                         })}
                         title="Register as Employee"
@@ -405,6 +411,7 @@ const CandidatesView = () => {
                                                             <td>
                                                                 <a
                                                                     href={doc.url}
+                                                                    target="_blank"
                                                                     className="btn btn-sm btn-outline-primary me-2"
                                                                 >
                                                                     <Download className="me-1" /> View

@@ -6,7 +6,8 @@ import { DepartmentGetApi, DesignationGetApi } from "../../../Utils/Axios";
 
 const OfferLetterForm = () => {
   const location = useLocation();
-  const initialFormData = location.state?.formData || null;
+  // const initialFormData = location.state?.formData || null;
+  const initialFormData = location.state?.clearForm ? null : location.state?.formData || null;
   const formData = location.state?.formData || null;
   const {
     register,
@@ -138,22 +139,27 @@ const OfferLetterForm = () => {
   };
 
   const clearForm = () => {
-    reset(initialFormData || {
-      offerDate: "",
-      referenceNo: "",
-      employeeName: "",
-      employeeFatherName: "",
-      employeeAddress: "",
-      employeeContactNo: "",
-      joiningDate: "",
-      jobLocation: "",
-      salaryPackage: "",
-      salaryConfigurationId: "",
-      employeePosition: "",
-      draft: "",
-      generatedDate: "",
+  reset({
+    offerDate: "",
+    referenceNo: "",
+    employeeName: "",
+    employeeFatherName: "",
+    employeeAddress: "",
+    employeeContactNo: "+91 ",
+    joiningDate: "",
+    jobLocation: "",
+    salaryPackage: "",
+    salaryConfigurationId: "",
+    department: "",
+    designation: "",
+    draft: undefined,
+    generatedDate: "",
+  });
+   navigate('.', {
+      state: { clearForm: true },
+      replace: true
     });
-  };
+};
 
   const toInputTitleCase = (e) => {
     const input = e.target;

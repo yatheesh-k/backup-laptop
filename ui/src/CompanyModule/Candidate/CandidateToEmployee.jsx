@@ -67,9 +67,9 @@ export default function CandidateToEmployee() {
     const { state } = useLocation();
     const candidateDataFromState = state?.candidate
     const { data: employees, status, error } = useSelector((state) => state.employees);
-    const [useCandidateEmail, setUseCandidateEmail] = useState(true);
-    const [emailConfirmed, setEmailConfirmed] = useState(false);
-    const [showEmailModal, setShowEmailModal] = useState(false);
+    // const [useCandidateEmail, setUseCandidateEmail] = useState(true);
+    // const [emailConfirmed, setEmailConfirmed] = useState(false);
+    // const [showEmailModal, setShowEmailModal] = useState(false);
     const { employee } = useAuth();
     const companyId = employee?.companyId;
 
@@ -107,15 +107,8 @@ export default function CandidateToEmployee() {
                     firstName: candidateData.firstName || "",
                     lastName: candidateData.lastName || "",
                     mobileNo: candidateData.mobileNo || "",
-                    emailId: candidateData.emailId || "" // Will be cleared if user chooses
+                    emailId: ""
                 });
-
-                // Show email modal if email exists
-                if (candidateData.emailId) {
-                    setShowEmailModal(true);
-                } else {
-                    setEmailConfirmed(true); // No email to confirm
-                }
 
             } catch (error) {
                 console.error('Error fetching candidate:', error);
@@ -349,7 +342,7 @@ export default function CandidateToEmployee() {
     return (
         <LayOut>
             {/* Email Confirmation Modal */}
-            {showEmailModal && (
+            {/* {showEmailModal && (
                 <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
@@ -401,7 +394,7 @@ export default function CandidateToEmployee() {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
             <div className="row container d-flex justify-content-center align-items-center min-vh-100">
                 <div className="row d-flex align-items-center justify-content-between mt-1 mb-2">
                     <div className="col">
@@ -449,9 +442,10 @@ export default function CandidateToEmployee() {
                                     <h3 className="mb-3">Step 1: Employee Details <span className='text-danger'>*</span></h3>
                                     <div className="row">
                                         <div className="col-md-6 mb-2">
-                                            <label>Employee First Name</label>
+                                            <label>Employee First Name <span className="text-danger">*</span></label>
                                             <input
                                                 type="text"
+                                                placeholder='Enter Employee First Name'
                                                 className="form-control"
                                                 onInput={toInputTitleCase}
                                                 {...register("firstName", {
@@ -462,9 +456,10 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.firstName?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2">
-                                            <label>Employee Last Name</label>
+                                            <label>Employee Last Name <span className="text-danger">*</span></label>
                                             <input
                                                 type="text"
+                                                placeholder='Enter Employee Last Name'
                                                 className="form-control"
                                                 onInput={toInputTitleCase}
                                                 {...register("lastName", {
@@ -475,9 +470,10 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.lastName?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2 mt-2">
-                                            <label>Employee ID</label>
+                                            <label>Employee ID <span className="text-danger">*</span></label>
                                             <input
                                                 type="text"
+                                                placeholder='Enter Employee ID'
                                                 className="form-control"
                                                 {...register("employeeId", {
                                                     required: "Employee ID is required",
@@ -487,7 +483,7 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.employeeId?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2 mt-2">
-                                            <label>Employee Type</label>
+                                            <label>Employee Type <span className="text-danger">*</span></label>
                                             <select
                                                 className="form-select"
                                                 {...register("employeeType", { required: "Select Employee Type" })}
@@ -500,7 +496,7 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.employeeType?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2 mt-2">
-                                            <label>Department</label>
+                                            <label>Department <span className="text-danger">*</span></label>
                                             <select
                                                 className="form-select"
                                                 {...register("department", {
@@ -520,7 +516,7 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.department?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2 mt-2">
-                                            <label>Designation</label>
+                                            <label>Designation <span className="text-danger">*</span></label>
                                             <select
                                                 className="form-select"
                                                 disabled={!watch("department") || designations.length === 0}
@@ -539,29 +535,23 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.designation?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2 mt-2">
-                                            <label>Employee Mail ID {!useCandidateEmail && <span className="text-danger">*</span>}</label>
+                                            <label>Employee Mail<span className="text-danger">*</span></label>
                                             <input
                                                 type="email"
+                                                placeholder='Enter Employee Mail'
                                                 className="form-control"
                                                 {...register("emailId", {
-                                                    required: !useCandidateEmail && "Email is required",
-                                                    validate: validateEmail
+                                                   required: "Email is required",
+                                                   validate: validateEmail
                                                 })}
-                                                disabled={useCandidateEmail && emailConfirmed}
-                                                readOnly={useCandidateEmail && emailConfirmed}
                                                  onKeyPress={(e) => {
                                                     if (e.key === ' ') e.preventDefault();
                                                 }}
                                             />
-                                            {useCandidateEmail && emailConfirmed && (
-                                                <small className="text-success">
-                                                    <i className="bi bi-check-circle-fill"></i> Using candidate's email address
-                                                </small>
-                                            )}
                                             <small className="text-danger">{errors.emailId?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2 mt-2">
-                                            <label>Manager</label>
+                                            <label>Manager <span className="text-danger">*</span></label>
                                             <select
                                                 className="form-select"
                                                 {...register("manager", { required: "Select Manager" })}
@@ -574,7 +564,7 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.manager?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2 mt-2">
-                                            <label>Date of Hiring</label>
+                                            <label>Date of Hiring <span className="text-danger">*</span></label>
                                             <input
                                                 type="date"
                                                 className="form-control"
@@ -587,9 +577,10 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.dateOfHiring?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2 mt-2">
-                                            <label>Branch Location</label>
+                                            <label>Branch Location <span className="text-danger">*</span></label>
                                             <input
                                                 type="text"
+                                                placeholder='Enter Branch Location'
                                                 className="form-control"
                                                 onInput={toInputAddressCase}
                                                 {...register("location", {
@@ -600,7 +591,7 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.location?.message}</small>
                                         </div>
                                         <div className="col-md-6 mb-2 mt-2">
-                                            <label>Status</label>
+                                            <label>Status <span className="text-danger">*</span></label>
                                             <select
                                                 className="form-select"
                                                 {...register("status", { required: "Select Status" })}
@@ -619,7 +610,7 @@ export default function CandidateToEmployee() {
                                     <h5>Personal Details</h5>
                                     <div className="row mb-3">
                                         <div className="col-md-4">
-                                            <label htmlFor="dob" className="form-label">Date of Birth</label>
+                                            <label htmlFor="dob" className="form-label">Date of Birth <span className="text-danger">*</span></label>
                                             <input type="date" className="form-control" id="dob"
                                                 onClick={(e) => e.target.showPicker()}
                                                 {...register("dateOfBirth", {
@@ -630,7 +621,7 @@ export default function CandidateToEmployee() {
                                             <small className="text-danger">{errors.dateOfBirth?.message}</small>
                                         </div>
                                         <div className="col-md-4">
-                                            <label htmlFor="mobileNumber" className="form-label">Mobile Number</label>
+                                            <label htmlFor="mobileNumber" className="form-label">Mobile Number <span className="text-danger">*</span></label>
                                             <input type="tel" className="form-control" id="mobileNumber" defaultValue="+91 "
                                                 {...register("mobileNo", {
                                                     required: "Mobile Number is required",

@@ -2,63 +2,89 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ModalTitle } from 'react-bootstrap';
 import { useForm } from 'react-hook-form';
-import './NewLogin/Message.css'
-
+import { CompanyValidateApi } from '../Utils/Axios';
+import './NewLogin/Message.css';
 
 function Message() {
-    const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    const { register, handleSubmit, formState: { errors, isValid }, reset } = useForm({
         mode: 'onChange',
         defaultValues: {
             companyName: '',
         },
     });
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [companyName, setCompanyName] = useState('');
+    const [validationError, setValidationError] = useState('');
+    const [isValidating, setIsValidating] = useState(false);
 
     const openModal = () => {
         setShowModal(true);
+        setValidationError('');
     };
 
     const closeModal = () => {
         setShowModal(false);
         reset();
+        setValidationError('');
     };
 
     const handleCompanyNameChange = (event) => {
         setCompanyName(event.target.value);
+        setValidationError('');
     };
+
     const toInputLowerCase = (e) => {
         const inputValue = e.target.value;
         let newValue = "";
         for (let i = 0; i < inputValue.length; i++) {
             const char = inputValue.charAt(i);
             if (char.match(/[a-z]/)) {
-                // Only allow lowercase letters
                 newValue += char;
             }
         }
         e.target.value = newValue;
+        setCompanyName(newValue);
     };
 
-    const onSubmit = (data) => {
-        closeModal()
-        const { companyName } = data;
-        localStorage.setItem('companyName', companyName)
-        reset();
+     const onSubmit = async (data) => {
+  const { companyName } = data;
+  
+  try {
+    setIsValidating(true);
+    setValidationError('');
+    
+    // 1. First validate the company name via API
+    const response = await CompanyValidateApi(companyName);
+    
+    // 2. Check for successful validation (200/201)
+    if ([200, 201].includes(response.status)) {
+      if (response.data.message === "success") {
+        // 3. Only store in localStorage AFTER successful validation
+        localStorage.setItem('companyName', companyName);
+        closeModal();
         navigate(`/${companyName}/login`);
-
-    };
+      }
+    }
+  } catch (error) {
+    // 4. Handle 404 - Company Not Found
+    if (error.response?.status === 404) {
+      setValidationError(error.response.data?.error?.message || "Company does not exist");
+    } 
+    // 5. Handle other errors
+    else {
+      setValidationError("Error validating company. Please try again.");
+    }
+  } finally {
+    setIsValidating(false);
+  }
+};
 
     const handleEmailChange = (e) => {
-        // Get the current value of the input field
         const value = e.target.value;
-
-        // Check if the value is empty
         if (value.trim() !== "") {
-            return; // Allow space button
+            return;
         }
-        // Prevent space character entry if the value is empty
         if (e.keyCode === 32) {
             e.preventDefault();
         }
@@ -98,9 +124,9 @@ function Message() {
                                 <ModalTitle className="modal-title">Company Service Name</ModalTitle>
                                 <button
                                     type="button"
-                                    className="btn-close" // Bootstrap's close button class
+                                    className="btn-close"
                                     aria-label="Close"
-                                    onClick={closeModal} // Function to close the modal
+                                    onClick={closeModal}
                                 >
                                 </button>
                             </div>
@@ -133,18 +159,26 @@ function Message() {
                                     {errors.companyName && (
                                         <p className='errorMsg'>{errors.companyName.message}</p>
                                     )}
+                                    {validationError && (
+                                        <p className='errorMsg'>{validationError}</p>
+                                    )}
                                     <div className="modal-footer" style={{ paddingRight: "0px" }}>
                                         <button type="button" className="btn btn-secondary" onClick={closeModal}>Close</button>
-                                        <button type="submit" className="btn btn-primary">Submit</button>
+                                        <button 
+                                            type="submit" 
+                                            className="btn btn-primary"
+                                            disabled={!isValid || isValidating}
+                                        >
+                                            {isValidating ? 'Validating...' : 'Submit'}
+                                        </button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-                </div >
-            )
-            }
-        </main >
+                </div>
+            )}
+        </main>
     );
 }
 

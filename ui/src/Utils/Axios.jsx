@@ -221,7 +221,9 @@ export const updateCompanyStatusApi = (id, status) => {
 export const companyPasswordUpdateById = async (companyId) => {
   axiosInstance.patch(`/company/password/${companyId}`);
 }
-
+export const CompanyValidateApi = (companyName) => {
+  return axiosInstance.post(`/company/${companyName}/validate`);
+};
 export const DepartmentGetApi = () => {
   const company = localStorage.getItem("companyName")
   return axiosInstance.get(`${company}/department`);
@@ -2199,4 +2201,45 @@ export const CredentialsDeleteAPIById = (id) => {
   return axiosInstance.delete(`/${company}/portalCred/${id}`)
 }
 
+//Time Lines
+export const postDueDates = async (data) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await microserviceAxiosInstance.post(`/${companyName}/dates`,data);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting GST receipt by ID:', error);
+    throw error;
+  }
+}
+export const getDueDates = async () => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await microserviceAxiosInstance.get(`/${companyName}/dates`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting GST receipt by ID:', error);
+    throw error;
+  }
+}
+export const patchDueDatesById = async () => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await microserviceAxiosInstance.patch(`/${companyName}/dates`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting GST receipt by ID:', error);
+    throw error;
+  }
+}
+export const deleteDueDatesById = async (id) => {
+  const companyName = localStorage.getItem("companyName");
+  try {
+    const response = await microserviceAxiosInstance.delete(`/${companyName}/dates/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting GST receipt by ID:', error);
+    throw error;
+  }
+}
 

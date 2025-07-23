@@ -26,38 +26,38 @@ const EmployeeView = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showDocumentsModal, setShowDocumentsModal] = useState(false);
   const allColumns = [
-  { name: 'Name', selector: 'Name' },
-  { name: 'EmployeeId', selector: 'EmployeeId' },
-  { name: 'Email Id', selector: 'Email Id' },
-  { name: 'Contact No', selector: 'Contact No' },
-  { name: 'Alternate No', selector: 'Alternate No' },
-  { name: 'Department And Designation', selector: 'Department And Designation' },
-  { name: 'Date Of Hiring', selector: 'Date Of Hiring' },
-  { name: 'Date Of Birth', selector: 'Date Of Birth' },
-  { name: 'Marital Status', selector: 'Marital Status' },
-  { name: 'Pan No', selector: 'Pan No' },
-  { name: 'Aadhaar No', selector: 'Aadhaar No' },
-  { name: 'UAN No', selector: 'UAN No' },
-  { name: 'PF No', selector: 'PF No' },
-  { name: 'Bank Account No', selector: 'Bank Account No' },
-  { name: 'IFSC Code', selector: 'IFSC Code' },
-  { name: 'Bank Name', selector: 'Bank Name' },
-  { name: 'Bank Branch', selector: 'Bank Branch' },
-  { name: 'Current Gross', selector: 'Current Gross' },
-  { name: 'Location', selector: 'Location' },
-  { name: 'Temporary Address', selector: 'Temporary Address' },
-  { name: 'Permanent Address', selector: 'Permanent Address' },
-  { name: 'Fixed Amount', selector: 'Fixed Amount' },
-  { name: 'Variable Amount', selector: 'Variable Amount' },
-  { name: 'Gross Amount', selector: 'Gross Amount' },
-  { name: 'Total Earnings', selector: 'Total Earnings' },
-  { name: 'Net Salary', selector: 'Net Salary' },
-  { name: 'Loss Of Pay', selector: 'Loss Of Pay' },
-  { name: 'Total Deductions', selector: 'Total Deductions' },
-  { name: 'Pf Tax', selector: 'Pf Tax' },
-  { name: 'Income Tax', selector: 'Income Tax' },
-  { name: 'Total Tax', selector: 'Total Tax' },
-];
+    { name: 'Name', selector: 'Name' },
+    { name: 'EmployeeId', selector: 'EmployeeId' },
+    { name: 'Email Id', selector: 'Email Id' },
+    { name: 'Contact No', selector: 'Contact No' },
+    { name: 'Alternate No', selector: 'Alternate No' },
+    { name: 'Department And Designation', selector: 'Department And Designation' },
+    { name: 'Date Of Hiring', selector: 'Date Of Hiring' },
+    { name: 'Date Of Birth', selector: 'Date Of Birth' },
+    { name: 'Marital Status', selector: 'Marital Status' },
+    { name: 'Pan No', selector: 'Pan No' },
+    { name: 'Aadhaar No', selector: 'Aadhaar No' },
+    { name: 'UAN No', selector: 'UAN No' },
+    { name: 'PF No', selector: 'PF No' },
+    { name: 'Bank Account No', selector: 'Bank Account No' },
+    { name: 'IFSC Code', selector: 'IFSC Code' },
+    { name: 'Bank Name', selector: 'Bank Name' },
+    { name: 'Bank Branch', selector: 'Bank Branch' },
+    { name: 'Current Gross', selector: 'Current Gross' },
+    { name: 'Location', selector: 'Location' },
+    { name: 'Temporary Address', selector: 'Temporary Address' },
+    { name: 'Permanent Address', selector: 'Permanent Address' },
+    { name: 'Fixed Amount', selector: 'Fixed Amount' },
+    { name: 'Variable Amount', selector: 'Variable Amount' },
+    { name: 'Gross Amount', selector: 'Gross Amount' },
+    { name: 'Total Earnings', selector: 'Total Earnings' },
+    { name: 'Net Salary', selector: 'Net Salary' },
+    { name: 'Loss Of Pay', selector: 'Loss Of Pay' },
+    { name: 'Total Deductions', selector: 'Total Deductions' },
+    { name: 'Pf Tax', selector: 'Pf Tax' },
+    { name: 'Income Tax', selector: 'Income Tax' },
+    { name: 'Total Tax', selector: 'Total Tax' },
+  ];
 
   const bankColumns = [
     "Name",
@@ -73,21 +73,21 @@ const EmployeeView = () => {
     "Contact No"
   ];
   const employeeDetailFields = [
-  "Name", "EmployeeId", "Email Id", "Contact No", "Alternate No",
-  "Department And Designation", "Date Of Hiring", "Date Of Birth", "Marital Status",
-  "Location", "Temporary Address", "Permanent Address"
-];
+    "Name", "EmployeeId", "Email Id", "Contact No", "Alternate No",
+    "Department And Designation", "Date Of Hiring", "Date Of Birth", "Marital Status",
+    "Location", "Temporary Address", "Permanent Address"
+  ];
 
-const bankDetailFields = [
-  "Bank Account No", "IFSC Code", "Bank Name", "Bank Branch",
-  "Pan No", "Aadhaar No", "UAN No", "PF No"
-];
+  const bankDetailFields = [
+    "Bank Account No", "IFSC Code", "Bank Name", "Bank Branch",
+    "Pan No", "Aadhaar No", "UAN No", "PF No"
+  ];
 
-const salaryDetailFields = [
-  "Current Gross", "Fixed Amount", "Variable Amount", "Gross Amount",
-  "Total Earnings", "Net Salary", "Loss Of Pay", "Total Deductions",
-  "Pf Tax", "Income Tax", "Total Tax"
-];
+  const salaryDetailFields = [
+    "Current Gross", "Fixed Amount", "Variable Amount", "Gross Amount",
+    "Total Earnings", "Net Salary", "Loss Of Pay", "Total Deductions",
+    "Pf Tax", "Income Tax", "Total Tax"
+  ];
   const isPDF = (selectedEmployeeDownloadFormat === "pdf" || selectedBankDownloadFormat === "pdf");
   const maxFields = 8;
   const [showDownloadModal, setShowDownloadModal] = useState(false);
@@ -114,21 +114,6 @@ const salaryDetailFields = [
       return () => clearTimeout(timer);
     }
   }, [dispatch, companyId]);
-
-  const getMonthNames = () => {
-    return Array.from({ length: 12 }, (_, i) =>
-      new Date(0, i).toLocaleString("en-US", { month: "long" })
-    );
-  };
-
-  const getRecentYears = () => {
-    const currentYear = new Date().getFullYear();
-    const years = [];
-    for (let i = currentYear; i >= currentYear - 10; i--) {
-      years.push(i.toString());
-    }
-    return years;
-  };
 
   const handleSalary = (id) => {
     navigate(`/employeeSalaryList?id=${id}`);
@@ -342,18 +327,49 @@ const salaryDetailFields = [
     }
   ];
 
+  const formatDate = (dateString, format) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  
+  switch (format) {
+    case 'dd-MM-yyyy':
+      return `${day}-${month}-${year}`;
+    case 'yyyy-MM-dd':
+      return `${year}-${month}-${day}`;
+    default:
+      return dateString;
+  }
+};
+
   const filteredEmployees = employees?.filter((employee) => {
-    const nameMatch =
-      (employee.firstName?.toLowerCase().includes(search.toLowerCase()) || "") ||
-      (employee.lastName?.toLowerCase().includes(search.toLowerCase()) || "") ||
-      (employee.emailId?.toLowerCase().includes(search.toLowerCase()) || "");
+  const searchTerm = search.toLowerCase();
+  
+  // Create a string that combines all the data from displayed columns
+  const searchableString = [
+    employee.firstName || '',
+    employee.lastName || '',
+    employee.employeeId || '',
+    employee.emailId || '',
+    employee.departmentName || '',
+    // Format date in both date-month-year and year-month-date formats
+    employee.dateOfHiring ? formatDate(employee.dateOfHiring, 'dd-MM-yyyy') : '',
+    employee.dateOfHiring ? formatDate(employee.dateOfHiring, 'yyyy-MM-dd') : '',
+    employee.status || '',
+    // Add any other fields that are displayed in your table
+  ].join(' ').toLowerCase();
 
-    const hireDate = employee.dateOfHiring ? new Date(employee.dateOfHiring) : null;
-    const monthMatch = selectedMonth ? hireDate?.getMonth() + 1 === parseInt(selectedMonth) : true;
-    const yearMatch = selectedYear ? hireDate?.getFullYear().toString() === selectedYear : true;
+  const hireDate = employee.dateOfHiring ? new Date(employee.dateOfHiring) : null;
+  const monthMatch = selectedMonth ? hireDate?.getMonth() + 1 === parseInt(selectedMonth) : true;
+  const yearMatch = selectedYear ? hireDate?.getFullYear().toString() === selectedYear : true;
 
-    return nameMatch && monthMatch && yearMatch;
-  });
+  return searchableString.includes(searchTerm) && monthMatch && yearMatch;
+});
 
   const toInputTitleCase = (e) => {
     const input = e.target;
@@ -424,7 +440,7 @@ const salaryDetailFields = [
                               if (!format) return;
                               setSelectedEmployeeDownloadFormat(format);
                               setSelectedBankDownloadFormat(""); // clear other
-                               setSelectedColumns(["Name"]); // default: no columns selected
+                              setSelectedColumns(["Name"]); // default: no columns selected
                               setShowDownloadModal(true);
                             }}
                             disabled={isDownloading}
@@ -434,7 +450,7 @@ const salaryDetailFields = [
                             <option value="pdf">PDF (.pdf)</option>
                           </select>
                         </div>
-                        <div className="col-auto">
+                        {/* <div className="col-auto">
                           <select
                             className="form-select bg-primary border-0 text-white"
                             value={selectedBankDownloadFormat}
@@ -452,7 +468,7 @@ const salaryDetailFields = [
                             <option value="excel">Excel (.xlsx)</option>
                             <option value="pdf">PDF (.pdf)</option>
                           </select>
-                        </div>
+                        </div> */}
                       </div>
                       <div className="row col-12 mb-2">
                         <div className="col-md-4 mt-2 ">
@@ -464,36 +480,6 @@ const salaryDetailFields = [
                             onInput={toInputTitleCase}
                             onChange={(e) => setSearch(e.target.value)}
                           />
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <select
-                            className="form-select"
-                            style={{ paddingBottom: '6px' }}
-                            value={selectedYear}
-                            onChange={(e) => setSelectedYear(e.target.value)}
-                          >
-                            <option value="">Select Year</option>
-                            {getRecentYears().map((year) => (
-                              <option key={year} value={year}>
-                                {year}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="col-md-4 mt-2">
-                          <select
-                            className="form-select"
-                            style={{ paddingBottom: '6px' }}
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                          >
-                            <option value="">Select Month</option>
-                            {getMonthNames().map((month, index) => (
-                              <option key={index} value={(index + 1).toString()}>
-                                {month}
-                              </option>
-                            ))}
-                          </select>
                         </div>
                       </div>
                       <div className="dropdown-divider" style={{ borderTopColor: "#d7d9dd" }} />
@@ -569,6 +555,7 @@ const salaryDetailFields = [
                               <td>
                                 <a
                                   href={doc.url}
+                                  target="_blank"
                                   className="btn btn-sm btn-outline-primary me-2"
                                 >
                                   <Download className="me-1" /> View
@@ -614,174 +601,174 @@ const salaryDetailFields = [
                   ></button>
                 </div>
                 <div className="modal-body">
-<div className="form-group">
-  <div className="d-flex justify-content-between mb-3">
-    <button
-      className="btn btn-sm btn-outline-primary"
-      onClick={() => {
-        if (selectedBankDownloadFormat) {
-          setSelectedColumns(bankColumns);
-        } else if (selectedEmployeeDownloadFormat) {
-          setSelectedColumns([
-            ...employeeDetailFields,
-            ...salaryDetailFields,
-            ...bankDetailFields
-          ]);
-        } else {
-          setSelectedColumns([]);
-        }
-      }}
-    >
-      Select All
-    </button>
-    <button
-      className="btn btn-sm btn-outline-secondary"
-      onClick={() => setSelectedColumns([])}
-    >
-      Deselect All
-    </button>
-  </div>
-  {isPDF && (
-    <div className="text-info mb-2">
-      You can select a maximum of 8 fields for PDF download.
-    </div>
-  )}
+                  <div className="form-group">
+                    <div className="d-flex justify-content-between mb-3">
+                      <button
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={() => {
+                          if (selectedBankDownloadFormat) {
+                            setSelectedColumns(bankColumns);
+                          } else if (selectedEmployeeDownloadFormat) {
+                            setSelectedColumns([
+                              ...employeeDetailFields,
+                              ...salaryDetailFields,
+                              ...bankDetailFields
+                            ]);
+                          } else {
+                            setSelectedColumns([]);
+                          }
+                        }}
+                      >
+                        Select All
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setSelectedColumns([])}
+                      >
+                        Deselect All
+                      </button>
+                    </div>
+                    {isPDF && (
+                      <div className="text-info mb-2">
+                        You can select a maximum of 8 fields for PDF download.
+                      </div>
+                    )}
 
-  {/* Show only the relevant fields based on dropdown selection */}
-  {selectedBankDownloadFormat ? (
-    <div className="mb-3">
-      <h6 className="fw-bold">Bank Details</h6>
-      <div className="row">
-        {getColumnsByNames(bankColumns).map((column, index) => {
-          const checked = selectedColumns.includes(column.name);
-          const disableCheckbox = isPDF && !checked && selectedColumns.length >= maxFields;
-          return (
-            <div className="col-md-4" key={column.name}>
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id={`bank-column-${index}`}
-                  checked={checked}
-                  disabled={disableCheckbox}
-                  onChange={() => {
-                    if (checked) {
-                      setSelectedColumns(selectedColumns.filter(c => c !== column.name));
-                    } else if (!disableCheckbox) {
-                      setSelectedColumns([...selectedColumns, column.name]);
-                    }
-                  }}
-                />
-                <label className="form-check-label" htmlFor={`bank-column-${index}`}>
-                  {column.name}
-                </label>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  ) : selectedEmployeeDownloadFormat ? (
-    <>
-      <div className="mb-3">
-        <h6 className="fw-bold">Employee Details</h6>
-        <div className="row">
-          {getColumnsByNames(employeeDetailFields).map((column, index) => {
-            const checked = selectedColumns.includes(column.name);
-            const disableCheckbox = isPDF && !checked && selectedColumns.length >= maxFields;
-            return (
-              <div className="col-md-4" key={column.name}>
-                <div className="form-check">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id={`employee-detail-column-${index}`}
-                    checked={checked}
-                    disabled={disableCheckbox}
-                    onChange={() => {
-                      if (checked) {
-                        setSelectedColumns(selectedColumns.filter(c => c !== column.name));
-                      } else if (!disableCheckbox) {
-                        setSelectedColumns([...selectedColumns, column.name]);
-                      }
-                    }}
-                  />
-                  <label className="form-check-label" htmlFor={`employee-detail-column-${index}`}>
-                    {column.name}
-                  </label>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className="mb-3">
-        <h6 className="fw-bold">Salary Details</h6>
-        <div className="row">
-          {getColumnsByNames(salaryDetailFields).map((column, index) => {
-            const checked = selectedColumns.includes(column.name);
-            const disableCheckbox = isPDF && !checked && selectedColumns.length >= maxFields;
-            return (
-              <div className="col-md-4" key={column.name}>
-                <div className="form-check">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id={`salary-detail-column-${index}`}
-                    checked={checked}
-                    disabled={disableCheckbox}
-                    onChange={() => {
-                      if (checked) {
-                        setSelectedColumns(selectedColumns.filter(c => c !== column.name));
-                      } else if (!disableCheckbox) {
-                        setSelectedColumns([...selectedColumns, column.name]);
-                      }
-                    }}
-                  />
-                  <label className="form-check-label" htmlFor={`salary-detail-column-${index}`}>
-                    {column.name}
-                  </label>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className="mb-3">
-        <h6 className="fw-bold">Bank Details</h6>
-        <div className="row">
-          {getColumnsByNames(bankDetailFields).map((column, index) => {
-            const checked = selectedColumns.includes(column.name);
-            const disableCheckbox = isPDF && !checked && selectedColumns.length >= maxFields;
-            return (
-              <div className="col-md-4" key={column.name}>
-                <div className="form-check">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id={`bank-detail-column-${index}`}
-                    checked={checked}
-                    disabled={disableCheckbox}
-                    onChange={() => {
-                      if (checked) {
-                        setSelectedColumns(selectedColumns.filter(c => c !== column.name));
-                      } else if (!disableCheckbox) {
-                        setSelectedColumns([...selectedColumns, column.name]);
-                      }
-                    }}
-                  />
-                  <label className="form-check-label" htmlFor={`bank-detail-column-${index}`}>
-                    {column.name}
-                  </label>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </>
-  ) : null}
-</div>
+                    {/* Show only the relevant fields based on dropdown selection */}
+                    {selectedBankDownloadFormat ? (
+                      <div className="mb-3">
+                        <h6 className="fw-bold">Bank Details</h6>
+                        <div className="row">
+                          {getColumnsByNames(bankColumns).map((column, index) => {
+                            const checked = selectedColumns.includes(column.name);
+                            const disableCheckbox = isPDF && !checked && selectedColumns.length >= maxFields;
+                            return (
+                              <div className="col-md-4" key={column.name}>
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id={`bank-column-${index}`}
+                                    checked={checked}
+                                    disabled={disableCheckbox}
+                                    onChange={() => {
+                                      if (checked) {
+                                        setSelectedColumns(selectedColumns.filter(c => c !== column.name));
+                                      } else if (!disableCheckbox) {
+                                        setSelectedColumns([...selectedColumns, column.name]);
+                                      }
+                                    }}
+                                  />
+                                  <label className="form-check-label" htmlFor={`bank-column-${index}`}>
+                                    {column.name}
+                                  </label>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : selectedEmployeeDownloadFormat ? (
+                      <>
+                        <div className="mb-3">
+                          <h6 className="fw-bold">Employee Details</h6>
+                          <div className="row">
+                            {getColumnsByNames(employeeDetailFields).map((column, index) => {
+                              const checked = selectedColumns.includes(column.name);
+                              const disableCheckbox = isPDF && !checked && selectedColumns.length >= maxFields;
+                              return (
+                                <div className="col-md-4" key={column.name}>
+                                  <div className="form-check">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      id={`employee-detail-column-${index}`}
+                                      checked={checked}
+                                      disabled={disableCheckbox}
+                                      onChange={() => {
+                                        if (checked) {
+                                          setSelectedColumns(selectedColumns.filter(c => c !== column.name));
+                                        } else if (!disableCheckbox) {
+                                          setSelectedColumns([...selectedColumns, column.name]);
+                                        }
+                                      }}
+                                    />
+                                    <label className="form-check-label" htmlFor={`employee-detail-column-${index}`}>
+                                      {column.name}
+                                    </label>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <h6 className="fw-bold">Salary Details</h6>
+                          <div className="row">
+                            {getColumnsByNames(salaryDetailFields).map((column, index) => {
+                              const checked = selectedColumns.includes(column.name);
+                              const disableCheckbox = isPDF && !checked && selectedColumns.length >= maxFields;
+                              return (
+                                <div className="col-md-4" key={column.name}>
+                                  <div className="form-check">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      id={`salary-detail-column-${index}`}
+                                      checked={checked}
+                                      disabled={disableCheckbox}
+                                      onChange={() => {
+                                        if (checked) {
+                                          setSelectedColumns(selectedColumns.filter(c => c !== column.name));
+                                        } else if (!disableCheckbox) {
+                                          setSelectedColumns([...selectedColumns, column.name]);
+                                        }
+                                      }}
+                                    />
+                                    <label className="form-check-label" htmlFor={`salary-detail-column-${index}`}>
+                                      {column.name}
+                                    </label>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <h6 className="fw-bold">Bank Details</h6>
+                          <div className="row">
+                            {getColumnsByNames(bankDetailFields).map((column, index) => {
+                              const checked = selectedColumns.includes(column.name);
+                              const disableCheckbox = isPDF && !checked && selectedColumns.length >= maxFields;
+                              return (
+                                <div className="col-md-4" key={column.name}>
+                                  <div className="form-check">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      id={`bank-detail-column-${index}`}
+                                      checked={checked}
+                                      disabled={disableCheckbox}
+                                      onChange={() => {
+                                        if (checked) {
+                                          setSelectedColumns(selectedColumns.filter(c => c !== column.name));
+                                        } else if (!disableCheckbox) {
+                                          setSelectedColumns([...selectedColumns, column.name]);
+                                        }
+                                      }}
+                                    />
+                                    <label className="form-check-label" htmlFor={`bank-detail-column-${index}`}>
+                                      {column.name}
+                                    </label>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="modal-footer">
                   <button

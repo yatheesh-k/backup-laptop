@@ -4,7 +4,6 @@ import EmsLogin from '../Login/EmsLogin';
 import CompanyLogin from '../Login/CompanyLogin';
 import CandidateLogin from '../Login/CandidateLogin';
 import AnonymousCmpRegistration from '../EMSModule/Company/AnonymousCmpRegistration';
-import LayOut from '../LayOut/LayOut';
 import routeConfig from './RouteConfig';
 import LandingPage from '../Website/LandingPage';
 import Reset from '../LayOut/Reset';
@@ -12,19 +11,23 @@ import ForgotPassword from '../Login/ForgotPassword';
 import ForbiddenPage from './ForbiddenPage';
 import ProtectedRoute from './ProtectedRoute';
 
-
-const Routing = () => {
- useEffect(() => {
-    console.log("Loaded routeConfig:");
-    routeConfig.forEach(({ path, allowedRoles, allowedResourceTypes }, index) => {
-      console.log(`Route[${index}]:`, {
-        path,
-        allowedRoles,
-        allowedResourceTypes
-      });
+const flattenRoutes = (routes) => {
+  const flatRoutes = [];
+  const recurse = (items) => {
+    items.forEach((route) => {
+      if (route.path && route.element) {
+        flatRoutes.push(route);
+      }
+      if (route.children && Array.isArray(route.children)) {
+        recurse(route.children);
+      }
     });
-  }, []);
-  
+  };
+  recurse(routes);
+  return flatRoutes;
+};
+const Routing = () => {
+    const allRoutes = flattenRoutes(routeConfig);
   return (
  <Routes>
            <Route path="/" element={<LandingPage />} />
@@ -35,22 +38,20 @@ const Routing = () => {
       <Route path='/forgotPassword' element={<ForgotPassword/>}/>
       <Route path='/anonymouseCmpRegistration' element={<AnonymousCmpRegistration/>}/>
       <Route path='/forbidden' element={<ForbiddenPage/>}/>
-        {routeConfig.map(({ path, element, allowedRoles, allowedResourceTypes }, index) => (
-          <Route
-            key={index}
-            path={path}
-            element={
-              <ProtectedRoute
-                element={element}
-                allowedRoles={allowedRoles}
-                allowedResourceTypes={allowedResourceTypes}
-              />
-            }
-          />
-        ))}
+       {allRoutes.map(({ path, element, allowedRoles, allowedResourceTypes }, index) => (
+        <Route
+          key={index}
+          path={path}
+          element={
+            <ProtectedRoute
+              element={element}
+              allowedRoles={allowedRoles}
+              allowedResourceTypes={allowedResourceTypes}
+            />
+          }
+        />
+      ))}
     </Routes>
   );
 };
-
 export default Routing;
-

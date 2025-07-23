@@ -107,7 +107,7 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
                 tdsReceipts.setTdsTotalAmount(base64getDecode(tdsReceipts.getTdsTotalAmount()));
                 if (tdsReceipts.getTdsReceiptFileName() != null) {
                     String baseUrl = getBaseUrl(request);
-                    String filePath = baseUrl+folderPath + tdsReceipts.getTdsReceiptFileName();
+                    String filePath = baseUrl+"/var/www/ems/assets/img/" + tdsReceipts.getTdsReceiptFileName();
                     tdsReceipts.setTdsReceiptFileName(filePath);
                 }
             }
@@ -205,9 +205,9 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
         if (file == null || file.isEmpty()) return;
         try {
             String path = folderPath + companyName;
-            String filePath = path + Constants.SLASH + companyName + "_" + receipt.getMonth() + "_" + receipt.getYear() + "_" + file.getOriginalFilename();
+            String filePath = path + Constants.SLASH + Constants.TDS_RECEIPT + "_" + receipt.getMonth() + "_" + receipt.getYear() + "_" + file.getOriginalFilename();
             file.transferTo(new File(filePath));
-            receipt.setTdsReceiptFileName(companyName + Constants.SLASH+Constants.TDS_RECEIPT+"_"+receipt.getMonth() + "_" + receipt.getYear() + "_" + "_" +file.getOriginalFilename());
+            receipt.setTdsReceiptFileName(companyName + Constants.SLASH+Constants.TDS_RECEIPT+"_"+receipt.getMonth() + "_" + receipt.getYear() + "_" +file.getOriginalFilename());
         } catch (IOException e) {
             log.error("Failed to store TDS receipt file: {}", e.getMessage());
             throw new AccountantException("Unable to store TDS receipt file", HttpStatus.INTERNAL_SERVER_ERROR);

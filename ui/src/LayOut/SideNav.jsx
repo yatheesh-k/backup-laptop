@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {  useLocation, useNavigate } from "react-router-dom";
 import routeConfig from "../Utils/RouteConfig";
 import SideNavLogo from "./SideNavLogo";
 
 const SideNav = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { userRole = [], resourceType = "",company } = useSelector((state) => state.auth);
+  const { userRole = [], resourceType = "" } = useSelector((state) => state.auth);
   const [expandedItems, setExpandedItems] = useState({});
 
   const isRouteAllowed = (route) => {
@@ -43,7 +43,7 @@ const SideNav = () => {
 
   const getPortalName = () => {
     if (userRole.includes("ems_admin")) return "EMS Admin";
-    if (userRole.includes("HRM") && resourceType === "company_admin")
+    if (userRole.includes("hrm") && resourceType === "company_admin")
       return `HRM Portal`;
     if (userRole.includes("tax_consultant"))
       return `Tax Portal`;
@@ -55,7 +55,7 @@ const SideNav = () => {
       return `Admin Portal`;
     if (userRole.includes("employee"))
       return `Employee Portal`;
-    if (userRole.includes("candidate"))
+    if (userRole.includes("candidate") && resourceType === "candidate")
       return `Candidate Portal`;
     return "Portal";
   };
