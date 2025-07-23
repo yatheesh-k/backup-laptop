@@ -11,12 +11,14 @@
     position: relative;
 }
 .newLoginContainer{
-    width: 90%;
-    padding: 25px 0 0;
+    width: 70%;
+    /* padding: 25px 0 0; */
     margin: auto;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    background-color: #fff;
+    border-radius: 25px;
 }
 .newLoginLeftSectionOuter,
 .newLoginRightSectionOuter{
@@ -27,7 +29,9 @@
     display: flex;
     flex-direction: column;
     text-align: center;
+    padding: 25px 0 25px;
 }
+.newLoginLeftSectionOuter{ background-image: linear-gradient(90deg, #1762da 30%, #307cf5 100%); color: #fff; border-bottom-left-radius: 25px; border-top-left-radius: 25px;}
 .newLoginRightSection{
     width: 400px;
     background: #fff;
@@ -39,7 +43,7 @@
 
 .newLoginLeftTitle{
     font-family: "Helvetica Neue", "Inter", Arial;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: bold;
     margin: 15px 0;
 }
@@ -52,11 +56,12 @@
 }
 .newLoginRightSecTitle{
     width: 100%;
-    font-size: 18px;
+    font-size: 26px;
     text-align: center;
     font-weight: bold;
     font-family: sans-serif;
     margin-bottom: 25px;
+    
 }
 .loginBtn{
     width: 100%;
