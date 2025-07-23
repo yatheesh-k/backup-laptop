@@ -51,7 +51,7 @@ const TimeLineNotification = () => {
       </h4>
 
       {!dueDates ? (
-        <div className="text-muted">Loading due dates...</div>
+        <div className="text-muted">No Due Dates Added</div>
       ) : (
         <ul className="list-group shadow-sm">
           {renderDueDate("PF", dueDates.pfDay)}

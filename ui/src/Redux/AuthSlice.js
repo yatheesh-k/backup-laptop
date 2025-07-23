@@ -34,7 +34,6 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setAuthDetails: (state, action) => {
-      console.log("🟢 Setting Auth Details in Redux:", action.payload);
       state.userId = action.payload.userId;
       state.userRole = normalizeRoles(action.payload.userRole);
       state.company = action.payload.company;

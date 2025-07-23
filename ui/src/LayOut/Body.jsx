@@ -46,17 +46,15 @@ const Body = () => {
   const { resourceType, roles = [] } = authUser;
 
   // Identify user types
-  const isEMSAdmin = roles.includes("ems_admin") || resourceType === "Admin";
-  const isCompanyAdmin = resourceType === "company_admin";
+  const isEMSAdmin = roles.includes("ems_admin") || resourceType === "ems_admin";
+  const isCompanyAdmin = resourceType === "company_admin"|| roles.includes("company_admin") ;
   const isHR = resourceType === "HR" || roles.includes("hrm");
   const isTaxConsultant = roles.includes("tax_consultant");
   const isAccountant = resourceType === "Accountant";
   const isEmployee = resourceType === "employee";
-  const isCandidate = resourceType === "candidate";
 
   const showCompanyDashboard = isCompanyAdmin || isHR || isTaxConsultant || isAccountant;
   const showEmployeeDashboard = isEmployee;
-  const showCandidateDashboard = isCandidate;
 
   const handleTotalEmployeesClick = () => navigate('/totalEmployees');
   const handleActiveEmployeesClick = () => navigate('/employeeList/Active');
@@ -137,13 +135,6 @@ const Body = () => {
             <div className="row">
               <div className="col-md-6"><div className="card h-100 p-4"><DashboardCalendar /></div></div>
               <div className="col-md-6"><div className="card h-100 p-4"><TaxSlab /></div></div>
-            </div>
-          )}
-
-          {/* Candidate Dashboard (can be customized further) */}
-          {showCandidateDashboard && (
-            <div className="row">
-              <div className="col-md-12"><div className="card h-100 p-4"><TimeLineNotification /></div></div>
             </div>
           )}
 

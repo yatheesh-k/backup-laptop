@@ -5,6 +5,7 @@ import LayOut from "../LayOut/LayOut";
 import { fetchEmployees } from "../Redux/EmployeeSlice";
 import Loader from "../Utils/Loader";
 import { useAuth } from "../Context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const TotalEmployees = () => {
   const dispatch = useDispatch();
@@ -12,7 +13,7 @@ const TotalEmployees = () => {
   const companyId = employee?.companyId;
 
   const { data: employees, status } = useSelector((state) => state.employees);
-
+  const navigate=useNavigate();
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,14 +89,19 @@ const TotalEmployees = () => {
   return (
     <LayOut>
       <div className="container-fluid p-0">
-        <div className="row d-flex align-items-center justify-content-between mt-1 mb-2">
-          <div className="col">
-            <h1 className="fs-3 mb-3 fw-bold text-dark">
+ <div className="row d-flex align-items-center justify-content-between mt-1 mb-2">
+          <div className="col d-flex justify-content-between align-items-center">
+            <h1 className="fs-3 mb-3 fw-bold text-dark m-0">
               <strong>Total Employees : {filteredData.length}</strong>
             </h1>
+            <button
+              className="btn btn-secondary mb-3"
+              onClick={() => navigate(-1)}
+            >
+              <i className="bi bi-arrow-left-circle me-1"></i> Back
+            </button>
           </div>
         </div>
-
         <div className="row mb-3">
           <div className="col-md-4 offset-md-8">
             <input

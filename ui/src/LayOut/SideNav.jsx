@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {  useLocation, useNavigate } from "react-router-dom";
 import routeConfig from "../Utils/RouteConfig";
 import SideNavLogo from "./SideNavLogo";
 
 const SideNav = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { userRole = [], resourceType = "",company } = useSelector((state) => state.auth);
+  const { userRole = [], resourceType = "" } = useSelector((state) => state.auth);
   const [expandedItems, setExpandedItems] = useState({});
 
   const isRouteAllowed = (route) => {
@@ -17,18 +17,7 @@ const SideNav = () => {
     const hasResource = types.includes("all") || types.includes(resourceType);
     return hasRole && hasResource;
   };
-useEffect(() => {
-  console.log("userRole:", userRole, "resourceType:", resourceType);
-  routeConfig.forEach(route => {
-    if (route.children) {
-      route.children.forEach(child => {
-        console.log("Child:", child.label, "Allowed:", isRouteAllowed(child));
-      });
-    } else {
-      console.log("Route:", route.label, "Allowed:", isRouteAllowed(route));
-    }
-  });
-}, [userRole, resourceType]);
+
   useEffect(() => {
     const expandParents = (routes, parentKey = "") => {
       const result = {};
@@ -66,7 +55,7 @@ useEffect(() => {
       return `Admin Portal`;
     if (userRole.includes("employee"))
       return `Employee Portal`;
-    if (userRole.includes("candidate"))
+    if (userRole.includes("candidate") && resourceType === "candidate")
       return `Candidate Portal`;
     return "Portal";
   };

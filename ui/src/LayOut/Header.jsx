@@ -65,10 +65,10 @@ const handleClickOutside = (event) => {
   const handleLogOut = () => {
     logout();
      setShowModal(false);
-    if (roles.includes("ems_admin")) {
+    if (resourceType==="ems_admin") {
       navigate("/login", { replace: true });
     } else if (
-      ["company_admin", "Accountant", "HR", "Admin"].includes(resourceType) ||
+      ["company_admin", "Accountant", "HR", "Admin"].includes(resourceType) &&
       companyName
     ) {
       navigate(`/${companyName}/login`, { replace: true });
@@ -121,9 +121,8 @@ const handleClickOutside = (event) => {
       <div className="navbar-collapse collapse">
         <ul className="navbar-nav navbar-align">
 
-          {roles.includes("ems_admin") && (
+          {resourceType==="ems_admin" && (
             <>
-              <span className="mt-3">EMS-Admin</span>
               <li className="nav-item">
                 <button
             type="button"

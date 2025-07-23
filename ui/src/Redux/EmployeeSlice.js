@@ -37,7 +37,6 @@ const employeeSlice = createSlice({
       .addCase(fetchEmployees.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || "Failed to fetch employees";
-        state.data = []; // Clear data on error
       });
   },
 });

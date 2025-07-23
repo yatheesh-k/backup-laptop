@@ -100,7 +100,7 @@ const EmployeeList = () => {
               {status} Employees : {filteredEmployees.length}
             </h1>
             <button
-              className="btn btn-outline-secondary mb-3"
+              className="btn btn-secondary mb-3"
               onClick={() => navigate(-1)}
             >
               <i className="bi bi-arrow-left-circle me-1"></i> Back
