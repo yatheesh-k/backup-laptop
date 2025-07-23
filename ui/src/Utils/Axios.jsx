@@ -4,8 +4,8 @@ const protocol = window.location.protocol;
 const hostname = window.location.hostname;
 
 
-const BASE_URL = `${protocol}//${hostname}:8092/ems`;
-const Login_URL = `${protocol}//${hostname}:9090/ems`;
+const BASE_URL = "https://ems.pathbreakertech.in:8012/ems";
+const Login_URL = "https://ems.pathbreakertech.in:9002/ems";
 // New microservice (port 8093)
 const MICROSERVICE_URL = `${protocol}//${hostname}:8093/ems`;
 
