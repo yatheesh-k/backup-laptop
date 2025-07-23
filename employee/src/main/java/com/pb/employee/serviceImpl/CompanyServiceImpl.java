@@ -12,6 +12,7 @@ import com.pb.employee.exception.ErrorMessageHandler;
 import com.pb.employee.opensearch.OpenSearchOperations;
 import com.pb.employee.persistance.model.*;
 import com.pb.employee.request.*;
+import com.pb.employee.response.CompanyResponse;
 import com.pb.employee.service.CompanyService;
 import com.pb.employee.service.CustomerService;
 import com.pb.employee.service.DepartmentService;
@@ -187,12 +188,21 @@ public class CompanyServiceImpl implements CompanyService {
     public ResponseEntity<?> getCompanies(HttpServletRequest request) throws EmployeeException {
 
         List<CompanyEntity> companyEntities = null;
+        List<CompanyResponse> companyResponses = new ArrayList<>();
+
         companyEntities = openSearchOperations.getCompanies();
         for(CompanyEntity companyEntity : companyEntities) {
             CompanyUtils.unmaskCompanyProperties(companyEntity, request);
+            EmployeeEntity companyAdmin = openSearchOperations.getCompanyAdmin(companyEntity.getId(), ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName()));
+            CompanyResponse companyResponse = objectMapper.convertValue(companyEntity, CompanyResponse.class);
+            if (companyAdmin != null && companyAdmin.getRoles() != null && !companyAdmin.getRoles().isEmpty()) {
+                companyResponse.setRoles(companyAdmin.getRoles());
+            }
+            companyResponses.add(companyResponse);
         }
+
         return new ResponseEntity<>(
-                ResponseBuilder.builder().build().createSuccessResponse(companyEntities), HttpStatus.OK);
+                ResponseBuilder.builder().build().createSuccessResponse(companyResponses), HttpStatus.OK);
 
     }
 
@@ -200,6 +210,7 @@ public class CompanyServiceImpl implements CompanyService {
     public ResponseEntity<?> getCompanyById(String companyId, HttpServletRequest request)  throws EmployeeException{
         log.info("getting details of {}", companyId);
         CompanyEntity companyEntity = null;
+        CompanyResponse companyResponse = null;
         try {
             companyEntity = openSearchOperations.getCompanyById(companyId, null, Constants.INDEX_EMS);
             CompanyUtils.unmaskCompanyProperties(companyEntity, request);
@@ -209,6 +220,11 @@ public class CompanyServiceImpl implements CompanyService {
                 folder.mkdirs();
                 log.info("Creating the company Folder");
             }
+            EmployeeEntity companyAdmin = openSearchOperations.getCompanyAdmin(companyEntity.getId(), ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName()));
+            companyResponse = objectMapper.convertValue(companyEntity, CompanyResponse.class);
+            if (companyAdmin != null && companyAdmin.getRoles() != null && !companyAdmin.getRoles().isEmpty()) {
+                companyResponse.setRoles(companyAdmin.getRoles());
+            }
         } catch (Exception ex) {
             log.error("Exception while fetching company details {}", ex);
             throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.UNABLE_GET_COMPANY),
@@ -216,7 +232,7 @@ public class CompanyServiceImpl implements CompanyService {
         }
 
         return new ResponseEntity<>(
-                ResponseBuilder.builder().build().createSuccessResponse(companyEntity), HttpStatus.OK);
+                ResponseBuilder.builder().build().createSuccessResponse(companyResponse), HttpStatus.OK);
     }
     @Override
     public ResponseEntity<?> updateCompanyById(String companyId,  CompanyUpdateRequest companyUpdateRequest) throws EmployeeException, IOException {
