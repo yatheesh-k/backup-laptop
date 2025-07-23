@@ -138,4 +138,27 @@ public class GSTAccountController {
         return gstAccountService.deleteGSTAccount(companyName, id);
     }
 
+    @RequestMapping(value = "{companyName}/account/comparing", method = RequestMethod.GET)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.gstAccountComparing.tag}", description = "${api.gstAccountComparing.description}")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
+    public ResponseEntity<?> getGstAccountComparing(
+            @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+            @RequestHeader(Constants.AUTH_KEY) String authToken,
+            @PathVariable String companyName,
+            @RequestParam(required = true) String month, @RequestParam(required = true) String year) throws IOException, AccountantException {
+        return gstAccountService.getGstAccountComparing(companyName, month, year);
+    }
+
+    @RequestMapping(value = "{companyName}/gst/register", method = RequestMethod.POST)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.gstAccountRegister.tag}", description = "${api.gstAccountRegister.description}")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
+    public ResponseEntity<?> GstAccountRegister(
+            @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+            @RequestHeader(Constants.AUTH_KEY) String authToken,
+            @PathVariable String companyName,
+            @RequestParam(required = true) String month, @RequestParam(required = true) String year) throws AccountantException {
+        return gstAccountService.GstAccountRegister(companyName, month, year);
+    }
 }

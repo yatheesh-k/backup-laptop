@@ -90,7 +90,9 @@ public enum ErrorMessageKey {
     UNABLE_UPDATE_DUE_DATES("unable.to.update.due.dates"),
     UNABLE_DELETE_DUE_DATES("unable.to.delete.due.dates"),
     EMPLOYEE_TDS_ALREADY_EXISTS("employee.tds.already.exists"),
-    TDS_ALREADY_EXISTS_PANS("tds.already.exists.pan");
+    TDS_ALREADY_EXISTS_PANS("tds.already.exists.pan"),
+    INVOICE_DATA_NOT_FOUND("invoice.data.not.found"),
+    CUSTOMER_DATA_NOT_FOUND("customer.data.not.found"),;
 
     private final String key;
 

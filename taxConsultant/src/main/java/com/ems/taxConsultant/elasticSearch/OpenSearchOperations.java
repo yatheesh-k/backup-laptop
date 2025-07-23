@@ -13,6 +13,7 @@ import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
 import com.ems.taxConsultant.persistance.EmployeeEntity;
+import com.ems.taxConsultant.persistance.InvoiceModel;
 import com.ems.taxConsultant.persistance.model.Entity;
 import com.ems.taxConsultant.utils.Constants;
 import com.ems.taxConsultant.utils.ResourceIdUtils;
@@ -23,8 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class OpenSearchOperations {
@@ -176,4 +177,43 @@ public class OpenSearchOperations {
         }
         return null;
     }
+
+    public List<InvoiceModel> getInvoicesByCompanyId(String companyId, String index) throws AccountantException {
+        logger.debug("Getting invoices for company {} from index {}", companyId, index);
+
+        try {
+            // Build bool query
+            BoolQuery boolQuery = BoolQuery.of(b -> b
+                    .filter(f -> f.matchPhrase(mp -> mp.field(Constants.TYPE).query(Constants.INVOICE)))
+                    .filter(f -> f.matchPhrase(mp -> mp.field(Constants.COMPANY_ID).query(companyId)))
+            );
+
+            // Execute search
+            SearchResponse<InvoiceModel> searchResponse = esClient.search(s -> s
+                            .index(index)
+                            .size(SIZE_ELASTIC_SEARCH_MAX_VAL)
+                            .query(q -> q.bool(boolQuery)),
+                    InvoiceModel.class
+            );
+
+            List<Hit<InvoiceModel>> hits = Optional.ofNullable(searchResponse.hits())
+                    .map(h -> h.hits())
+                    .orElse(Collections.emptyList());
+
+            logger.info("Number of invoice hits for company {}: {}", companyId, hits.size());
+
+            return hits.stream()
+                    .map(Hit::source)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+        } catch (IOException e) {
+            logger.error("Error fetching invoices for company {}: {}", companyId, e.getMessage(), e);
+            throw new AccountantException(
+                    ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
 }

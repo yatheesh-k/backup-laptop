@@ -44,8 +44,8 @@ public class Constants {
     public static final Object DELETED = "Deleted";
     public static final String CUSTOMER_ID = "customerId";
     public static final String GST_ACCOUNT = "gst_account";
-    public static final String MISSED_COMPANY_CUSTOMER = "Company Customers Who are not in the Sheet";
-    public static final String NOT_COMPANY_CUSTOMERS = "Customers Not existed in company";
+    public static final String MISSED_COMPANY_CUSTOMER = "Missed Company Customers";
+    public static final String EXTRA_COMPANY_CUSTOMERS = "Extra Customers Not existed in company";
     public static final String GST_MISS_MATCH_CUSTOMERS = "GST Mismatch Customers";
     public static final String CUSTOMER_GST = "customerGstNo";
     public static final String COMPANY_NAME = "companyName";
@@ -84,4 +84,5 @@ public class Constants {
 
 
     public static final String DUE_DATES = "due_dates";
+    public static final String INVOICE = "invoice";
 }

@@ -28,8 +28,8 @@ public class ResourceIdUtils {
     public static String generatePFResponseResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.PF_RESPONSE, companyName, month, year);
     }
-    public static String generateGSTAccountResourceId(String invoiceNumber) {
-        return generateGlobalResourceId(ResourceType.GST_ACCOUNT, invoiceNumber);
+    public static String generateGSTAccountResourceId(String gst,String month, String year) {
+        return generateGlobalResourceId(ResourceType.GST_ACCOUNT, gst);
     }
     public static String generatePTResponseResourceId(String companyName, String month, String year) {
         return generateGlobalResourceId(ResourceType.PT_RESPONSE, companyName, month, year);

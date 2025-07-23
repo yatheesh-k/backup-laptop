@@ -14,6 +14,7 @@ import com.ems.taxConsultant.utils.Constants;
 import com.ems.taxConsultant.utils.GSTAccountUtils;
 import com.ems.taxConsultant.utils.ResourceIdUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -24,7 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -79,7 +83,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             String indexName = ResourceIdUtils.generateCompanyIndex(companyName);
             List<GSTAccountEntity> entities = parseGSTExcelSheet(companyEntity, month, year, file);
             for (GSTAccountEntity entity : entities) {
-                String resourceId = ResourceIdUtils.generateGSTAccountResourceId(entity.getInvoiceNumber());
+                String resourceId = ResourceIdUtils.generateGSTAccountResourceId(entity.getCustomerGstNo(),month, year);
 
                 entity.setId(resourceId);
                                openSearchOperations.saveEntity(entity, entity.getId(), indexName);
@@ -105,7 +109,11 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                 log.error("Company not found for name: {}", companyName);
                 throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
-           String resourceId = ResourceIdUtils.generateGSTAccountResourceId(gstAccountRequest.getInvoiceNumber());
+           String resourceId = ResourceIdUtils.generateGSTAccountResourceId(gstAccountRequest.getCustomerGstNo(), gstAccountRequest.getMonth(), gstAccountRequest.getYear());
+            log.info("Generated resource ID for GST account: {}", resourceId);
+
+            // Check if the GST account already exists for the given company, month, and year
+            log.info("Checking for existing GST accounts for company: {}, month: {}, year: {}", companyName, gstAccountRequest.getMonth(), gstAccountRequest.getYear());
            Collection<GSTAccountEntity> existingAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(companyName, companyEntity.getId(), gstAccountRequest.getYear(),gstAccountRequest.getMonth(), resourceId);
             if (existingAccounts != null && !existingAccounts.isEmpty()) {
                 log.error("GST accounts already exist for company: {}", companyName);
@@ -295,25 +303,20 @@ public class GSTAccountServiceImpl implements GSTAccountService {
 
     }
 
-    private Map<String, Object> parseExcelSheetForComparing(CompanyEntity company, String month, String year, MultipartFile file) throws IOException, AccountantException {
+    private Map<String, Object> parseExcelSheetForComparing(CompanyEntity company, String month, String year, MultipartFile file)
+            throws IOException, AccountantException {
 
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
 
         List<Object> missedCompanyCustomers = new ArrayList<>();
         List<Object> notCompanyCustomers = new ArrayList<>();
-        List<Object> gstMismatch = new ArrayList<>();
 
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put(Constants.MISSED_COMPANY_CUSTOMER, missedCompanyCustomers);
-        responseBody.put(Constants.NOT_COMPANY_CUSTOMERS, notCompanyCustomers);
-        responseBody.put(Constants.GST_MISS_MATCH_CUSTOMERS, gstMismatch);
+        responseBody.put(Constants.EXTRA_COMPANY_CUSTOMERS, notCompanyCustomers);
 
-        List<CustomerModel> dbCustomers = customerRepository.findByCompanyId(company.getId());
-        Map<String, CustomerModel> dbCustomerGstMap = dbCustomers.stream()
-                .filter(c -> c.getCustomerGstNo() != null)
-                .collect(Collectors.toMap(CustomerModel::getCustomerGstNo, c -> c));
-
+        // Step 1: Parse Excel data
         Map<String, List<GSTAccountEntity>> excelGstData = new HashMap<>();
 
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -329,7 +332,6 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             String iGst = getStringCellValue(row.getCell(6));
             String cGst = getStringCellValue(row.getCell(7));
             String sGst = getStringCellValue(row.getCell(8));
-
 
             if (customerGstNo == null || customerGstNo.isBlank()) continue;
 
@@ -351,94 +353,42 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             excelGstData.computeIfAbsent(customerGstNo, k -> new ArrayList<>()).add(entity);
         }
 
-        // collect DB GSTs missing in Excel
-        for (String dbGst : dbCustomerGstMap.keySet()) {
-            if (!excelGstData.containsKey(dbGst)) {
-                CustomerModel customer = dbCustomerGstMap.get(dbGst);
-                Map<String, String> missedCustomer = new LinkedHashMap<>();
-                missedCustomer.put(Constants.CUSTOMER_GST, base64Decode(dbGst));
-                missedCustomer.put(Constants.CUSTOMER_NAME, base64Decode(customer.getCustomerName()));
-                missedCompanyCustomers.add(missedCustomer);
-            }
-        }
+        // Step 2: Fetch GST data from OpenSearch (Elastic only)
+        Collection<GSTAccountEntity> dbGstAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(
+                company.getShortName(), company.getId(), year, month, null);
 
-        // collect Excel GSTs missing in DB
-        for (String excelGst : excelGstData.keySet()) {
-            if (!dbCustomerGstMap.containsKey(excelGst)) {
-                List<GSTAccountEntity> gstEntities = excelGstData.get(excelGst);
-                if (gstEntities != null && !gstEntities.isEmpty()) {
-                    GSTAccountEntity firstEntry = gstEntities.get(0);
-                    Map<String, String> notCompany = new LinkedHashMap<>();
-                    notCompany.put(Constants.CUSTOMER_GST, (excelGst));
-                    notCompany.put(Constants.CUSTOMER_NAME, firstEntry.getCustomerName());
-                    notCompanyCustomers.add(notCompany);
-                }
-            }
-        }
-
-        // Step 5: Fetch existing GST data from OpenSearch (not from DB)
-        Collection<GSTAccountEntity> dbGstAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(company.getShortName(), company.getId(),year, month,  null);
-
-        // Step 6: Create a map of existing GST accounts by customer GST number and invoice number
-        List<GSTAccountEntity> dbGstList = new ArrayList<>();
+        Map<String, List<GSTAccountEntity>> dbGstMap = new HashMap<>();
         for (GSTAccountEntity entity : dbGstAccounts) {
-            if (entity.getCustomerGstNo() != null && entity.getInvoiceNumber() != null) {
-                dbGstList.add(entity);
+            if (entity.getCustomerGstNo() != null) {
+                dbGstMap.computeIfAbsent(entity.getCustomerGstNo(), k -> new ArrayList<>()).add(entity);
             }
         }
 
-        List<GSTAccountEntity> allExcelInvoices = new ArrayList<>();
-        for (List<GSTAccountEntity> list : excelGstData.values()) {
-            allExcelInvoices.addAll(list);
-        }
-
-        // Loop through each Excel invoice entry
-        for (GSTAccountEntity excelEntity : allExcelInvoices) {
-            String gstNo = excelEntity.getCustomerGstNo();
-            String invoiceNo = excelEntity.getInvoiceNumber();
-
-            // Find matching OpenSearch entity from dbGstList
-            GSTAccountEntity dbEntity = null;
-            for (GSTAccountEntity e : dbGstList) {
-                if (gstNo.equals(e.getCustomerGstNo()) && invoiceNo.equals(e.getInvoiceNumber())) {
-                    dbEntity = e;
-                    break;
-                }
-            }
-
-            if (dbEntity == null) continue;
-
-            Map<String, String> diffs = new LinkedHashMap<>();
-
-            // Compare each GST-related field
-            if (!Objects.equals(excelEntity.getTotalAmount(), dbEntity.getTotalAmount()))
-                diffs.put(Constants.TOTAL_AMOUNT,Constants.EXCEL + excelEntity.getTotalAmount() +Constants.DB + dbEntity.getTotalAmount());
-
-            if (!Objects.equals(excelEntity.getSubTotal(), dbEntity.getSubTotal()))
-                diffs.put(Constants.SUB_TOTAL, Constants.EXCEL + excelEntity.getSubTotal() + Constants.DB+ dbEntity.getSubTotal());
-
-            if (!Objects.equals(excelEntity.getCGst(), dbEntity.getCGst()))
-                diffs.put(Constants.C_GST, Constants.EXCEL + excelEntity.getCGst() + Constants.DB+ dbEntity.getCGst());
-
-            if (!Objects.equals(excelEntity.getSGst(), dbEntity.getSGst()))
-                diffs.put(Constants.S_GST, Constants.EXCEL + excelEntity.getSGst() +Constants.DB + dbEntity.getSGst());
-
-            if (!Objects.equals(excelEntity.getIGst(), dbEntity.getIGst()))
-                diffs.put(Constants.I_GST, Constants.EXCEL + excelEntity.getIGst() + Constants.DB + dbEntity.getIGst());
-            // Add mismatch result if any field is different
-            if (!diffs.isEmpty()) {
-                Map<String, Object> mismatch = new LinkedHashMap<>();
-                mismatch.put(Constants.CUSTOMER_GST, base64Decode(gstNo));
-                mismatch.put(Constants.INVOICE_NUMBER, invoiceNo);
-                mismatch.put(Constants.CUSTOMER_NAME, excelEntity.getCustomerName());
-                mismatch.put(Constants.DIFFERENCES, diffs);
-                gstMismatch.add(mismatch);
+        // Step 3: Identify GSTs in OpenSearch but missing in Excel
+        for (String dbGstNo : dbGstMap.keySet()) {
+            if (!excelGstData.containsKey(dbGstNo)) {
+                GSTAccountEntity entity = dbGstMap.get(dbGstNo).get(0);
+                Map<String, String> missing = new LinkedHashMap<>();
+                missing.put(Constants.CUSTOMER_GST, base64Decode(dbGstNo));
+                missing.put(Constants.CUSTOMER_NAME, entity.getCustomerName());
+                missedCompanyCustomers.add(missing);
             }
         }
 
+        // Step 4: Identify GSTs in Excel but not in OpenSearch
+        for (String excelGst : excelGstData.keySet()) {
+            if (!dbGstMap.containsKey(excelGst)) {
+                GSTAccountEntity firstEntry = excelGstData.get(excelGst).get(0);
+                Map<String, String> notCompany = new LinkedHashMap<>();
+                notCompany.put(Constants.CUSTOMER_GST, excelGst);
+                notCompany.put(Constants.CUSTOMER_NAME, firstEntry.getCustomerName());
+                notCompanyCustomers.add(notCompany);
+            }
+        }
         workbook.close();
         return responseBody;
     }
+
 
     private String getStringCellValue(Cell cell) {
         if (cell == null) return "";
@@ -468,4 +418,172 @@ public class GSTAccountServiceImpl implements GSTAccountService {
     private String base64Decode(String value) {
         return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
     }
+
+    @Override
+    public ResponseEntity<?> getGstAccountComparing(String companyName, String month, String year) throws AccountantException {
+        log.info("Starting GST comparison for company: {}, month: {}, year: {}", companyName, month, year);
+        CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+        if (companyEntity == null) {
+            log.error("Company not found for name: {}", companyName);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+        }
+
+        String index = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
+
+        try {
+            List<InvoiceModel> invoiceModels = openSearchOperations.getInvoicesByCompanyId(companyEntity.getId(), index);
+            if (invoiceModels == null || invoiceModels.isEmpty()) {
+                log.error("Invoice data not found for company: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVOICE_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+
+            List<CustomerModel> customerModels = customerRepository.findByCompanyId(companyEntity.getId());
+            if (customerModels == null || customerModels.isEmpty()) {
+                log.error("Customer data not found for company: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.CUSTOMER_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+
+            customerModels.forEach(GSTAccountUtils::unmaskCustomerProperties);
+            invoiceModels.forEach(GSTAccountUtils::unMaskInvoiceProperties);
+
+            Map<String, CustomerModel> customerIdMap = customerModels.stream()
+                    .filter(c -> c.getCustomerId() != null)
+                    .collect(Collectors.toMap(CustomerModel::getCustomerId, c -> c));
+
+            // Collect GST numbers and names from Invoices
+            Map<String, String> invoiceGstNameMap = new HashMap<>();
+            for (InvoiceModel invoice : invoiceModels) {
+                CustomerModel customer = customerIdMap.get(invoice.getCustomerId());
+                if (customer != null && customer.getCustomerGstNo() != null) {
+                    invoiceGstNameMap.put(customer.getCustomerGstNo(), customer.getCustomerName());
+                }
+            }
+
+            // GST Accounts from OpenSearch
+            Collection<GSTAccountEntity> gstAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(
+                    companyEntity.getShortName(), companyEntity.getId(), year, month, null);
+
+            Map<String, String> gstDbNameMap = gstAccounts.stream()
+                    .filter(acc -> acc.getCustomerGstNo() != null)
+                    .collect(Collectors.toMap(
+                            GSTAccountEntity::getCustomerGstNo,
+                            GSTAccountEntity::getCustomerName,
+                            (existing, replacement) -> existing // resolve duplicates
+                    ));
+
+            Set<String> invoiceGstSet = invoiceGstNameMap.keySet();
+            Set<String> gstDbSet = gstDbNameMap.keySet();
+
+            // Comparison maps with names
+            List<Map<String, String>> missedCompanyCustomers = new ArrayList<>();
+            for (String gst : invoiceGstSet) {
+                if (!gstDbSet.contains(gst)) {
+                    Map<String, String> data = new LinkedHashMap<>();
+                    data.put(Constants.CUSTOMER_GST, gst);
+                    data.put(Constants.CUSTOMER_NAME, invoiceGstNameMap.get(gst));
+                    missedCompanyCustomers.add(data);
+                }
+            }
+
+            List<Map<String, String>> notCompanyCustomers = new ArrayList<>();
+            for (String gst : gstDbSet) {
+                if (!invoiceGstSet.contains(gst)) {
+                    Map<String, String> data = new LinkedHashMap<>();
+                    data.put(Constants.CUSTOMER_GST, gst);
+                    data.put(Constants.CUSTOMER_NAME, gstDbNameMap.get(gst));
+                    notCompanyCustomers.add(data);
+                }
+            }
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put(Constants.MISSED_COMPANY_CUSTOMER, missedCompanyCustomers);
+            responseBody.put(Constants.EXTRA_COMPANY_CUSTOMERS, notCompanyCustomers);
+
+            log.info("GST comparison completed successfully for company: {}", companyName);
+            return ResponseEntity.ok(responseBody);
+
+        } catch (AccountantException ae) {
+            log.error("AccountantException occurred while comparing GST data", ae);
+            throw ae;
+        } catch (Exception e) {
+            log.error("Error comparing GST data", e);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_GST_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> GstAccountRegister(String companyName, String month, String year) throws AccountantException {
+        log.info("Starting GST account registration for company: {}, month: {}, year: {}", companyName, month, year);
+
+        CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+        if (companyEntity == null) {
+            log.error("Company not found for name: {}", companyName);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+        }
+
+        String index = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
+        try {
+            List<InvoiceModel> invoiceModels = openSearchOperations.getInvoicesByCompanyId(companyEntity.getId(), index);
+            if (invoiceModels == null || invoiceModels.isEmpty()) {
+                log.error("Invoice data not found for company: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVOICE_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+
+            List<CustomerModel> customerModels = customerRepository.findByCompanyId(companyEntity.getId());
+            if (customerModels == null || customerModels.isEmpty()) {
+                log.error("Customer data not found for company: {}", companyName);
+                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.CUSTOMER_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+
+            customerModels.forEach(GSTAccountUtils::unmaskCustomerProperties);
+            invoiceModels.forEach(GSTAccountUtils::unMaskInvoiceProperties);
+
+            Map<String, CustomerModel> customerIdMap = customerModels.stream()
+                    .filter(c -> c.getCustomerId() != null)
+                    .collect(Collectors.toMap(CustomerModel::getCustomerId, c -> c));
+
+            List<GSTAccountEntity> gstAccounts = new ArrayList<>();
+
+            for (InvoiceModel invoice : invoiceModels) {
+                CustomerModel customer = customerIdMap.get(invoice.getCustomerId());
+                GSTAccountUtils.calculateGrandTotal(invoice);
+                if (customer != null && customer.getCustomerGstNo() != null) {
+                    GSTAccountEntity entity = new GSTAccountEntity();
+                    entity.setCompanyId(companyEntity.getId());
+                    entity.setMonth(month);
+                    entity.setYear(year);
+                    entity.setCustomerGstNo(base64Encode(customer.getCustomerGstNo()));
+                    entity.setCustomerName(customer.getCustomerName());
+                    entity.setInvoiceNumber((invoice.getInvoiceNo()));
+                    entity.setInvoiceDate(invoice.getInvoiceDate());
+                    entity.setTotalAmount(base64Encode(invoice.getGrandTotal()));
+                    entity.setSubTotal(base64Encode(invoice.getSubTotal()));
+                    entity.setIGst(base64Encode(invoice.getIGst()));
+                    entity.setCGst(base64Encode(invoice.getCGst()));
+                    entity.setSGst(base64Encode(invoice.getIGst()));
+                    entity.setStatus(Constants.FILED);
+                    entity.setType(Constants.GST_ACCOUNT);
+
+                    String resourceId = ResourceIdUtils.generateGSTAccountResourceId(customer.getCustomerGstNo(),month, year);
+                    entity.setId(resourceId);
+                    gstAccounts.add(entity);
+                }
+            }
+            for (GSTAccountEntity account : gstAccounts) {
+                openSearchOperations.saveEntity(account, account.getId(), index);
+            }
+            log.info("GST account registration completed successfully for company: {}", companyName);
+            return new ResponseEntity<>(
+                    ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS),
+                    HttpStatus.CREATED);
+
+        } catch (AccountantException ae) {
+            log.error("AccountantException occurred while registering GST accounts", ae);
+            throw ae;
+        } catch (Exception e) {
+            log.error("Error registering GST accounts", e);
+            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
