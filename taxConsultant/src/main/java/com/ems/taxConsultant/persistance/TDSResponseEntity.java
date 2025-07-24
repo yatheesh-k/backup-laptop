@@ -18,5 +18,7 @@ public class TDSResponseEntity extends AbstractEntity {
     private String month;
     private String year;
     private String ignoredCompanyEmployees;
+    private String previousMonthMissedEmp;
+    private String newAddedEmployees;
     private String invalidTDSAmounts;
 }

@@ -22,4 +22,12 @@ public class TDSResponseUpdateRequest {
     @Schema(example = "something")
     @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{invalidTDSAmounts.message}")
     private String invalidTDSAmounts;
+
+    @Schema(example = "something")
+    @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{previousMonthMissedEmp.message}")
+    private String previousMonthMissedEmp;
+
+    @Schema(example = "something")
+    @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{newAddedEmployees.message}")
+    private String newAddedEmployees;
 }

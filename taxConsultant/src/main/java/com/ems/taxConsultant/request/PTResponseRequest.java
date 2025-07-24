@@ -30,6 +30,14 @@ public class PTResponseRequest {
     private String ignoredCompanyEmployees;
 
     @Schema(example = "something")
+    @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{previousMonthMissedEmp.message}")
+    private String previousMonthMissedEmp;
+
+    @Schema(example = "something")
+    @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{newAddedEmployees.message}")
+    private String newAddedEmployees;
+
+    @Schema(example = "something")
     @Pattern(regexp = "^(|null|(?!\\s)(?=.*[A-Za-z])[A-Za-z0-9.,:;'#&*()^/\\s-]*[^\\s])$", message = "{invalidPTAmounts.message}")
     private String invalidPTAmounts;
 
