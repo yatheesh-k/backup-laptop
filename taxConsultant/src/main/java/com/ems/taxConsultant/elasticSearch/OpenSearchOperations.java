@@ -178,14 +178,14 @@ public class OpenSearchOperations {
         return null;
     }
 
-    public List<InvoiceModel> getInvoicesByCompanyId(String companyId, String index) throws AccountantException {
-        logger.debug("Getting invoices for company {} from index {}", companyId, index);
+    public List<InvoiceModel> getInvoicesByCustomerId(String customerId, String index) throws AccountantException {
+        logger.debug("Getting invoices for company {} from index {}", customerId, index);
 
         try {
             // Build bool query
             BoolQuery boolQuery = BoolQuery.of(b -> b
                     .filter(f -> f.matchPhrase(mp -> mp.field(Constants.TYPE).query(Constants.INVOICE)))
-                    .filter(f -> f.matchPhrase(mp -> mp.field(Constants.COMPANY_ID).query(companyId)))
+                    .filter(f -> f.matchPhrase(mp -> mp.field(Constants.CUSTOMER_ID).query(customerId)))
             );
 
             // Execute search
@@ -200,7 +200,7 @@ public class OpenSearchOperations {
                     .map(h -> h.hits())
                     .orElse(Collections.emptyList());
 
-            logger.info("Number of invoice hits for company {}: {}", companyId, hits.size());
+            logger.info("Number of invoice hits for company {}: {}", customerId, hits.size());
 
             return hits.stream()
                     .map(Hit::source)
@@ -208,7 +208,7 @@ public class OpenSearchOperations {
                     .collect(Collectors.toList());
 
         } catch (IOException e) {
-            logger.error("Error fetching invoices for company {}: {}", companyId, e.getMessage(), e);
+            logger.error("Error fetching invoices for company {}: {}", customerId, e.getMessage(), e);
             throw new AccountantException(
                     ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH),
                     HttpStatus.INTERNAL_SERVER_ERROR

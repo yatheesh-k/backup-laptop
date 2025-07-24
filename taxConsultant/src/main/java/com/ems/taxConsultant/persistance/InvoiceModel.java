@@ -2,7 +2,6 @@ package com.ems.taxConsultant.persistance;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-import nonapi.io.github.classgraph.json.Id;
 
 @Getter
 @Setter
@@ -12,7 +11,6 @@ import nonapi.io.github.classgraph.json.Id;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InvoiceModel {
 
-    @Id
     private String invoiceId;
     private String companyId;
     private String customerId;

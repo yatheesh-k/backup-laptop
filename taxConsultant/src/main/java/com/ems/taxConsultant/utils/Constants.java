@@ -44,9 +44,7 @@ public class Constants {
     public static final Object DELETED = "Deleted";
     public static final String CUSTOMER_ID = "customerId";
     public static final String GST_ACCOUNT = "gst_account";
-    public static final String MISSED_COMPANY_CUSTOMER = "Missed Company Customers";
-    public static final String EXTRA_COMPANY_CUSTOMERS = "Extra Customers Not existed in company";
-    public static final String GST_MISS_MATCH_CUSTOMERS = "GST Mismatch Customers";
+    public static final String MISSED_GST = "Missed Last Month GST";
     public static final String CUSTOMER_GST = "customerGstNo";
     public static final String COMPANY_NAME = "companyName";
     public static final String TOTAL_AMOUNT = "totalAmount";
@@ -81,8 +79,10 @@ public class Constants {
     public static final String TAX_CONSULTANT =  "tax_consultant";
     public static final String HR_MANAGEMENT =  "hr_management";
     public static final String INVOICE_MANAGEMENT =  "invoice_management";
-
-
     public static final String DUE_DATES = "due_dates";
     public static final String INVOICE = "invoice";
+    public static final String DUPLICATE_GST = "Duplicate GST";
+    public static final String THIS_MONTH_MISSING_GST_FILING = "This Month Missing GST Filing Customers";
+    public static final String NEW_GST_FILING = "New GST Filing Customers";
+    public static final String COUNT = "count";
 }
