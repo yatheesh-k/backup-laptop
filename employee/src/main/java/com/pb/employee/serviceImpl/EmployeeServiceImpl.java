@@ -235,7 +235,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     employeePersonnelEntity = openSearchOperations.getEmployeePersonnelDetails(employee.getId(), index);
 
                 }
-                EmployeeResponse employeeResponse = objectMapper.convertValue(employee, com.pb.employee.response.EmployeeResponse.class);
+                EmployeeResponse employeeResponse = objectMapper.convertValue(employee, EmployeeResponse.class);
                 if (employee.getProfileImage()!= null && !employee.getProfileImage().isEmpty()) {
                     String baseUrl = getBaseUrl(request);
                     String image = baseUrl + "/var/www/ems/assets/img/" + employee.getProfileImage();
