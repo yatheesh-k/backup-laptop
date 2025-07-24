@@ -28,7 +28,7 @@ public class EmployeeSalaryResPayload {
     private String totalDeductions;
     private String pfTax;
     private String incomeTax;
-    private String tdsTax;
+    private String tdsType;
     private String totalTax;
     private String status;
     private String addSalaryDate;
