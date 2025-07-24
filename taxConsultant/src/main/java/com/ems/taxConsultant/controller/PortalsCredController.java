@@ -1,7 +1,7 @@
 package com.ems.taxConsultant.controller;
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.PortalsCredEntity;
@@ -38,7 +38,7 @@ public class PortalsCredController {
                                            @RequestHeader(Constants.AUTH_KEY) String authToken,
                                            @PathVariable String companyName,
                                            @Parameter(required = true, description = "${api.addPTResponsePayload.description}")
-                                           @RequestBody @Valid PortalsCredRequest request) throws AccountantException {
+                                           @RequestBody @Valid PortalsCredRequest request) throws TaxConsultantException {
         return portalCredService.addPortalDetails(companyName, request);
     }
 
@@ -50,11 +50,11 @@ public class PortalsCredController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String id) throws AccountantException {
+            @PathVariable String id) throws TaxConsultantException {
         Collection<PortalsCredEntity> portalsCredEntities = portalCredService.getPortalCred(companyName, id);
         if (portalsCredEntities.isEmpty()) {
             log.error("portals credentials not found for company: {}, id: {}", companyName, id);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PORTALS_CREDENTIALS_NOT_FOUND, id), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PORTALS_CREDENTIALS_NOT_FOUND, id), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(portalsCredEntities), HttpStatus.OK);
     }
@@ -80,7 +80,7 @@ public class PortalsCredController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @PathVariable String id,
-            @Valid @RequestBody PortalsCredRequest updateRequest) throws AccountantException {
+            @Valid @RequestBody PortalsCredRequest updateRequest) throws TaxConsultantException {
         return portalCredService.updatePortalsCred(companyName, id, updateRequest);
     }
 
@@ -92,7 +92,7 @@ public class PortalsCredController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String id) throws AccountantException, IOException {
+            @PathVariable String id) throws TaxConsultantException, IOException {
 
         portalCredService.deletePortalCredById(companyName, id);
         return new ResponseEntity<>(

@@ -3,7 +3,7 @@ package com.ems.taxConsultant.serviceImpl;
 import com.ems.taxConsultant.common.ResponseBuilder;
 import com.ems.taxConsultant.dao.TDSReceiptsDao;
 import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
@@ -42,7 +42,7 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
     private String folderPath;
 
     @Override
-    public ResponseEntity<?> addTDSReceipt(String companyName, TDSReceiptRequest request) throws AccountantException {
+    public ResponseEntity<?> addTDSReceipt(String companyName, TDSReceiptRequest request) throws TaxConsultantException {
         log.debug("Validating company existence for company: {}", companyName);
         String resourceId = ResourceIdUtils.generateTDSReceiptResourceId(companyName, request.getMonth(), request.getYear());
         CompanyEntity companyEntity;
@@ -51,22 +51,22 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
             companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
         if (companyEntity == null) {
             log.error("Company not found with name {}", companyName);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
         }
-        } catch (AccountantException accountantException) {
-            log.error("Error while fetching company details: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while fetching company details: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         }
 
         try {
             TDSReceiptEntity existingReceipt = tdsReceiptsDao.get(resourceId, companyName).orElse(null);
             if (existingReceipt != null) {
                 log.error("TDS Receipt already exists for month {} and year {} for company {}", request.getMonth(), request.getYear(), companyName);
-                throw new AccountantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RECEIPT_ALREADY_EXISTS), resourceId), HttpStatus.CONFLICT);
+                throw new TaxConsultantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RECEIPT_ALREADY_EXISTS), resourceId), HttpStatus.CONFLICT);
             }
 
             if (request.getFile() == null || request.getFile().isEmpty()) {
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RECEIPT_FILE_EMPTY), HttpStatus.BAD_REQUEST);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RECEIPT_FILE_EMPTY), HttpStatus.BAD_REQUEST);
             }
 
             TDSReceiptEntity receipt = new TDSReceiptEntity();
@@ -82,12 +82,12 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
             storeTDSReceiptFile(request.getFile(), companyName, receipt);
             tdsReceiptsDao.save(receipt, companyName);
         }
-        catch (AccountantException accountantException) {
-            log.error("Error while saving TDS Receipts for company {}: {}", companyName, accountantException.getMessage());
-            throw accountantException;
+        catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while saving TDS Receipts for company {}: {}", companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception e) {
             log.error("Unable to save TDS Receipts for company {} due to {}", companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_TDS_RECEIPTS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_TDS_RECEIPTS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
     }
@@ -98,7 +98,7 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null){
                 log.error("Exception while fetching company details for companyName: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
             log.debug("Getting TDS Receipts for companyName: {}, tdsReceiptsId: {}, month: {}, year: {}", companyName, tdsReceiptsId, month, year);
             Collection<TDSReceiptEntity> tdsReceiptEntities = tdsReceiptsDao.getTDSReceipts(companyName, companyEntity.getId(), tdsReceiptsId, month, year);
@@ -119,11 +119,11 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
 
 
     @Override
-    public ResponseEntity<?> updateTDSReceipt(String companyName, String tdsReceiptsId, TDSReceiptUpdateRequest updateRequest) throws AccountantException {
+    public ResponseEntity<?> updateTDSReceipt(String companyName, String tdsReceiptsId, TDSReceiptUpdateRequest updateRequest) throws TaxConsultantException {
         log.debug("Updating TDS Receipt for company: {}, ID: {}", companyName, tdsReceiptsId);
 
         TDSReceiptEntity tdsReceiptEntity = tdsReceiptsDao.get(tdsReceiptsId, companyName)
-                .orElseThrow(() -> new AccountantException(
+                .orElseThrow(() -> new TaxConsultantException(
                         String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RECEIPTS_NOT_FOUND), tdsReceiptsId, companyName),
                         HttpStatus.NOT_FOUND));
 
@@ -133,7 +133,7 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
         if (updateRequest.getTdsReceiptDate().equals(tdsReceiptEntity.getTdsReceiptDate())
                 && updateRequest.getTdsReceiptNumber().equals(decodedReceiptNumber)
                 && updateRequest.getTdsTotalAmount().equals(decodedTotalAmount)) {
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
         }
 
         // Apply updates
@@ -150,10 +150,10 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
     }
 
     @Override
-    public void deleteTDSReceiptById(String companyName, String id) throws AccountantException {
+    public void deleteTDSReceiptById(String companyName, String id) throws TaxConsultantException {
         try {
             TDSReceiptEntity tdsReceiptEntity = tdsReceiptsDao.get(id, companyName)
-                    .orElseThrow(() -> new AccountantException(
+                    .orElseThrow(() -> new TaxConsultantException(
                             String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RECEIPTS_NOT_FOUND), id, companyName),
                             HttpStatus.NOT_FOUND));
 
@@ -165,12 +165,12 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
 
             tdsReceiptsDao.delete(id, companyName);
             log.info("Successfully deleted TDS Receipt with ID {} for company {}", id, companyName);
-        } catch (AccountantException ex) {
+        } catch (TaxConsultantException ex) {
             log.error("Failed to delete TDS Receipt: {}", ex.getMessage());
             throw ex;
         } catch (Exception e) {
             log.error("Unexpected error while deleting TDS Receipt: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE_TDS_RECEIPTS),
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE_TDS_RECEIPTS),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -201,7 +201,7 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
         return scheme + "://" + serverName + ":" + serverPort + contextPath;
     }
 
-    private void storeTDSReceiptFile(MultipartFile file, String companyName, TDSReceiptEntity receipt) throws AccountantException {
+    private void storeTDSReceiptFile(MultipartFile file, String companyName, TDSReceiptEntity receipt) throws TaxConsultantException {
         if (file == null || file.isEmpty()) return;
         try {
             String path = folderPath + companyName;
@@ -210,7 +210,7 @@ public class TDSReceiptsServiceImpl implements TDSReceiptsService {
             receipt.setTdsReceiptFileName(companyName + Constants.SLASH+Constants.TDS_RECEIPT+"_"+receipt.getMonth() + "_" + receipt.getYear() + "_" +file.getOriginalFilename());
         } catch (IOException e) {
             log.error("Failed to store TDS receipt file: {}", e.getMessage());
-            throw new AccountantException("Unable to store TDS receipt file", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException("Unable to store TDS receipt file", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

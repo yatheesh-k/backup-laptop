@@ -3,7 +3,7 @@ package com.ems.taxConsultant.daoImpl;
 import com.ems.taxConsultant.controller.filter.Filter;
 import com.ems.taxConsultant.controller.filter.Operator;
 import com.ems.taxConsultant.dao.PFReceiptsDao;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.persistance.PFReceiptsEntity;
 import com.ems.taxConsultant.repository.Repository;
 import com.ems.taxConsultant.utils.Constants;
@@ -19,7 +19,7 @@ public class PFReceiptsDaoImpl extends AbstractDao<PFReceiptsEntity> implements 
     public PFReceiptsDaoImpl(Repository repository) {super(repository);}
 
     @Override
-    public Collection<PFReceiptsEntity> getPFReceipts(String companyName, String companyId, String pfReceiptsId, String month, String year) throws AccountantException {
+    public Collection<PFReceiptsEntity> getPFReceipts(String companyName, String companyId, String pfReceiptsId, String month, String year) throws TaxConsultantException {
         Collection<Filter> filters = new ArrayList<>();
 
         if (StringUtils.isNotBlank(companyId)) {

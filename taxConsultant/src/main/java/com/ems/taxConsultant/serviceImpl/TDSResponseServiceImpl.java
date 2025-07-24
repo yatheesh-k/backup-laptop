@@ -4,7 +4,7 @@ package com.ems.taxConsultant.serviceImpl;
 import com.ems.taxConsultant.common.ResponseBuilder;
 import com.ems.taxConsultant.dao.TDSResponseDao;
 import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
@@ -43,7 +43,7 @@ public class TDSResponseServiceImpl implements TDSResponseService {
     private OpenSearchOperations openSearchOperations;
 
     @Override
-    public ResponseEntity<?> addTDSResponse(String companyName, TDSResponseRequest responseRequest) throws AccountantException {
+    public ResponseEntity<?> addTDSResponse(String companyName, TDSResponseRequest responseRequest) throws TaxConsultantException {
         log.debug("validating company existence for companyName {}", companyName);
         String resourceId = ResourceIdUtils.generateTDSResponseResourceId(companyName, responseRequest.getMonth(), responseRequest.getYear());
         CompanyEntity companyEntity;
@@ -52,17 +52,17 @@ public class TDSResponseServiceImpl implements TDSResponseService {
             companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found with name {}", companyName);
-                throw new AccountantException("Company not found", HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException("Company not found", HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException accountantException) {
-            log.error("Error while fetching company details: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while fetching company details: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         }
         try {
             responseEntity = responseDao.get(resourceId, companyName).orElse(null);
             if (responseEntity != null) {
                 log.error("TDS Response for month {} and year {} already exists for company {}", responseRequest.getMonth(), responseRequest.getYear(), companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RESPONSE_ALREADY_EXISTS),
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RESPONSE_ALREADY_EXISTS),
                         HttpStatus.CONFLICT);
             }
             TDSResponseEntity response = objectMapper.convertValue(responseRequest, TDSResponseEntity.class);
@@ -70,12 +70,12 @@ public class TDSResponseServiceImpl implements TDSResponseService {
             response.setCompanyId(companyEntity.getId());
             response.setType(Constants.TDS_RESPONSE);
             responseDao.save(response, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while saving PF response: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while saving PF response: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception e) {
             log.error("Unable to save TDS response for month {} and year {} due to {}", responseRequest.getMonth(), responseRequest.getYear(), e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_TDS_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_TDS_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(
@@ -88,7 +88,7 @@ public class TDSResponseServiceImpl implements TDSResponseService {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null){
                 log.error("Exception while fetching company details for companyName: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
             log.debug("Getting TDS response for company {} with ID {} for month {} and year {}", companyName, tdsId, month, year);
             Collection<TDSResponseEntity> tdsResponseEntities = responseDao.getTDSResponse(companyName, companyEntity.getId(), tdsId, month, year);
@@ -99,7 +99,7 @@ public class TDSResponseServiceImpl implements TDSResponseService {
     }
 
     @Override
-    public ResponseEntity<?> updateTDSResponse(String companyName, String tdsId, TDSResponseUpdateRequest updateRequest) throws AccountantException {
+    public ResponseEntity<?> updateTDSResponse(String companyName, String tdsId, TDSResponseUpdateRequest updateRequest) throws TaxConsultantException {
         TDSResponseEntity response;
         log.debug("Validating company existence for companyName {}", companyName);
         try {
@@ -109,35 +109,35 @@ public class TDSResponseServiceImpl implements TDSResponseService {
                     .orElse(null);
             if (response == null) {
                 log.error("TDS Response with ID {} not found for company {}", tdsId, companyName);
-                throw new AccountantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RESPONSE_NOT_FOUND), companyName), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RESPONSE_NOT_FOUND), companyName), HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Unable to fetch TDS Response with ID {} for company {} due to {}", tdsId, companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_TDS_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_TDS_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         try {
             if ((updateRequest.getInvalidTDSAmounts() .equals(response.getInvalidTDSAmounts()))
                     && (updateRequest.getIgnoredCompanyEmployees().equals(response.getIgnoredCompanyEmployees()))) {
                 log.warn("No changes detected in PF Response with ID {} for company {}", tdsId, companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }
 
             TDSResponseEntity updatedData = objectMapper.convertValue(updateRequest, TDSResponseEntity.class);
             BeanUtils.copyProperties(updatedData, response, getNullPropertyNames(updatedData));
             responseDao.save(response, companyName);
-        } catch (AccountantException ex) {
+        } catch (TaxConsultantException ex) {
             log.error("Unable to update TDS Response with ID {} for company {} due to {}", tdsId, companyName, ex.getMessage());
             throw ex;
         } catch (Exception e) {
             log.error("Unable to update TDS Response with ID {} for company {} due to {}", tdsId, companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_TDS_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_TDS_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
     }
 
 
     @Override
-    public void deleteTDSResponseById(String companyName, String responseId) throws AccountantException, IOException {
+    public void deleteTDSResponseById(String companyName, String responseId) throws TaxConsultantException, IOException {
         try {
             TDSResponseEntity pfResponseEntity = this.getTDSResponse(companyName, responseId, null, null)
                     .stream()
@@ -145,12 +145,12 @@ public class TDSResponseServiceImpl implements TDSResponseService {
                     .orElse(null);
             responseDao.delete(responseId, companyName);
             log.info("Successfully deleted TDS Response with ID {} for company {}", responseId, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while deleting TDS Response with ID {} for company {}: {}", responseId, companyName, accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while deleting TDS Response with ID {} for company {}: {}", responseId, companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception exception) {
             log.error("Unexpected error while deleting TDS Response with ID {} for company {}: {}", responseId, companyName, exception.getMessage());
-            throw new AccountantException(
+            throw new TaxConsultantException(
                     ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE_TDS_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }

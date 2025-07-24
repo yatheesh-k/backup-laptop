@@ -11,7 +11,7 @@ import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.exception.ErrorMessageHandler;
 import com.pb.employee.opensearch.OpenSearchOperations;
 import com.pb.employee.persistance.model.*;
-import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeResponseEntity;
 import com.pb.employee.request.*;
 import com.pb.employee.response.EmployeeDownloadResponse;
 import com.pb.employee.response.EmployeeResponse;
@@ -934,10 +934,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeAccountsResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException {
-        String index = ResourceIdUtils.generateCompanyIndex(companyName);
+    public List<EmployeeResponseEntity> getEmployeesAccountsDetails(String companyName) throws EmployeeException {
         List<EmployeeEntity> employeeEntities;
-        List<EmployeeAccountsResponse> employeeResponses = new ArrayList<>();
+        List<EmployeeResponseEntity> employeeResponsEntities = new ArrayList<>();
         try {
             employeeEntities = openSearchOperations.getCompanyEmployees(companyName);
 
@@ -947,8 +946,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                     List<EmployeeSalaryEntity> employeeSalaryEntity = openSearchOperations.getEmployeeSalaries(companyName, employee.getId(), Constants.ACTIVE);
                     if (employeeSalaryEntity != null && !employeeSalaryEntity.isEmpty()) {
                         EmployeeSalaryEntity activeSalary = employeeSalaryEntity.get(0);
-                        EmployeeAccountsResponse employeeAccountsResponse = EmployeeUtils.unMaskEmployeeAccountProperties(activeSalary, employee);
-                        employeeResponses.add(employeeAccountsResponse);
+                        EmployeeResponseEntity employeeResponseEntity = EmployeeUtils.unMaskEmployeeAccountProperties(activeSalary, employee);
+                        employeeResponsEntities.add(employeeResponseEntity);
                     }
                 }
 
@@ -959,7 +958,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return employeeResponses;
+        return employeeResponsEntities;
     }
 
     @Override

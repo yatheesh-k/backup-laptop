@@ -74,4 +74,9 @@ public class Constants {
     public static final String THIS_MONTH_MISSING_GST_FILING = "This Month Missing GST Filing Customers";
     public static final String NEW_GST_FILING = "New GST Filing Customers";
     public static final String COUNT = "count";
+    public static final String SALARY = "salary";
+    public static final String STATUS = "status";
+    public static final String ADMIN = "CompanyAdmin";
+    public static final String PREVIOUS_MONTH_MISSED_EMP = "Previous Month Missed Employees";
+    public static final String CURRENT_MONTH_ADDED_EMP = "Current Month Added Employees"; ;
 }
