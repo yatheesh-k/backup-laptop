@@ -18,4 +18,8 @@ public interface EmployeePTService {
 
 
     ResponseEntity<?> addSingleEmployeeForPT(String companyName, EmployeePTRequest request) throws TaxConsultantException,IOException;
+
+    ResponseEntity<?> employeesPTComparing(String companyName, String month, String year)throws TaxConsultantException;
+
+    ResponseEntity<?> registerEmployeesForPT(String companyName, String month, String year) throws TaxConsultantException;
 }
