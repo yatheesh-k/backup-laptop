@@ -129,7 +129,7 @@ public class EmployeePFController {
     }
 
 
-    @RequestMapping(value = "{companyName}/pf/comparing", method = RequestMethod.GET, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "{companyName}/pf/comparing", method = RequestMethod.GET)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
             summary = "${api.employeePFComparing.tag}", description = "${api.employeePFComparing.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
@@ -141,9 +141,9 @@ public class EmployeePFController {
         return employeePFService.employeesPFComparing(companyName, month, year);
     }
 
-    @RequestMapping(value = "{companyName}/pf", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "{companyName}/pf", method = RequestMethod.POST)
     @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
-            summary = "${api.employeePFComparing.tag}", description = "${api.employeePFComparing.description}")
+            summary = "${api.registerEmployeeForPF.tag}", description = "${api.registerEmployeeForPF.description}")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
     public ResponseEntity<?> registerEmployeeForPF(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")

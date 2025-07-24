@@ -595,7 +595,6 @@ public class EmployeePFServiceImpl implements EmployeePFService {
 
     @Override
     public ResponseEntity<?> registerEmployeeForPF(String companyName, String month, String year) throws TaxConsultantException {
-
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
@@ -605,8 +604,13 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             log.info("Processing employee accounts for company: {}", companyName);
             String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
 
-            List<EmployeeAccountEntity> employees = this.getEmployeesAccountsDetails(companyName)
-                    .stream()
+            List<EmployeeResponse> employees = this.getEmployeesAccountsDetails(companyName);
+            if (employees == null || employees.isEmpty()) {
+                log.error("No employee accounts found for company: {}", companyName);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+
+            List<EmployeeAccountEntity> validEmployees = employees.stream()
                     .filter(emp -> emp.getPfAmount() != null && !emp.getPfAmount().isEmpty()
                             && emp.getPanNo() != null && !emp.getPanNo().isEmpty()
                             && emp.getUanNumber() != null && !emp.getUanNumber().isEmpty())
@@ -626,7 +630,12 @@ public class EmployeePFServiceImpl implements EmployeePFService {
                     })
                     .collect(Collectors.toList());
 
-            for (EmployeeAccountEntity employee : employees) {
+            if (validEmployees.isEmpty()) {
+                log.error("No employee has salary for company: {}", companyName);
+                throw new TaxConsultantException("No employee has salary", HttpStatus.NOT_FOUND);
+            }
+
+            for (EmployeeAccountEntity employee : validEmployees) {
                 openSearchOperations.saveEntity(employee, employee.getId(), indexName);
             }
 
@@ -639,9 +648,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
-
     }
-
     public List<EmployeeResponse> getEmployeesAccountsDetails(String companyName) throws TaxConsultantException {
         List<EmployeeEntity> employeeEntities;
         List<EmployeeResponse> employeeResponses = new ArrayList<>();
