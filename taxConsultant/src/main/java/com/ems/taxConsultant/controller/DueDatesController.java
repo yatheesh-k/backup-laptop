@@ -1,7 +1,7 @@
 package com.ems.taxConsultant.controller;
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.persistance.DueDatesEntity;
 import com.ems.taxConsultant.request.DueDatesRequest;
 import com.ems.taxConsultant.request.TaxStatusResponse;
@@ -38,7 +38,7 @@ public class DueDatesController {
                                            @RequestHeader(Constants.AUTH_KEY) String authToken,
                                            @PathVariable String companyName,
                                            @Parameter(required = true, description = "${api.dueDatesPayload.description}")
-                                           @RequestBody @Valid DueDatesRequest request) throws AccountantException {
+                                           @RequestBody @Valid DueDatesRequest request) throws TaxConsultantException {
         return dueDatesService.addDueDates(companyName, request);
     }
 
@@ -63,7 +63,7 @@ public class DueDatesController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @PathVariable String id,
-            @Valid @RequestBody DueDatesRequest updateRequest) throws AccountantException {
+            @Valid @RequestBody DueDatesRequest updateRequest) throws TaxConsultantException {
         return dueDatesService.updateDueDates(companyName, id, updateRequest);
     }
 
@@ -75,7 +75,7 @@ public class DueDatesController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String id) throws AccountantException, IOException {
+            @PathVariable String id) throws TaxConsultantException, IOException {
 
         dueDatesService.deleteDueDatesById(companyName, id);
         return new ResponseEntity<>(
@@ -91,7 +91,7 @@ public class DueDatesController {
     public ResponseEntity<?> getDueDatesValidation(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName, HttpServletRequest request) throws AccountantException {
+            @PathVariable String companyName, HttpServletRequest request) throws TaxConsultantException {
         Collection<TaxStatusResponse> datesRequests = dueDatesService.getDueDatesValidation(companyName, request);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(datesRequests), HttpStatus.OK);
     }

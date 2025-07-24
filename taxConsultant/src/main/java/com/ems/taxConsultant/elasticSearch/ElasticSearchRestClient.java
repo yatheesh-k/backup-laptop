@@ -6,7 +6,7 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.ems.taxConsultant.daoImpl.DocumentIndex;
 import com.ems.taxConsultant.daoImpl.DocumentType;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.model.IDEntity;
@@ -20,20 +20,20 @@ public abstract class ElasticSearchRestClient implements Repository {
 
     // Search and return the first matching result
     final <T extends IDEntity> Optional<T> searchAndGet(ElasticSearchRequest searchRequest, Class<T> documentClass, ElasticsearchClient esClient)
-            throws AccountantException {
+            throws TaxConsultantException {
         return search(searchRequest, documentClass, esClient).stream()
                 .findFirst();
     }
 
     // Perform a search and return a collection of results
     final <T extends IDEntity> Collection<T> search(ElasticSearchRequest searchRequest, Class<T> documentClass, ElasticsearchClient esClient)
-            throws AccountantException {
+            throws TaxConsultantException {
         try {
             SearchRequest request = ElasticSearchUtil.buildSearchRequest(searchRequest);
             SearchResponse<T> searchResponse = esClient.search(request, documentClass);
             return ElasticSearchUtil.toDocuments(searchResponse);
         } catch (IOException | ElasticsearchException e) {
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH), e);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH), e);
         }
     }
 

@@ -3,7 +3,7 @@ package com.ems.taxConsultant.daoImpl;
 import com.ems.taxConsultant.controller.filter.Filter;
 import com.ems.taxConsultant.controller.filter.Operator;
 import com.ems.taxConsultant.dao.GSTResponseDao;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.persistance.GSTResponseEntity;
 import com.ems.taxConsultant.repository.Repository;
 import com.ems.taxConsultant.utils.Constants;
@@ -20,7 +20,7 @@ public class GSTResponseDaoImpl extends AbstractDao<GSTResponseEntity> implement
     public GSTResponseDaoImpl(Repository repository) {super(repository);}
 
     @Override
-    public Collection<GSTResponseEntity> getGSTResponse(String companyName, String companyId, String pfResponseId, String month, String year) throws AccountantException {
+    public Collection<GSTResponseEntity> getGSTResponse(String companyName, String companyId, String pfResponseId, String month, String year) throws TaxConsultantException {
         Collection<Filter> filters = new ArrayList<>();
 
         if (StringUtils.isNotBlank(companyId)) {

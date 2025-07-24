@@ -1,7 +1,7 @@
 package com.ems.taxConsultant.controller;
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.TDSReceiptEntity;
@@ -39,7 +39,7 @@ public class TDSReceiptController {
     public ResponseEntity<?> addTDSReceipt(@RequestHeader(Constants.AUTH_KEY) @Parameter(hidden = true) String authToken,
                                            @PathVariable String companyName,
                                            @Parameter(required = true, description = "${api.addTDSReceiptsPayload.description}")
-                                           @ModelAttribute @Valid TDSReceiptRequest request) throws AccountantException {
+                                           @ModelAttribute @Valid TDSReceiptRequest request) throws TaxConsultantException {
         return tdsReceiptsService.addTDSReceipt(companyName, request);
     }
 
@@ -63,11 +63,11 @@ public class TDSReceiptController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String tdsReceiptsId, HttpServletRequest request) throws AccountantException {
+            @PathVariable String tdsReceiptsId, HttpServletRequest request) throws TaxConsultantException {
         Collection<TDSReceiptEntity> receipts = tdsReceiptsService.getTDSReceipts(companyName, tdsReceiptsId, null, null, request);
         if (receipts.isEmpty()) {
             log.error("Professional tax Receipts not found for company: {}, receiptId: {}", companyName, tdsReceiptsId);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RECEIPTS_NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RECEIPTS_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(receipts), HttpStatus.OK);
     }
@@ -81,7 +81,7 @@ public class TDSReceiptController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @PathVariable String tdsReceiptsId,
-            @Valid @RequestBody TDSReceiptUpdateRequest updateRequest) throws AccountantException {
+            @Valid @RequestBody TDSReceiptUpdateRequest updateRequest) throws TaxConsultantException {
         return tdsReceiptsService.updateTDSReceipt(companyName, tdsReceiptsId, updateRequest);
     }
 
@@ -93,7 +93,7 @@ public class TDSReceiptController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String tdsReceiptsId) throws AccountantException, IOException {
+            @PathVariable String tdsReceiptsId) throws TaxConsultantException, IOException {
 
         tdsReceiptsService.deleteTDSReceiptById(companyName, tdsReceiptsId);
         return new ResponseEntity<>(

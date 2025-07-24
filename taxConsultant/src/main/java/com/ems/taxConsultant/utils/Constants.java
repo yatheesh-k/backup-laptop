@@ -81,8 +81,12 @@ public class Constants {
     public static final String TAX_CONSULTANT =  "tax_consultant";
     public static final String HR_MANAGEMENT =  "hr_management";
     public static final String INVOICE_MANAGEMENT =  "invoice_management";
-
-
     public static final String DUE_DATES = "due_dates";
     public static final String INVOICE = "invoice";
+    public static final String SALARY = "salary";
+    public static final String STATUS = "status";
+    public static final String ADMIN = "CompanyAdmin";
+    public static final String PREVIOUS_MONTH_MISSED_EMP = "Previous Month Missed Employees";
+    public static final String CURRENT_MONTH_ADDED_EMP = "Current Month Added Employees"; ;
+
 }

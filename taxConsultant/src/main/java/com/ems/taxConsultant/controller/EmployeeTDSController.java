@@ -1,6 +1,6 @@
 package com.ems.taxConsultant.controller;
 
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.request.EmployeeTDSRequest;
 import com.ems.taxConsultant.service.EmployeeTdsService;
 import com.ems.taxConsultant.utils.Constants;
@@ -29,7 +29,7 @@ public class EmployeeTDSController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file") MultipartFile file) throws AccountantException, IOException {
+            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file") MultipartFile file) throws TaxConsultantException, IOException {
         return employeeTDSService.employeeTDSComparing(companyName, month, year, file);
     }
 
@@ -41,7 +41,7 @@ public class EmployeeTDSController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file")MultipartFile file) throws  IOException, AccountantException {
+            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file")MultipartFile file) throws  IOException, TaxConsultantException {
         return employeeTDSService.registerEmployeeForTDS(companyName, month, year, file);
     }
 
@@ -55,7 +55,7 @@ public class EmployeeTDSController {
             @PathVariable String companyName,
             @PathVariable String employeeId,
             @PathVariable String id,
-            @RequestBody EmployeeTDSRequest request) throws IOException, AccountantException {
+            @RequestBody EmployeeTDSRequest request) throws IOException, TaxConsultantException {
         return employeeTDSService.updateEmployeeForTDS(companyName, employeeId, id, request);
     }
 
@@ -66,7 +66,7 @@ public class EmployeeTDSController {
     public ResponseEntity<?> addSingleEmployeeForTDS(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName, @RequestBody EmployeeTDSRequest request) throws  IOException, AccountantException {
+            @PathVariable String companyName, @RequestBody EmployeeTDSRequest request) throws  IOException, TaxConsultantException {
         return employeeTDSService.addSingleEmployeeForTDS(companyName, request);
     }
 }

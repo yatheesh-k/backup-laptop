@@ -3,7 +3,7 @@ package com.ems.taxConsultant.serviceImpl;
 import com.ems.taxConsultant.common.ResponseBuilder;
 import com.ems.taxConsultant.dao.PFResponseDao;
 import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
@@ -42,7 +42,7 @@ public class PFResponseServiceImpl implements PFResponseService {
     private OpenSearchOperations openSearchOperations;
 
     @Override
-    public ResponseEntity<?> addPFResponse(String companyName, PFResponseRequest responseRequest) throws AccountantException {
+    public ResponseEntity<?> addPFResponse(String companyName, PFResponseRequest responseRequest) throws TaxConsultantException {
         log.debug("validating company existence for companyName {}", companyName);
         String resourceId = ResourceIdUtils.generatePFResponseResourceId(companyName, responseRequest.getMonth(), responseRequest.getYear());
         CompanyEntity companyEntity;
@@ -51,17 +51,17 @@ public class PFResponseServiceImpl implements PFResponseService {
             companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found with name {}", companyName);
-                throw new AccountantException("Company not found", HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException("Company not found", HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException accountantException) {
-            log.error("Error while fetching company details: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while fetching company details: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         }
         try {
             pfResponseEntity = pfResponseDao.get(resourceId, companyName).orElse(null);
             if (pfResponseEntity != null) {
                 log.error("PF Response for month {} and year {} already exists for company {}", responseRequest.getMonth(), responseRequest.getYear(), companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PF_RESPONSE_ALREADY_EXISTS),
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PF_RESPONSE_ALREADY_EXISTS),
                         HttpStatus.CONFLICT);
             }
             PFResponseEntity pfResponse = objectMapper.convertValue(responseRequest, PFResponseEntity.class);
@@ -69,12 +69,12 @@ public class PFResponseServiceImpl implements PFResponseService {
             pfResponse.setCompanyId(companyEntity.getId());
             pfResponse.setType(Constants.PF_RESPONSE);
             pfResponseDao.save(pfResponse, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while saving PF response: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while saving PF response: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception e) {
             log.error("Unable to save PF response for month {} and year {} due to {}", responseRequest.getMonth(), responseRequest.getYear(), e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(
@@ -87,7 +87,7 @@ public class PFResponseServiceImpl implements PFResponseService {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null){
                 log.error("Exception while fetching company details for companyName: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
             log.debug("Getting PF response for company {} with ID {} for month {} and year {}", companyName, pfResponseId, month, year);
             Collection<PFResponseEntity> candidateEntities = pfResponseDao.getPFResponse(companyName, companyEntity.getId(), pfResponseId, month, year);
@@ -98,42 +98,42 @@ public class PFResponseServiceImpl implements PFResponseService {
     }
 
     @Override
-    public ResponseEntity<?> updatePFResponse(String companyName, String pfResponseId, PFResponseUpdateRequest updateRequest) throws AccountantException {
+    public ResponseEntity<?> updatePFResponse(String companyName, String pfResponseId, PFResponseUpdateRequest updateRequest) throws TaxConsultantException {
         PFResponseEntity pfResponseEntity;
         log.debug("Validating company existence for companyName {}", companyName);
         try {
             pfResponseEntity = this.pfResponseDao.get(pfResponseId, companyName).orElse(null);
             if (pfResponseEntity == null) {
                 log.error("PF Response with ID {} not found for company {}", pfResponseId, companyName);
-                throw new AccountantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.PF_RESPONSE_NOT_FOUND), companyName), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.PF_RESPONSE_NOT_FOUND), companyName), HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Unable to fetch PF Response with ID {} for company {} due to {}", pfResponseId, companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         try {
             if ((updateRequest.getInvalidPFAmounts() .equals(pfResponseEntity.getInvalidPFAmounts()))
                     && (updateRequest.getIgnoredCompanyEmployees().equals(pfResponseEntity.getIgnoredCompanyEmployees()))) {
                 log.warn("No changes detected in PF Response with ID {} for company {}", pfResponseId, companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }
 
             PFResponseEntity updatedData = objectMapper.convertValue(updateRequest, PFResponseEntity.class);
             BeanUtils.copyProperties(updatedData, pfResponseEntity, getNullPropertyNames(updatedData));
             pfResponseDao.save(pfResponseEntity, companyName);
-        } catch (AccountantException ex) {
+        } catch (TaxConsultantException ex) {
             log.error("Unable to update PF Response with ID {} for company {} due to {}", pfResponseId, companyName, ex.getMessage());
             throw ex;
         } catch (Exception e) {
             log.error("Unable to update PF Response with ID {} for company {} due to {}", pfResponseId, companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
     }
 
 
     @Override
-    public void deletePFResponseById(String companyName, String responseId) throws AccountantException, IOException {
+    public void deletePFResponseById(String companyName, String responseId) throws TaxConsultantException, IOException {
         try {
             PFResponseEntity pfResponseEntity = this.getPFResponse(companyName, responseId, null, null)
                     .stream()
@@ -141,12 +141,12 @@ public class PFResponseServiceImpl implements PFResponseService {
                     .orElse(null);
             pfResponseDao.delete(responseId, companyName);
             log.info("Successfully deleted PF Response with ID {} for company {}", responseId, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while deleting PF Response with ID {} for company {}: {}", responseId, companyName, accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while deleting PF Response with ID {} for company {}: {}", responseId, companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception exception) {
             log.error("Unexpected error while deleting PF Response with ID {} for company {}: {}", responseId, companyName, exception.getMessage());
-            throw new AccountantException(
+            throw new TaxConsultantException(
                     ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE_PF_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR
             );
         }

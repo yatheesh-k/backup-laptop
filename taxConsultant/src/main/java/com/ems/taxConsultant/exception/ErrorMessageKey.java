@@ -92,7 +92,8 @@ public enum ErrorMessageKey {
     EMPLOYEE_TDS_ALREADY_EXISTS("employee.tds.already.exists"),
     TDS_ALREADY_EXISTS_PANS("tds.already.exists.pan"),
     INVOICE_DATA_NOT_FOUND("invoice.data.not.found"),
-    CUSTOMER_DATA_NOT_FOUND("customer.data.not.found"),;
+    CUSTOMER_DATA_NOT_FOUND("customer.data.not.found"),
+    UNABLE_GET_EMPLOYEES("unable.to.get.employees");
 
     private final String key;
 

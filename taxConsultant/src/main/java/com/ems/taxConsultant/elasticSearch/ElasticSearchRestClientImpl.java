@@ -7,7 +7,7 @@ import co.elastic.clients.elasticsearch.core.*;
 import com.ems.taxConsultant.controller.filter.Filter;
 import com.ems.taxConsultant.controller.filter.Operator;
 import com.ems.taxConsultant.daoImpl.DocumentType;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.model.IDEntity;
@@ -30,19 +30,19 @@ public class ElasticSearchRestClientImpl extends ElasticSearchRestClient {
 
     @Override
     public <T extends IDEntity> Optional<T> get(String id, Class<T> documentClass, String companyName)
-            throws AccountantException {
+            throws TaxConsultantException {
         GetRequest getRequest = new GetRequest.Builder().id(id)
                 .index(getIndex(documentClass, companyName).getName()).build();
         try {
             GetResponse<T> response = esClient.get(getRequest, documentClass);
             return Optional.ofNullable(ElasticSearchUtil.toDocument(response));
         } catch (IOException | ElasticsearchException e) {
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH), e);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH), e);
         }
     }
 
     @Override
-    public <T extends IDEntity> Collection<T> search(Collection<Filter> filters, Class<T> documentClass, String companyName) throws AccountantException {
+    public <T extends IDEntity> Collection<T> search(Collection<Filter> filters, Class<T> documentClass, String companyName) throws TaxConsultantException {
         if(Objects.isNull(filters)) {
             filters = new ArrayList<>();
         }
@@ -52,13 +52,13 @@ public class ElasticSearchRestClientImpl extends ElasticSearchRestClient {
     }
 
     @Override
-    public <T extends IDEntity> Collection<T> getAll(Class<T> documentClass, String companyName) throws AccountantException {
+    public <T extends IDEntity> Collection<T> getAll(Class<T> documentClass, String companyName) throws TaxConsultantException {
         return search(List.of(new Filter("type", Operator.EQ, DocumentType.getByType(documentClass).getType())), documentClass, companyName);
     }
 
     @Override
     public <T extends IDEntity> T save(T entity, String companyName)
-            throws AccountantException {
+            throws TaxConsultantException {
         logger.debug("Saving the Entity {}", entity.getId());
         try {
             synchronized (entity) {
@@ -69,7 +69,7 @@ public class ElasticSearchRestClientImpl extends ElasticSearchRestClient {
             }
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-            throw new AccountantException(String.format("Unable to save the entity {} ",
+            throw new TaxConsultantException(String.format("Unable to save the entity {} ",
                     entity.toString()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return entity;
@@ -77,7 +77,7 @@ public class ElasticSearchRestClientImpl extends ElasticSearchRestClient {
 
     @Override
     public <T extends IDEntity> T update(T entity, String companyName)
-            throws AccountantException {
+            throws TaxConsultantException {
         IndexRequest<T> request = new IndexRequest.Builder<T>()
                                                     .index(getIndex(entity.getClass(), companyName).getName())
                                                     .id(entity.getId())
@@ -90,27 +90,27 @@ public class ElasticSearchRestClientImpl extends ElasticSearchRestClient {
                 throw new RuntimeException();
             }
         } catch (IOException | RuntimeException e) {
-            throw new AccountantException("Failed to update employee: " + entity.getId(), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException("Failed to update employee: " + entity.getId(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return entity;
     }
 
     @Override
     public <T extends IDEntity> void delete(String id, Class<T> documentClass, String companyName)
-            throws AccountantException {
+            throws TaxConsultantException {
         logger.debug("Deleting the Entity {}", id);
         try {
             synchronized (id) {
                 DeleteResponse deleteResponse = esClient.delete(b -> b.index(getIndex(documentClass, companyName).getName())
                         .id(id));
                 if(deleteResponse.result() == Result.NotFound) {
-                    throw new AccountantException(String.format("Entity id {} not found", id), HttpStatus.NOT_FOUND);
+                    throw new TaxConsultantException(String.format("Entity id {} not found", id), HttpStatus.NOT_FOUND);
                 }
                 logger.debug("Deleted the Entity {}, Delete response {}", id, deleteResponse);
             }
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-            throw new AccountantException("Exception while deleting Entity " + id, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException("Exception while deleting Entity " + id, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

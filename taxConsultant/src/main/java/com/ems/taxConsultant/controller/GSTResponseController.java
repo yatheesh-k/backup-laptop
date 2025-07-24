@@ -1,7 +1,7 @@
 package com.ems.taxConsultant.controller;
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.GSTResponseEntity;
@@ -40,7 +40,7 @@ public class GSTResponseController {
                                            @RequestHeader(Constants.AUTH_KEY) String authToken,
                                            @PathVariable String companyName,
                                            @Parameter(required = true, description = "${api.addTDSResponsePayload.description}")
-                                           @RequestBody @Valid GSTResponseRequest request) throws AccountantException {
+                                           @RequestBody @Valid GSTResponseRequest request) throws TaxConsultantException {
         return responseService.addGSTResponse(companyName, request);
     }
 
@@ -52,11 +52,11 @@ public class GSTResponseController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String responseId) throws AccountantException {
+            @PathVariable String responseId) throws TaxConsultantException {
         Collection<GSTResponseEntity> responseEntities = responseService.getGSTResponse(companyName, responseId, null, null);
         if (responseEntities.isEmpty()) {
             log.error("GST Response not found for company: {}, responseId: {}", companyName, responseId);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RESPONSE_NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RESPONSE_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(responseEntities), HttpStatus.OK);
     }
@@ -83,7 +83,7 @@ public class GSTResponseController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @PathVariable String responseId,
-            @Valid @RequestBody GSTResponseUpdateRequest updateRequest) throws AccountantException {
+            @Valid @RequestBody GSTResponseUpdateRequest updateRequest) throws TaxConsultantException {
         return responseService.updateGSTResponse(companyName, responseId, updateRequest);
     }
 
@@ -95,7 +95,7 @@ public class GSTResponseController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String responseId) throws AccountantException, IOException {
+            @PathVariable String responseId) throws TaxConsultantException, IOException {
 
         responseService.deleteGSTResponseById(companyName, responseId);
         return new ResponseEntity<>(

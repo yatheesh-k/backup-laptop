@@ -1,6 +1,6 @@
 package com.ems.taxConsultant.model;
 
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.utils.Constants;
@@ -40,11 +40,11 @@ public enum ResourceType {
         return this.persistValue;
     }
 
-    public static ResourceType fromValue(final String value) throws AccountantException {
+    public static ResourceType fromValue(final String value) throws TaxConsultantException {
         ResourceType type = byValue(value);
         if(type != UNDEFINED)
             return type;
-        throw new AccountantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.INVALID_RESOURCE_TYPE), value), HttpStatus.BAD_REQUEST);
+        throw new TaxConsultantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.INVALID_RESOURCE_TYPE), value), HttpStatus.BAD_REQUEST);
     }
 
     //TODO byValue should be replaced with appropriate name

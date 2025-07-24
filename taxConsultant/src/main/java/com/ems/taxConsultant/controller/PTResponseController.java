@@ -1,7 +1,7 @@
 package com.ems.taxConsultant.controller;
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.PTResponseEntity;
@@ -38,7 +38,7 @@ public class PTResponseController {
                                            @RequestHeader(Constants.AUTH_KEY) String authToken,
                                            @PathVariable String companyName,
                                            @Parameter(required = true, description = "${api.addPTResponsePayload.description}")
-                                           @RequestBody @Valid PTResponseRequest responseRequest) throws AccountantException {
+                                           @RequestBody @Valid PTResponseRequest responseRequest) throws TaxConsultantException {
         return ptResponseService.addPTResponse(companyName, responseRequest);
     }
 
@@ -50,11 +50,11 @@ public class PTResponseController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String responseId) throws AccountantException {
+            @PathVariable String responseId) throws TaxConsultantException {
         Collection<PTResponseEntity> responseEntities = ptResponseService.getPTResponse(companyName, responseId, null, null);
         if (responseEntities.isEmpty()) {
             log.error("PT Response not found for company: {}, responseId: {}", companyName, responseId);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_RESPONSE_NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_RESPONSE_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(responseEntities), HttpStatus.OK);
     }
@@ -80,7 +80,7 @@ public class PTResponseController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @PathVariable String responseId,
-            @Valid @RequestBody PTResponseUpdateRequest updateRequest) throws AccountantException {
+            @Valid @RequestBody PTResponseUpdateRequest updateRequest) throws TaxConsultantException {
         return ptResponseService.updatePTResponse(companyName, responseId, updateRequest);
     }
 
@@ -92,7 +92,7 @@ public class PTResponseController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String responseId) throws AccountantException, IOException {
+            @PathVariable String responseId) throws TaxConsultantException, IOException {
 
         ptResponseService.deletePTResponseById(companyName, responseId);
         return new ResponseEntity<>(

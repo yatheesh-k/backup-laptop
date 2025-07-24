@@ -8,12 +8,13 @@ import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
 import com.ems.taxConsultant.persistance.EmployeeEntity;
 import com.ems.taxConsultant.persistance.InvoiceModel;
+import com.ems.taxConsultant.persistance.EmployeeSalaryEntity;
 import com.ems.taxConsultant.persistance.model.Entity;
 import com.ems.taxConsultant.utils.Constants;
 import com.ems.taxConsultant.utils.ResourceIdUtils;
@@ -37,10 +38,10 @@ public class OpenSearchOperations {
     private ElasticsearchClient esClient;
 
 
-    public Entity saveEntity(Entity entity, String Id, String index) throws AccountantException {
+    public Entity saveEntity(Entity entity, String Id, String index) throws TaxConsultantException {
         co.elastic.clients.elasticsearch.core.IndexResponse indexResponse = null;
         try {
-            synchronized (entity){
+            synchronized (entity) {
                 indexResponse = esClient.index(builder -> builder.index(index)
                         .id(Id)
                         .document(entity));
@@ -48,27 +49,27 @@ public class OpenSearchOperations {
             logger.debug("Saved the entity. Response {}.Entity:{}", indexResponse, entity);
         } catch (IOException e) {
             logger.error("Exception ", e);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return entity;
     }
 
 
-    public String deleteEntity(String id, String index) throws AccountantException {
+    public String deleteEntity(String id, String index) throws TaxConsultantException {
         logger.debug("Deleting the Entity {}", id);
         co.elastic.clients.elasticsearch.core.DeleteResponse deleteResponse = null;
         try {
-            synchronized (id){
+            synchronized (id) {
                 deleteResponse = esClient.delete(b -> b.index(index)
                         .id(id));
 
             }
-            if(deleteResponse.result() == Result.NotFound) {
-                throw new AccountantException(String.format("Entity Id not found",id), HttpStatus.NOT_FOUND);
+            if (deleteResponse.result() == Result.NotFound) {
+                throw new TaxConsultantException(String.format("Entity Id not found", id), HttpStatus.NOT_FOUND);
             }
             logger.debug("Deleted the Entity {}, Delete response {}", id, deleteResponse);
         } catch (IOException e) {
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EXCEPTION_OCCURRED), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EXCEPTION_OCCURRED), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return id;
     }
@@ -107,7 +108,7 @@ public class OpenSearchOperations {
         return null;
     }
 
-    public List<EmployeeEntity> getCompanyEmployees(String companyName) throws AccountantException {
+    public List<EmployeeEntity> getCompanyEmployees(String companyName) throws TaxConsultantException {
         logger.debug("Getting employees for company {}", companyName);
         BoolQuery.Builder boolQueryBuilder = new BoolQuery.Builder();
         boolQueryBuilder = boolQueryBuilder
@@ -122,7 +123,7 @@ public class OpenSearchOperations {
                     .query(finalBoolQueryBuilder.build()._toQuery()), EmployeeEntity.class);
         } catch (IOException e) {
             logger.error(e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         List<Hit<EmployeeEntity>> hits = searchResponse.hits().hits();
@@ -178,7 +179,7 @@ public class OpenSearchOperations {
         return null;
     }
 
-    public List<InvoiceModel> getInvoicesByCompanyId(String companyId, String index) throws AccountantException {
+    public List<InvoiceModel> getInvoicesByCompanyId(String companyId, String index) throws TaxConsultantException {
         logger.debug("Getting invoices for company {} from index {}", companyId, index);
 
         try {
@@ -209,11 +210,49 @@ public class OpenSearchOperations {
 
         } catch (IOException e) {
             logger.error("Error fetching invoices for company {}: {}", companyId, e.getMessage(), e);
-            throw new AccountantException(
+            throw new TaxConsultantException(
                     ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH),
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
+    }
+    
+    public List<EmployeeSalaryEntity> getEmployeeSalaries(String companyName, String employeeId, String status) throws TaxConsultantException {
+
+        logger.debug("Getting employees for salary details {}", companyName);
+        BoolQuery.Builder boolQueryBuilder = new BoolQuery.Builder();
+        boolQueryBuilder = boolQueryBuilder
+                .filter(q -> q.matchPhrase(t -> t.field(Constants.TYPE).query(Constants.SALARY)));
+        if (employeeId != null) {
+            boolQueryBuilder
+                    .filter(q -> q.matchPhrase(t -> t.field(Constants.EMPLOYEE_ID).query(employeeId)));
+        }
+        if (status != null){
+            boolQueryBuilder
+                    .filter(q -> q.matchPhrase(t -> t.field(Constants.STATUS).query(status)));
+        }
+        BoolQuery.Builder finalBoolQueryBuilder = boolQueryBuilder;
+        SearchResponse<EmployeeSalaryEntity> searchResponse = null;
+        String index = ResourceIdUtils.generateCompanyIndex(companyName);
+
+        try {
+            // Adjust the type or field according to your index structure
+            searchResponse = esClient.search(t -> t.index(index).size(SIZE_ELASTIC_SEARCH_MAX_VAL)
+                    .query(finalBoolQueryBuilder.build()._toQuery()), EmployeeSalaryEntity.class);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        List<Hit<EmployeeSalaryEntity>> hits = searchResponse.hits().hits();
+        logger.info("Number of employee hits for company is {}: {}", companyName, hits.size());
+
+        List<EmployeeSalaryEntity> salaryEntities = new ArrayList<>();
+        for (Hit<EmployeeSalaryEntity> hit : hits) {
+            salaryEntities.add(hit.source());
+        }
+
+        return salaryEntities;
     }
 
 }

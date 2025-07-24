@@ -3,7 +3,7 @@ package com.ems.taxConsultant.serviceImpl;
 import com.ems.taxConsultant.common.ResponseBuilder;
 import com.ems.taxConsultant.dao.GSTAccountDao;
 import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.*;
@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -55,7 +56,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
     private ObjectMapper objectMapper;
 
     @Override
-    public ResponseEntity<?> gstComparing(String companyName, String month, String year, MultipartFile file) throws AccountantException, IOException {
+    public ResponseEntity<?> gstComparing(String companyName, String month, String year, MultipartFile file) throws TaxConsultantException, IOException {
 
         Map<String, Object> responseBody;
         try{
@@ -64,19 +65,19 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             String indexName = ResourceIdUtils.generateCompanyIndex(companyName);
             responseBody = parseExcelSheetForComparing(companyEntity, month, year, file);
             log.info("Parsed Excel sheet for comparing GST accounts: {}", responseBody);
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Error validating company or file: {}", e.getMessage());
             throw e;
         } catch (IOException e) {
             log.error("Error reading Excel file: {}", e.getMessage());
-            throw new AccountantException("Failed to read the Excel file", e);
+            throw new TaxConsultantException("Failed to read the Excel file", e);
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(responseBody), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<?> registerGSTAccount(String companyName, String month, String year,MultipartFile file) throws AccountantException {
+    public ResponseEntity<?> registerGSTAccount(String companyName, String month, String year,MultipartFile file) throws TaxConsultantException {
         try {
             CompanyEntity companyEntity = validatingCompanyAndFile(companyName, file);
             log.info("Company entity validated successfully: {}", companyEntity);
@@ -89,25 +90,25 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                                openSearchOperations.saveEntity(entity, entity.getId(), indexName);
             }
 
-        } catch (AccountantException accountantException) {
-            log.error("Error validating company or file: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error validating company or file: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception exception) {
             log.error("Error reading Excel file: {}", exception.getMessage());
-            throw new AccountantException("Failed to read the Excel file", exception);
+            throw new TaxConsultantException("Failed to read the Excel file", exception);
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<?> addSingleGSTAccount(String companyName,GSTAccountRequest gstAccountRequest) throws AccountantException {
+    public ResponseEntity<?> addSingleGSTAccount(String companyName,GSTAccountRequest gstAccountRequest) throws TaxConsultantException {
 
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found for name: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
            String resourceId = ResourceIdUtils.generateGSTAccountResourceId(gstAccountRequest.getCustomerGstNo(), gstAccountRequest.getMonth(), gstAccountRequest.getYear());
             log.info("Generated resource ID for GST account: {}", resourceId);
@@ -117,31 +118,31 @@ public class GSTAccountServiceImpl implements GSTAccountService {
            Collection<GSTAccountEntity> existingAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(companyName, companyEntity.getId(), gstAccountRequest.getYear(),gstAccountRequest.getMonth(), resourceId);
             if (existingAccounts != null && !existingAccounts.isEmpty()) {
                 log.error("GST accounts already exist for company: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_ALREADY_EXIST), HttpStatus.BAD_REQUEST);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_ALREADY_EXIST), HttpStatus.BAD_REQUEST);
             }
             GSTAccountEntity gstAccountEntity = GSTAccountUtils.maskGSTAccountEntity(gstAccountRequest,companyEntity.getId(),resourceId);
            log.info("Saving GST account entity: {}", gstAccountEntity);
             // Save the entity to OpenSearch
             gstAccountDao.save(gstAccountEntity, companyName);
 
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Error adding single GST account: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while adding single GST account: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
     }
 
     @Override
-    public Collection<GSTAccountEntity> getGSTAccount(String companyName, String month, String year, String Id) throws AccountantException {
+    public Collection<GSTAccountEntity> getGSTAccount(String companyName, String month, String year, String Id) throws TaxConsultantException {
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found for name: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
             Collection<GSTAccountEntity> gstAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(companyEntity.getShortName(),companyEntity.getId(),year, month,Id);
@@ -151,72 +152,72 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                     .collect(Collectors.toList());
 
             return unmaskedAccounts;
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Error retrieving GST accounts: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while retrieving GST accounts: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_GST_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_GST_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
-    public ResponseEntity<?> updateGSTAccount(String companyName, String Id, GSTAccountRequest gstAccountRequest) throws AccountantException {
+    public ResponseEntity<?> updateGSTAccount(String companyName, String Id, GSTAccountRequest gstAccountRequest) throws TaxConsultantException {
 
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found for name: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
             Collection<GSTAccountEntity> existingAccounts = this.getGSTAccount(companyName, null,null, Id);
             GSTAccountEntity accountEntity = existingAccounts.iterator().next();
             if (existingAccounts == null ) {
                 log.error("GST accounts already exist for company: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
             GSTAccountEntity entity = objectMapper.convertValue(gstAccountRequest, GSTAccountEntity.class);
             GSTAccountEntity existingAccount = objectMapper.convertValue(accountEntity, GSTAccountEntity.class);
             BeanUtils.copyProperties(entity, existingAccount, getNullPropertyNames(entity));
             existingAccount = maskUpdatedGSTAccountEntity(existingAccount);
             gstAccountDao.update(existingAccount, companyName);
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Error updating GST account: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("Error updating GST account: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<?> deleteGSTAccount(String companyName, String Id) throws AccountantException {
+    public ResponseEntity<?> deleteGSTAccount(String companyName, String Id) throws TaxConsultantException {
 
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found for name: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
             Collection<GSTAccountEntity> existingAccounts = this.getGSTAccount(companyName, null, null, Id);
             if (existingAccounts.isEmpty()) {
                 log.error("GST account not found for ID: {}", Id);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
             GSTAccountEntity accountEntity = existingAccounts.iterator().next();
             gstAccountDao.delete(accountEntity.getId(), companyName);
 
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Error deleting GST account: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("Error deleting GST account: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
@@ -235,7 +236,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
     }
 
     public List<GSTAccountEntity> parseGSTExcelSheet(CompanyEntity company, String month, String year, MultipartFile file)
-            throws IOException, AccountantException {
+            throws IOException, TaxConsultantException {
 
         List<GSTAccountEntity> gstAccounts = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
@@ -285,27 +286,26 @@ public class GSTAccountServiceImpl implements GSTAccountService {
     }
 
 
-    private CompanyEntity validatingCompanyAndFile(String companyName, MultipartFile file) throws AccountantException {
+    private CompanyEntity validatingCompanyAndFile(String companyName, MultipartFile file) throws TaxConsultantException {
         CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
         if (companyEntity == null) {
             log.error("Company not found for ID: {}", companyName);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
         }
         if (file.isEmpty()) {
             log.error("File is empty for company: {}", companyName);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPTY_FILE), HttpStatus.BAD_REQUEST);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPTY_FILE), HttpStatus.BAD_REQUEST);
         }
         if (!file.getContentType().equals(Constants.EXCEL_TYPE)) {
             log.error("Invalid file type: {}", file.getContentType());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVALID_FILE_TYPE), HttpStatus.BAD_REQUEST);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVALID_FILE_TYPE), HttpStatus.BAD_REQUEST);
         }
         return companyEntity;
 
     }
 
     private Map<String, Object> parseExcelSheetForComparing(CompanyEntity company, String month, String year, MultipartFile file)
-            throws IOException, AccountantException {
-
+            throws IOException, TaxConsultantException {
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
 
@@ -420,12 +420,12 @@ public class GSTAccountServiceImpl implements GSTAccountService {
     }
 
     @Override
-    public ResponseEntity<?> getGstAccountComparing(String companyName, String month, String year) throws AccountantException {
+    public ResponseEntity<?> getGstAccountComparing(String companyName, String month, String year) throws TaxConsultantException {
         log.info("Starting GST comparison for company: {}, month: {}, year: {}", companyName, month, year);
         CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
         if (companyEntity == null) {
             log.error("Company not found for name: {}", companyName);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
         }
 
         String index = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
@@ -434,13 +434,13 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             List<InvoiceModel> invoiceModels = openSearchOperations.getInvoicesByCompanyId(companyEntity.getId(), index);
             if (invoiceModels == null || invoiceModels.isEmpty()) {
                 log.error("Invoice data not found for company: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVOICE_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVOICE_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
             List<CustomerModel> customerModels = customerRepository.findByCompanyId(companyEntity.getId());
             if (customerModels == null || customerModels.isEmpty()) {
                 log.error("Customer data not found for company: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.CUSTOMER_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.CUSTOMER_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
             customerModels.forEach(GSTAccountUtils::unmaskCustomerProperties);
@@ -502,23 +502,23 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             log.info("GST comparison completed successfully for company: {}", companyName);
             return ResponseEntity.ok(responseBody);
 
-        } catch (AccountantException ae) {
+        } catch (TaxConsultantException ae) {
             log.error("AccountantException occurred while comparing GST data", ae);
             throw ae;
         } catch (Exception e) {
             log.error("Error comparing GST data", e);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_GST_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_GST_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
-    public ResponseEntity<?> GstAccountRegister(String companyName, String month, String year) throws AccountantException {
+    public ResponseEntity<?> GstAccountRegister(String companyName, String month, String year) throws TaxConsultantException {
         log.info("Starting GST account registration for company: {}, month: {}, year: {}", companyName, month, year);
 
         CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
         if (companyEntity == null) {
             log.error("Company not found for name: {}", companyName);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
         }
 
         String index = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
@@ -526,13 +526,13 @@ public class GSTAccountServiceImpl implements GSTAccountService {
             List<InvoiceModel> invoiceModels = openSearchOperations.getInvoicesByCompanyId(companyEntity.getId(), index);
             if (invoiceModels == null || invoiceModels.isEmpty()) {
                 log.error("Invoice data not found for company: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVOICE_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVOICE_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
             List<CustomerModel> customerModels = customerRepository.findByCompanyId(companyEntity.getId());
             if (customerModels == null || customerModels.isEmpty()) {
                 log.error("Customer data not found for company: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.CUSTOMER_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.CUSTOMER_DATA_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
             customerModels.forEach(GSTAccountUtils::unmaskCustomerProperties);
@@ -577,12 +577,12 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                     ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS),
                     HttpStatus.CREATED);
 
-        } catch (AccountantException ae) {
+        } catch (TaxConsultantException ae) {
             log.error("AccountantException occurred while registering GST accounts", ae);
             throw ae;
         } catch (Exception e) {
             log.error("Error registering GST accounts", e);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

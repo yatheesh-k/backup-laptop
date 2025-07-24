@@ -12,7 +12,7 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Service;
 import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
@@ -51,43 +51,43 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
     private EmployeePFService pfService;
 
     @Override
-    public ResponseEntity<?> employeeTDSComparing(String companyName, String month, String year, MultipartFile file) throws AccountantException, IOException {
+    public ResponseEntity<?> employeeTDSComparing(String companyName, String month, String year, MultipartFile file) throws TaxConsultantException, IOException {
         Map<String, Object> responseBody;
         try {
             CompanyEntity companyEntity = validatingCompanyAndFile(companyName, file);
             log.info("Processing employee PT accounts for company: {}", companyName);
             String indexName = ResourceIdUtils.generateCompanyIndex(companyName);
             responseBody = parseExcelSheetForTDSComparing(companyEntity, month, year, file, indexName);
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Exception while fetching company details: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("An unexpected error occurred: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(responseBody), HttpStatus.CREATED);
     }
 
-    private CompanyEntity validatingCompanyAndFile(String companyName, MultipartFile file) throws AccountantException {
+    private CompanyEntity validatingCompanyAndFile(String companyName, MultipartFile file) throws TaxConsultantException {
         CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
         if (companyEntity == null) {
             log.error("Company not found: {}", companyName);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
         }
         if (file.isEmpty()) {
             log.error("Uploaded file is empty for company: {}", companyName);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPTY_FILE), HttpStatus.BAD_REQUEST);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPTY_FILE), HttpStatus.BAD_REQUEST);
         }
         if (!file.getContentType().equals(Constants.EXCEL_TYPE)) {
             log.error("Invalid file type: {}", file.getContentType());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVALID_FILE_TYPE), HttpStatus.BAD_REQUEST);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVALID_FILE_TYPE), HttpStatus.BAD_REQUEST);
         }
         return companyEntity;
     }
 
     @Override
-    public ResponseEntity<?> registerEmployeeForTDS(String companyName, String month, String year, MultipartFile file) throws AccountantException, IOException {
+    public ResponseEntity<?> registerEmployeeForTDS(String companyName, String month, String year, MultipartFile file) throws TaxConsultantException, IOException {
         try {
             CompanyEntity companyEntity = validatingCompanyAndFile(companyName, file);
             log.info("Processing employee accounts for company: {}", companyName);
@@ -97,19 +97,19 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
                 openSearchOperations.saveEntity(employee, employee.getId(), indexName);
             }
 
-        }catch (AccountantException e) {
+        }catch (TaxConsultantException e) {
             log.error("Exception while fetching company details: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("An unexpected error occurred while fetching company details: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
 
     }
 
-    public List<EmployeeAccountEntity> parseExcelSheetForTDS(CompanyEntity company, String month, String year, MultipartFile file, String index) throws IOException, AccountantException {
+    public List<EmployeeAccountEntity> parseExcelSheetForTDS(CompanyEntity company, String month, String year, MultipartFile file, String index) throws IOException, TaxConsultantException {
 
         List<EmployeeAccountEntity> employees = new ArrayList<>();
         List<String> alreadyRegisteredTds = new ArrayList<>();
@@ -134,7 +134,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
                     .filter(emp -> emp.getPanNo() != null && emp.getPanNo().equals(panEncoded))
                     .findFirst()
                     .orElseThrow(() ->
-                            new AccountantException("Employee not found for PAN: " + panPlain, HttpStatus.NOT_FOUND));
+                            new TaxConsultantException("Employee not found for PAN: " + panPlain, HttpStatus.NOT_FOUND));
 
             Collection<EmployeeAccountEntity> existingAccounts = accountDao.getEmployeeAccountByPanMonthYear(
                     panEncoded, company.getId(), month, year, company.getShortName(), matchedEmployee.getId(), null);
@@ -152,7 +152,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             Optional<EmployeeAccountEntity> existingAccount = accountDao.get(resourceId, company.getShortName());
             if (existingAccount.isPresent() && existingAccount.get().getTds()!=null && !existingAccount.get().getTds().isEmpty()) {
                 log.error("Employee account already exists for ID: {}", resourceId);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_TDS_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_TDS_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
             }else if (existingAccount.isEmpty()) {
                 employee.setId(resourceId);
                 employee.setEmployeeName(employeeName);
@@ -173,7 +173,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
 
         workbook.close();
         if (!alreadyRegisteredTds.isEmpty()) {
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_ALREADY_EXISTS_PANS) + String.join(", ", alreadyRegisteredTds), HttpStatus.CONFLICT);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_ALREADY_EXISTS_PANS) + String.join(", ", alreadyRegisteredTds), HttpStatus.CONFLICT);
         }
         return employees;
     }
@@ -184,7 +184,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
 
     private Map<String, Object> parseExcelSheetForTDSComparing(
             CompanyEntity company, String month, String year, MultipartFile file, String indexName
-    ) throws IOException, AccountantException {
+    ) throws IOException, TaxConsultantException {
 
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
@@ -321,13 +321,13 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
     }
 
     @Override
-    public ResponseEntity<?> updateEmployeeForTDS(String companyName, String employeeId, String accountId, EmployeeTDSRequest request) throws AccountantException, IOException {
+    public ResponseEntity<?> updateEmployeeForTDS(String companyName, String employeeId, String accountId, EmployeeTDSRequest request) throws TaxConsultantException, IOException {
         try {
             //  Validate company
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found for name: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
             log.info("Processing TDS update for company: {}", companyName);
@@ -337,7 +337,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             Object employeeEntity = openSearchOperations.getById(employeeId, null, indexName);
             if (employeeEntity == null) {
                 log.error("Employee not found for ID: {}", employeeId);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
             //  Get employee account record for that month/year
@@ -348,7 +348,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
 
             if (employees == null) {
                 log.error("Employee account not found for ID: {}", accountId);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_TDS_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_TDS_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
             //  Convert request to source object
@@ -362,12 +362,12 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             openSearchOperations.saveEntity(entityTgt, entityTgt.getId(), indexName);
             log.info("Updated TDS for employee: {} for month: {}, year: {}", employeeId);
 
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Exception while updating TDS: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error occurred while updating TDS: {}", e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(
@@ -377,7 +377,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
     }
 
     @Override
-    public ResponseEntity<?> addSingleEmployeeForTDS(String companyName, EmployeeTDSRequest request) throws AccountantException {
+    public ResponseEntity<?> addSingleEmployeeForTDS(String companyName, EmployeeTDSRequest request) throws TaxConsultantException {
         EmployeeAccountEntity employee = null;
 
         try {
@@ -385,25 +385,25 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found for ID: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
             if (request.getPanNo() == null || request.getPanNo().isBlank()) {
                 log.warn("PAN is blank, Pan Is required for TDS");
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PAN_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PAN_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
             String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(request.getPanNo(), request.getMonth(), request.getYear());
             EmployeeEntity employeeEntity = openSearchOperations.getEmployeeByPanNo(companyEntity.getShortName(), base64Encode(request.getPanNo()));
             if (employeeEntity == null) {
                 log.error("Employee not found for PAN: {}", request.getPanNo());
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
 
 
             Collection<EmployeeAccountEntity> employees = pfService.getEmployeeAccountDetails(companyName, employeeEntity.getId(), resourceId, request.getMonth(), request.getYear());
             if (employees != null && !employees.isEmpty() && employees.stream().anyMatch(emp -> emp.getTds() != null && !emp.getTds().isEmpty())) {
                 log.error("Employee account already exists for ID: {}", resourceId);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_TDS_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_TDS_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
             }else if (employees == null || employees.isEmpty()) {
                 employee = objectMapper.convertValue(request, EmployeeAccountEntity.class);
                 employee.setId(resourceId);
@@ -431,13 +431,13 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             }
             accountDao.save(employee, companyName);
 
-        }catch (AccountantException e) {
+        }catch (TaxConsultantException e) {
             log.error("Exception while Adding Employee TDS: {}", e.getMessage());
             throw e;
         }
         catch (Exception e) {
             log.error("Error while storing TDS for employee", e);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_TDS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);

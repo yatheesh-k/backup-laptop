@@ -2,7 +2,7 @@ package com.pb.employee.service;
 
 
 import com.pb.employee.exception.EmployeeException;
-import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeResponseEntity;
 import com.pb.employee.request.*;
 import com.pb.employee.response.EmployeeResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +31,7 @@ public interface EmployeeService {
 
     ResponseEntity<?> getEmployeeImage(String companyName, String employeeId,HttpServletRequest request) throws EmployeeException, IOException;
 
-    List<EmployeeAccountsResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException, IOException;
+    List<EmployeeResponseEntity> getEmployeesAccountsDetails(String companyName) throws EmployeeException, IOException;
 
     ResponseEntity<?> registerEmployeeForAccounts(String companyName, MultipartFile file) throws EmployeeException, IOException;
 
