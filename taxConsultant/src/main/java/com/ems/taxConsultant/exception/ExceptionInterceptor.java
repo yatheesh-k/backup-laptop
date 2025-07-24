@@ -175,7 +175,7 @@ public class ExceptionInterceptor extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    ResponseEntity<ResponseObject> handleGenericExceptions(AccountantException exception) {
+    ResponseEntity<ResponseObject> handleGenericExceptions(TaxConsultantException exception) {
         logger.error("exception occured  ",exception);
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         if (exception.getHttpStatus() != null) {
@@ -184,9 +184,9 @@ public class ExceptionInterceptor extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(ResponseBuilder.builder().build().createFailureResponse(ResponseErrorObject.builder().message(exception.getMessage()).build()), status);
     }
 
-    @ExceptionHandler(AccountantException.class)
+    @ExceptionHandler(TaxConsultantException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    ResponseEntity<ResponseObject> handleEmployeeExceptions(AccountantException exception) {
+    ResponseEntity<ResponseObject> handleEmployeeExceptions(TaxConsultantException exception) {
         logger.error("exception occured  ",exception);
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         if (exception.getHttpStatus() != null) {

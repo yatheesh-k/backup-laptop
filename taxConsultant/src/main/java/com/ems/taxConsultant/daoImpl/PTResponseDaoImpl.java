@@ -3,7 +3,7 @@ package com.ems.taxConsultant.daoImpl;
 import com.ems.taxConsultant.controller.filter.Filter;
 import com.ems.taxConsultant.controller.filter.Operator;
 import com.ems.taxConsultant.dao.PTResponseDao;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.persistance.PTResponseEntity;
 import com.ems.taxConsultant.repository.Repository;
 import com.ems.taxConsultant.utils.Constants;
@@ -18,7 +18,7 @@ public class PTResponseDaoImpl extends AbstractDao<PTResponseEntity> implements 
     public PTResponseDaoImpl(Repository repository) {super(repository);}
 
     @Override
-    public Collection<PTResponseEntity> getPTResponse(String companyName, String companyId, String ptResponseId, String month, String year) throws AccountantException {
+    public Collection<PTResponseEntity> getPTResponse(String companyName, String companyId, String ptResponseId, String month, String year) throws TaxConsultantException {
         Collection<Filter> filters = new ArrayList<>();
 
         if (StringUtils.isNotBlank(companyId)) {

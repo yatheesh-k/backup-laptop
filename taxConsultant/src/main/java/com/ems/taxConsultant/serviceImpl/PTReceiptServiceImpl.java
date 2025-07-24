@@ -3,7 +3,7 @@ package com.ems.taxConsultant.serviceImpl;
 import com.ems.taxConsultant.common.ResponseBuilder;
 import com.ems.taxConsultant.dao.PTReceiptDao;
 import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
@@ -51,7 +51,7 @@ public class PTReceiptServiceImpl implements PTReceiptService {
     private OpenSearchOperations openSearchOperations;
 
     @Override
-    public ResponseEntity<?> addPTReceipts(String companyName, PTReceiptRequest request) throws AccountantException {
+    public ResponseEntity<?> addPTReceipts(String companyName, PTReceiptRequest request) throws TaxConsultantException {
         log.debug("validating company existence for companyName {}", companyName);
         String resourceId = ResourceIdUtils.generatePTReceiptsResourceId(companyName, request.getMonth(), request.getYear());
         CompanyEntity companyEntity;
@@ -60,21 +60,21 @@ public class PTReceiptServiceImpl implements PTReceiptService {
             companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found with name {}", companyName);
-                throw new AccountantException("Company not found", HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException("Company not found", HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException accountantException) {
-            log.error("Error while fetching company details: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while fetching company details: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         }
         try {
             receiptsEntity = receiptsDao.get(resourceId, companyName).orElse(null);
             if (receiptsEntity != null) {
                 log.error("Professional Tax Receipts already exists for month {} and year {} for company {}", request.getMonth(), request.getYear(), companyName);
-                throw new AccountantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_RECEIPTS_ALREADY_EXISTS), resourceId, companyName), HttpStatus.CONFLICT);
+                throw new TaxConsultantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_RECEIPTS_ALREADY_EXISTS), resourceId, companyName), HttpStatus.CONFLICT);
             }
             if (request.getFile().isEmpty()) {
                 log.error("Professional Tax Receipts file is empty for company {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_RECEIPTS_FILE_EMPTY), HttpStatus.BAD_REQUEST);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_RECEIPTS_FILE_EMPTY), HttpStatus.BAD_REQUEST);
             }
 
             PTReceiptEntity receipts = new PTReceiptEntity();
@@ -90,12 +90,12 @@ public class PTReceiptServiceImpl implements PTReceiptService {
             receiptsDao.save(receipts, companyName);
 
 
-        } catch (AccountantException accountantException) {
-            log.error("Error while saving Professional Tax Receipts for company {}: {}", companyName, accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while saving Professional Tax Receipts for company {}: {}", companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception e) {
             log.error("Unable to save Professional Tax Receipts for company {} due to {}", companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_PT_RECEIPTS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_PT_RECEIPTS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(
@@ -119,7 +119,7 @@ public class PTReceiptServiceImpl implements PTReceiptService {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null){
                 log.error("Exception while fetching company details for companyName: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
             log.debug("Getting Professional Tax Receipts for companyName: {}, ptId: {}, month: {}, year: {}", companyName, ptId, month, year);
             Collection<PTReceiptEntity> ptReceiptEntities = receiptsDao.getPTReceipt(companyName, companyEntity.getId(), ptId, month, year);
@@ -139,7 +139,7 @@ public class PTReceiptServiceImpl implements PTReceiptService {
     }
 
     @Override
-    public ResponseEntity<?> updatePTReceipt(String companyName, String ptId, PTReceiptUpdateRequest updateRequest) throws AccountantException {
+    public ResponseEntity<?> updatePTReceipt(String companyName, String ptId, PTReceiptUpdateRequest updateRequest) throws TaxConsultantException {
         PTReceiptEntity ptReceiptEntity;
         log.debug("Validating company existence for companyName {}", companyName);
         try {
@@ -149,9 +149,9 @@ public class PTReceiptServiceImpl implements PTReceiptService {
                     .orElse(null);
             if (ptReceiptEntity == null) {
                 log.error("Professional Tax Receipts not found with ID {} for company {}", ptId, companyName);
-                throw new AccountantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_RECEIPTS_NOT_FOUND), ptId, companyName), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.PT_RECEIPTS_NOT_FOUND), ptId, companyName), HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Unable to fetch Professional tax Receipts with ID {} for company {} due to {}", ptId, companyName, e.getMessage());
             throw e;
         }
@@ -160,7 +160,7 @@ public class PTReceiptServiceImpl implements PTReceiptService {
                     && (updateRequest.getPtReceiptNumber().equals(ptReceiptEntity.getPtReceiptNumber()))
                     && (updateRequest.getPtTotalAmount().equals(ptReceiptEntity.getPtTotalAmount()))) {
                 log.warn("No changes detected in Professional tax Receipts with ID {} for company {}", ptId, companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }
 
             PTReceiptEntity updatedData = new PTReceiptEntity();
@@ -170,19 +170,19 @@ public class PTReceiptServiceImpl implements PTReceiptService {
             BeanUtils.copyProperties(updatedData, ptReceiptEntity, getNullPropertyNames(updatedData));
             storeEmployeePTReceipts(updateRequest.getFile(), companyName, ptReceiptEntity);
             receiptsDao.save(ptReceiptEntity, companyName);
-        } catch (AccountantException ex) {
+        } catch (TaxConsultantException ex) {
             log.error("Unable to update Professional tax Receipts with ID {} for company {} due to {}", ptId, companyName, ex.getMessage());
             throw ex;
         } catch (Exception e) {
             log.error("Unable to update Professional tax Receipts with ID {} for company {} due to {}", ptId, companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_PT_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_PT_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
     }
 
 
     @Override
-    public void deletePTReceiptById(String companyName, String id) throws AccountantException, IOException {
+    public void deletePTReceiptById(String companyName, String id) throws TaxConsultantException, IOException {
         try {
             PTReceiptEntity ptReceiptEntity = this.getPTReceipts(companyName, id, null, null, null)
                     .stream()
@@ -190,12 +190,12 @@ public class PTReceiptServiceImpl implements PTReceiptService {
                     .orElse(null);
             receiptsDao.delete(id, companyName);
             log.info("Successfully deleted professional tax Receipts with ID {} for company {}", id, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while deleting professional tax Receipts with ID {} for company {}: {}", id, companyName, accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while deleting professional tax Receipts with ID {} for company {}: {}", id, companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception exception) {
             log.error("Unexpected error while deleting professional tax Receipts with ID {} for company {}: {}", id, companyName, exception.getMessage());
-            throw new AccountantException(
+            throw new TaxConsultantException(
                     ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE_PT_RECEIPTS),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

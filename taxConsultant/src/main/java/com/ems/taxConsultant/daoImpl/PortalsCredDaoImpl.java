@@ -3,7 +3,7 @@ package com.ems.taxConsultant.daoImpl;
 import com.ems.taxConsultant.controller.filter.Filter;
 import com.ems.taxConsultant.controller.filter.Operator;
 import com.ems.taxConsultant.dao.PortalsCredDao;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.persistance.PortalsCredEntity;
 import com.ems.taxConsultant.repository.Repository;
 import com.ems.taxConsultant.utils.Constants;
@@ -19,7 +19,7 @@ public class PortalsCredDaoImpl extends AbstractDao<PortalsCredEntity> implement
     public PortalsCredDaoImpl(Repository repository) {super(repository);}
 
     @Override
-    public Collection<PortalsCredEntity> getPortalDetails(String companyName, String companyId, String id) throws AccountantException {
+    public Collection<PortalsCredEntity> getPortalDetails(String companyName, String companyId, String id) throws TaxConsultantException {
         Collection<Filter> filters = new ArrayList<>();
 
         if (StringUtils.isNotBlank(companyId)) {

@@ -3,7 +3,7 @@ package com.ems.taxConsultant.daoImpl;
 import com.ems.taxConsultant.controller.filter.Filter;
 import com.ems.taxConsultant.controller.filter.Operator;
 import com.ems.taxConsultant.dao.Dao;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.model.EntityManager;
 import com.ems.taxConsultant.persistance.model.IDEntity;
 import com.ems.taxConsultant.repository.Repository;
@@ -19,15 +19,15 @@ public abstract class AbstractDao<T extends IDEntity> implements Dao<T> {
         this.repository = repository;
     }
 
-    public Optional<T> get(String id, String companyName) throws AccountantException {
+    public Optional<T> get(String id, String companyName) throws TaxConsultantException {
         return EntityManager.get(id, getEntityClass(), companyName, repository);
     }
 
-    public Collection<T> getAll(String companyName) throws AccountantException {
+    public Collection<T> getAll(String companyName) throws TaxConsultantException {
         return EntityManager.getAll(getEntityClass(),companyName, repository);
     }
 
-    public Collection<T> search(Collection<Filter> filters, String companyName) throws AccountantException {
+    public Collection<T> search(Collection<Filter> filters, String companyName) throws TaxConsultantException {
         Class<T> entityClass = getEntityClass();
         DocumentType documentType = DocumentType.getByType(entityClass);
         if (documentType != null && !hasField(filters, "type")) {
@@ -36,15 +36,15 @@ public abstract class AbstractDao<T extends IDEntity> implements Dao<T> {
         return EntityManager.search(filters, entityClass,companyName, repository);
     }
 
-    public T save(T entity, String companyName, String... params) throws AccountantException {
+    public T save(T entity, String companyName, String... params) throws TaxConsultantException {
         return EntityManager.save(entity,companyName, repository);
     }
 
-    public T update(T entity, String companyName, String... params) throws AccountantException {
+    public T update(T entity, String companyName, String... params) throws TaxConsultantException {
         return EntityManager.update(entity,companyName, repository);
     }
 
-    public void delete(String id, String companyName) throws AccountantException {
+    public void delete(String id, String companyName) throws TaxConsultantException {
         EntityManager.delete(id, getEntityClass(), companyName, repository);
     }
 

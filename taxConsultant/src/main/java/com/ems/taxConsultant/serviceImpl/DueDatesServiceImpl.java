@@ -3,7 +3,7 @@ package com.ems.taxConsultant.serviceImpl;
 import com.ems.taxConsultant.common.ResponseBuilder;
 import com.ems.taxConsultant.dao.DueDatesDao;
 import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.*;
@@ -61,7 +61,7 @@ public class DueDatesServiceImpl implements DueDatesService {
     private OpenSearchOperations openSearchOperations;
 
     @Override
-    public ResponseEntity<?> addDueDates(String companyName, DueDatesRequest request) throws AccountantException {
+    public ResponseEntity<?> addDueDates(String companyName, DueDatesRequest request) throws TaxConsultantException {
         log.debug("validating company existence for companyName {}", companyName);
         CompanyEntity companyEntity;
         DueDatesEntity datesEntity;
@@ -69,11 +69,11 @@ public class DueDatesServiceImpl implements DueDatesService {
             companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found with name {}", companyName);
-                throw new AccountantException("Company not found", HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException("Company not found", HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException accountantException) {
-            log.error("Error while fetching company details: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while fetching company details: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         }
         try {
             String resourceId = ResourceIdUtils.generateDueDatesResourceId(companyEntity.getId());
@@ -81,19 +81,19 @@ public class DueDatesServiceImpl implements DueDatesService {
             datesEntity = dao.get(resourceId, companyName).orElse(null);
             if (datesEntity != null) {
                 log.error("Due dates already exist for company {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.DUE_DATES_ALREADY_EXIST), HttpStatus.CONFLICT);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.DUE_DATES_ALREADY_EXIST), HttpStatus.CONFLICT);
             }
             DueDatesEntity dueDates = objectMapper.convertValue(request, DueDatesEntity.class);
             dueDates.setId(resourceId);
             dueDates.setCompanyId(companyEntity.getId());
             dueDates.setType(Constants.DUE_DATES);
             dao.save(dueDates, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while saving due dates for company {}: {}", companyName, accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while saving due dates for company {}: {}", companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception e) {
             log.error("Unable to save due dates for company {} due to {}", companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_DUE_DATES), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_DUE_DATES), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(
@@ -106,7 +106,7 @@ public class DueDatesServiceImpl implements DueDatesService {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null){
                 log.error("Exception while fetching company details for companyName: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
             log.debug("Getting due dates for companyName: {}, companyId: {}, id: {}", companyName, companyEntity.getId(), id);
             return dao.getDueDate(companyName, companyEntity.getId(), id);
@@ -116,7 +116,7 @@ public class DueDatesServiceImpl implements DueDatesService {
     }
 
     @Override
-    public ResponseEntity<?> updateDueDates(String companyName, String id, DueDatesRequest updateRequest) throws AccountantException {
+    public ResponseEntity<?> updateDueDates(String companyName, String id, DueDatesRequest updateRequest) throws TaxConsultantException {
         DueDatesEntity datesEntity;
         log.debug("Validating company existence for companyName {}", companyName);
         try {
@@ -126,9 +126,9 @@ public class DueDatesServiceImpl implements DueDatesService {
                     .orElse(null);
             if (datesEntity == null) {
                 log.error("Due dates not found for company {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.DUE_DATES_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.DUE_DATES_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Unable to fetch due dates for company {} due to {}", companyName, e.getMessage());
             throw e;
         }
@@ -138,25 +138,25 @@ public class DueDatesServiceImpl implements DueDatesService {
                     &&(updateRequest.getPfDay().equals(datesEntity.getPfDay()))
                     &&(updateRequest.getTdsDay().equals(datesEntity.getTdsDay()))) {
                 log.warn("No changes detected in the update request for due dates for company {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }
 
             DueDatesEntity updatedData = objectMapper.convertValue(updateRequest, DueDatesEntity.class);
             BeanUtils.copyProperties(updatedData, datesEntity, getNullPropertyNames(updatedData));
             dao.save(datesEntity, companyName);
-        } catch (AccountantException ex) {
+        } catch (TaxConsultantException ex) {
             log.error("Unable to update due dates for company {} due to {}", companyName, ex.getMessage());
             throw ex;
         } catch (Exception e) {
             log.error("Unable to update due dates for company {} due to {}", companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_DUE_DATES), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_DUE_DATES), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
     }
 
 
     @Override
-    public void deleteDueDatesById(String companyName, String id) throws AccountantException, IOException {
+    public void deleteDueDatesById(String companyName, String id) throws TaxConsultantException, IOException {
         try {
             DueDatesEntity dueDatesEntity = this.getDueDates(companyName, id)
                     .stream()
@@ -164,23 +164,23 @@ public class DueDatesServiceImpl implements DueDatesService {
                     .orElse(null);
             dao.delete(id, companyName);
             log.info("Successfully deleted Due Dates with ID {} for company {}", id, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while deleting Due Dates with ID {} for company {}: {}", id, companyName, accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while deleting Due Dates with ID {} for company {}: {}", id, companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception exception) {
             log.error("Unexpected error while deleting Due Dates with ID {} for company {}: {}", id, companyName, exception.getMessage());
-            throw new AccountantException(
+            throw new TaxConsultantException(
                     ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE_DUE_DATES), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
-    public List<TaxStatusResponse> getDueDatesValidation(String companyName, HttpServletRequest request) throws AccountantException {
+    public List<TaxStatusResponse> getDueDatesValidation(String companyName, HttpServletRequest request) throws TaxConsultantException {
         try {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found for name: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
 
             // Get current month and year
@@ -192,7 +192,7 @@ public class DueDatesServiceImpl implements DueDatesService {
             Collection<DueDatesEntity> dueDatesEntities = dao.getDueDate(companyName, companyEntity.getId(), null);
             if (dueDatesEntities == null || dueDatesEntities.isEmpty()) {
                 log.error("Due Dates not found for company {}", companyName);
-                throw new AccountantException("Due dates not found", HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException("Due dates not found", HttpStatus.NOT_FOUND);
             }
 
             DueDatesEntity dueDates = dueDatesEntities.iterator().next();
@@ -216,7 +216,7 @@ public class DueDatesServiceImpl implements DueDatesService {
 
             return response;
 
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -11,40 +11,40 @@ import org.springframework.http.HttpStatus;
 @Setter
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AccountantException extends Exception {
+public class TaxConsultantException extends Exception {
 
     private static final long serialVersionUID = 1L;
     private String errorCode;
     private HttpStatus httpStatus;
 
-    public AccountantException(String message, HttpStatus httpStatus) {
+    public TaxConsultantException(String message, HttpStatus httpStatus) {
         super(message);
         this.httpStatus = httpStatus;
     }
-    public AccountantException(String message, String errorCode) {
+    public TaxConsultantException(String message, String errorCode) {
         super(message);
         this.errorCode = errorCode;
     }
 
-    public AccountantException(String message, String errorCode, HttpStatus httpStatus) {
+    public TaxConsultantException(String message, String errorCode, HttpStatus httpStatus) {
         super(message);
         this.errorCode = errorCode;
         this.httpStatus = httpStatus;
     }
 
-    public AccountantException(String message, Throwable cause, String errorCode) {
+    public TaxConsultantException(String message, Throwable cause, String errorCode) {
         super(message, cause);
         this.errorCode = errorCode;
     }
 
-    public AccountantException(String message, Throwable cause, String errorCode, HttpStatus httpStatus) {
+    public TaxConsultantException(String message, Throwable cause, String errorCode, HttpStatus httpStatus) {
         super(message, cause);
         this.errorCode = errorCode;
         this.httpStatus = httpStatus;
     }
 
 
-    public AccountantException(String mesg, Exception cause) {
+    public TaxConsultantException(String mesg, Exception cause) {
         super(mesg,cause);
     }
 }

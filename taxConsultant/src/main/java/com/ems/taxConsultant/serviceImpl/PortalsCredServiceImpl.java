@@ -3,7 +3,7 @@ package com.ems.taxConsultant.serviceImpl;
 import com.ems.taxConsultant.common.ResponseBuilder;
 import com.ems.taxConsultant.dao.PortalsCredDao;
 import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
@@ -41,7 +41,7 @@ public class PortalsCredServiceImpl implements PortalCredService {
     private OpenSearchOperations openSearchOperations;
 
     @Override
-    public ResponseEntity<?> addPortalDetails(String companyName, PortalsCredRequest request) throws AccountantException {
+    public ResponseEntity<?> addPortalDetails(String companyName, PortalsCredRequest request) throws TaxConsultantException {
         log.debug("validating company existence for companyName {}", companyName);
         String resourceId ;
         CompanyEntity companyEntity;
@@ -50,31 +50,31 @@ public class PortalsCredServiceImpl implements PortalCredService {
             companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found with name {}", companyName);
-                throw new AccountantException("Company not found", HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException("Company not found", HttpStatus.NOT_FOUND);
             }
             resourceId = ResourceIdUtils.generatePortalCredResourceId(companyEntity.getId());
 
-        } catch (AccountantException accountantException) {
-            log.error("Error while fetching company details: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while fetching company details: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         }
         try {
             credEntity = dao.get(resourceId, companyName).orElse(null);
             if (credEntity != null) {
                 log.error("Portal credentials already exist for company {} with resourceId {}", companyName, resourceId);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PORTAL_CREDENTIALS_ALREADY_EXIST), HttpStatus.CONFLICT);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PORTAL_CREDENTIALS_ALREADY_EXIST), HttpStatus.CONFLICT);
             }
             PortalsCredEntity portalsCredEntity = objectMapper.convertValue(request, PortalsCredEntity.class);
             portalsCredEntity.setId(resourceId);
             portalsCredEntity.setCompanyId(companyEntity.getId());
             portalsCredEntity.setType(Constants.PORTAL_CREDENTIALS);
             dao.save(portalsCredEntity, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while saving portal credentials for company {}: {}", companyName, accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while saving portal credentials for company {}: {}", companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception e) {
             log.error("Unable to save portal credentials for company {} due to {}", companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_PORTAL_CREDENTIALS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_PORTAL_CREDENTIALS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(
@@ -87,7 +87,7 @@ public class PortalsCredServiceImpl implements PortalCredService {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null){
                 log.error("Exception while fetching company details for companyName: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
             log.debug("Getting TDS response for company {} with ID {}", companyName, id);
             Collection<PortalsCredEntity> portalsCredEntities = dao.getPortalDetails(companyName, companyEntity.getId(), id);
@@ -98,7 +98,7 @@ public class PortalsCredServiceImpl implements PortalCredService {
     }
 
     @Override
-    public ResponseEntity<?> updatePortalsCred(String companyName, String tdsId, PortalsCredRequest updateRequest) throws AccountantException {
+    public ResponseEntity<?> updatePortalsCred(String companyName, String tdsId, PortalsCredRequest updateRequest) throws TaxConsultantException {
         PortalsCredEntity response;
         log.debug("Validating company existence for companyName {}", companyName);
         try {
@@ -108,9 +108,9 @@ public class PortalsCredServiceImpl implements PortalCredService {
                     .orElse(null);
             if (response == null) {
                 log.error("TDS Response with ID {} not found for company {}", tdsId, companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PORTALS_CREDENTIALS_NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PORTALS_CREDENTIALS_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Unable to fetch portal credentials for company {} with ID {} due to {}", companyName, tdsId, e.getMessage());
             throw e;
         }
@@ -118,19 +118,19 @@ public class PortalsCredServiceImpl implements PortalCredService {
             PortalsCredEntity updatedData = objectMapper.convertValue(updateRequest, PortalsCredEntity.class);
             BeanUtils.copyProperties(updatedData, response, getNullPropertyNames(updatedData));
             dao.save(response, companyName);
-        } catch (AccountantException ex) {
+        } catch (TaxConsultantException ex) {
             log.error("Unable to update TDS Response with ID {} for company {} due to {}", tdsId, companyName, ex.getMessage());
             throw ex;
         } catch (Exception e) {
             log.error("Unable to update TDS Response with ID {} for company {} due to {}", tdsId, companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_PORTAL_CREDENTIALS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_PORTAL_CREDENTIALS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
     }
 
 
     @Override
-    public void deletePortalCredById(String companyName, String id) throws AccountantException, IOException {
+    public void deletePortalCredById(String companyName, String id) throws TaxConsultantException, IOException {
         try {
             PortalsCredEntity portalsCredEntity = this.getPortalCred(companyName, id)
                     .stream()
@@ -138,12 +138,12 @@ public class PortalsCredServiceImpl implements PortalCredService {
                     .orElse(null);
             dao.delete(id, companyName);
             log.info("Successfully deleted portal credentials with ID {} for company {}", id, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while deleting portal credentials with ID {} for company {}: {}", id, companyName, accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while deleting portal credentials with ID {} for company {}: {}", id, companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception exception) {
             log.error("Unexpected error while deleting portal credentials with ID {} for company {}: {}", id, companyName, exception.getMessage());
-            throw new AccountantException(
+            throw new TaxConsultantException(
                     ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE_PORTAL_CREDENTIALS),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
