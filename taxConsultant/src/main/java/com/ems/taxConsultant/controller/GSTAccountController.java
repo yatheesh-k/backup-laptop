@@ -2,7 +2,7 @@ package com.ems.taxConsultant.controller;
 
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.GSTAccountEntity;
@@ -38,7 +38,7 @@ public class GSTAccountController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file") MultipartFile file) throws IOException, AccountantException {
+            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file") MultipartFile file) throws IOException, TaxConsultantException {
         return gstAccountService.gstComparing(companyName, month, year, file);
     }
 
@@ -50,7 +50,7 @@ public class GSTAccountController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file") MultipartFile file) throws IOException, AccountantException {
+            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file") MultipartFile file) throws IOException, TaxConsultantException {
         return gstAccountService.registerGSTAccount(companyName, month, year, file);
     }
 
@@ -62,7 +62,7 @@ public class GSTAccountController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @RequestBody GSTAccountRequest gstAccountRequest) throws AccountantException {
+            @RequestBody GSTAccountRequest gstAccountRequest) throws TaxConsultantException {
         return gstAccountService.addSingleGSTAccount(companyName,gstAccountRequest);
 
     }
@@ -75,11 +75,11 @@ public class GSTAccountController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String id) throws AccountantException {
+            @PathVariable String id) throws TaxConsultantException {
         Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName, null, null, id);
         if (account.isEmpty()) {
             log.error("No GST accounts found for company: {}", companyName);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(account), HttpStatus.OK);
     }
@@ -93,11 +93,11 @@ public class GSTAccountController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @RequestParam String month,
-            @RequestParam String year) throws AccountantException {
+            @RequestParam String year) throws TaxConsultantException {
         Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName, month, year, null);
         if (account.isEmpty()) {
             log.error("No GST accounts found for company: {}, month: {}, year: {}", companyName, month, year);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_ACCOUNT_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
 
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(account), HttpStatus.OK);    }
@@ -109,7 +109,7 @@ public class GSTAccountController {
     public ResponseEntity<?> getGSTAccountsByCustomer(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName) throws AccountantException {
+            @PathVariable String companyName) throws TaxConsultantException {
         Collection<GSTAccountEntity> account = gstAccountService.getGSTAccount(companyName,  null, null, null);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(account), HttpStatus.OK);    }
 
@@ -122,7 +122,7 @@ public class GSTAccountController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @PathVariable String id,
-            @RequestBody GSTAccountRequest gstAccountRequest) throws AccountantException {
+            @RequestBody GSTAccountRequest gstAccountRequest) throws TaxConsultantException {
         return gstAccountService.updateGSTAccount(companyName, id, gstAccountRequest);
     }
 
@@ -134,7 +134,7 @@ public class GSTAccountController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String id) throws AccountantException {
+            @PathVariable String id) throws TaxConsultantException {
         return gstAccountService.deleteGSTAccount(companyName, id);
     }
 

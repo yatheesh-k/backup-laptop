@@ -3,7 +3,7 @@ package com.ems.taxConsultant.daoImpl;
 import com.ems.taxConsultant.controller.filter.Filter;
 import com.ems.taxConsultant.controller.filter.Operator;
 import com.ems.taxConsultant.dao.EmployeeAccountDao;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.persistance.EmployeeAccountEntity;
 import com.ems.taxConsultant.repository.Repository;
 import com.ems.taxConsultant.utils.Constants;
@@ -20,7 +20,7 @@ public class EmployeeAccountDaoImpl extends AbstractDao<EmployeeAccountEntity> i
     public EmployeeAccountDaoImpl(Repository repository) {super(repository);}
 
     @Override
-    public Collection<EmployeeAccountEntity> getEmployeeAccountByUanMonthYear(String uanEncoded, String id, String month, String year, String companyName, String employeeId, String accountId) throws AccountantException {
+    public Collection<EmployeeAccountEntity> getEmployeeAccountByUanMonthYear(String uanEncoded, String id, String month, String year, String companyName, String employeeId, String accountId) throws TaxConsultantException {
         Collection<Filter> filters = new ArrayList<>();
 
         if (StringUtils.isNotBlank(uanEncoded)) {
@@ -48,7 +48,7 @@ public class EmployeeAccountDaoImpl extends AbstractDao<EmployeeAccountEntity> i
     }
 
     @Override
-    public Collection<EmployeeAccountEntity> getEmployeeAccountByPanMonthYear(String panEncoded, String id, String month, String year, String companyName, String employeeId, String accountId) throws AccountantException {
+    public Collection<EmployeeAccountEntity> getEmployeeAccountByPanMonthYear(String panEncoded, String id, String month, String year, String companyName, String employeeId, String accountId) throws TaxConsultantException {
         Collection<Filter> filters = new ArrayList<>();
 
         if (StringUtils.isNotBlank(panEncoded)) {

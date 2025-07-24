@@ -1,7 +1,7 @@
 package com.ems.taxConsultant.controller;
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.TDSResponseEntity;
@@ -38,7 +38,7 @@ public class TDSResponseController {
                                            @RequestHeader(Constants.AUTH_KEY) String authToken,
                                            @PathVariable String companyName,
                                            @Parameter(required = true, description = "${api.addTDSResponsePayload.description}")
-                                           @RequestBody @Valid TDSResponseRequest request) throws AccountantException {
+                                           @RequestBody @Valid TDSResponseRequest request) throws TaxConsultantException {
         return responseService.addTDSResponse(companyName, request);
     }
 
@@ -50,11 +50,11 @@ public class TDSResponseController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String responseId) throws AccountantException {
+            @PathVariable String responseId) throws TaxConsultantException {
         Collection<TDSResponseEntity> responseEntities = responseService.getTDSResponse(companyName, responseId, null, null);
         if (responseEntities.isEmpty()) {
             log.error("PF Response not found for company: {}, responseId: {}", companyName, responseId);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RESPONSE_NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.TDS_RESPONSE_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(responseEntities), HttpStatus.OK);
     }
@@ -81,7 +81,7 @@ public class TDSResponseController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @PathVariable String responseId,
-            @Valid @RequestBody TDSResponseUpdateRequest updateRequest) throws AccountantException {
+            @Valid @RequestBody TDSResponseUpdateRequest updateRequest) throws TaxConsultantException {
         return responseService.updateTDSResponse(companyName, responseId, updateRequest);
     }
 
@@ -93,7 +93,7 @@ public class TDSResponseController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String responseId) throws AccountantException, IOException {
+            @PathVariable String responseId) throws TaxConsultantException, IOException {
 
         responseService.deleteTDSResponseById(companyName, responseId);
         return new ResponseEntity<>(

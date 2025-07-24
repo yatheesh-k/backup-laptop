@@ -2,7 +2,7 @@ package com.pb.employee.controller;
 
 import com.pb.employee.common.ResponseBuilder;
 import com.pb.employee.exception.EmployeeException;
-import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeResponse;
 import com.pb.employee.request.*;
 import com.pb.employee.service.EmployeeService;
 import com.pb.employee.util.Constants;
@@ -167,9 +167,9 @@ public class EmployeeController {
     public ResponseEntity<?> getEmployeeAccountDetails(@Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef}")
                                               @RequestHeader(Constants.AUTH_KEY) String authToken,
                                               @PathVariable String companyName) throws EmployeeException, IOException {
-        List<EmployeeAccountsResponse> employeeAccountsResponses = employeeService.getEmployeesAccountsDetails(companyName);
+        List<EmployeeResponse> employeeResponse = employeeService.getEmployeesAccountsDetails(companyName);
         return new ResponseEntity<>(
-                ResponseBuilder.builder().build().createSuccessResponse(employeeAccountsResponses), HttpStatus.OK);
+                ResponseBuilder.builder().build().createSuccessResponse(employeeResponse), HttpStatus.OK);
     }
 
 

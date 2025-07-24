@@ -2,9 +2,8 @@ package com.pb.employee.service;
 
 
 import com.pb.employee.exception.EmployeeException;
-import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeResponse;
 import com.pb.employee.request.*;
-import com.pb.employee.response.EmployeeResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +14,7 @@ import java.util.List;
 public interface EmployeeService {
     ResponseEntity<?> registerEmployee(EmployeeRequest employeeRequest, HttpServletRequest request) throws EmployeeException;
     ResponseEntity<?> getEmployees(String companyName, HttpServletRequest request) throws IOException, EmployeeException;
-    EmployeeResponse getEmployeeById(String companyName, String employeeId, HttpServletRequest request) throws EmployeeException;
+    com.pb.employee.response.EmployeeResponse getEmployeeById(String companyName, String employeeId, HttpServletRequest request) throws EmployeeException;
     ResponseEntity<?> updateEmployeeById(String employeeId, EmployeeUpdateRequest employeeUpdateRequest) throws IOException, EmployeeException;
     ResponseEntity<?> deleteEmployeeById( String companyName,String employeeId) throws EmployeeException;
 
@@ -31,7 +30,7 @@ public interface EmployeeService {
 
     ResponseEntity<?> getEmployeeImage(String companyName, String employeeId,HttpServletRequest request) throws EmployeeException, IOException;
 
-    List<EmployeeAccountsResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException, IOException;
+    List<EmployeeResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException, IOException;
 
     ResponseEntity<?> registerEmployeeForAccounts(String companyName, MultipartFile file) throws EmployeeException, IOException;
 

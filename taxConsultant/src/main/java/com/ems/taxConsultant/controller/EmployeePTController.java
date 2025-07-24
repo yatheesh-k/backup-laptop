@@ -1,6 +1,6 @@
 package com.ems.taxConsultant.controller;
 
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.request.EmployeePTRequest;
 import com.ems.taxConsultant.request.EmployeePTUpdate;
 import com.ems.taxConsultant.service.EmployeePTService;
@@ -32,7 +32,7 @@ public class EmployeePTController {
             @PathVariable String companyName,
             @RequestParam String month,
             @RequestParam String year,
-            @RequestParam("file") MultipartFile file) throws IOException, AccountantException {
+            @RequestParam("file") MultipartFile file) throws IOException, TaxConsultantException {
         return employeePTService.employeePTComparing(companyName, month, year, file);
     }
 
@@ -46,7 +46,7 @@ public class EmployeePTController {
             @PathVariable String companyName,
             @RequestParam String month,
             @RequestParam String year,
-            @RequestParam("file") MultipartFile file) throws IOException, AccountantException {
+            @RequestParam("file") MultipartFile file) throws IOException, TaxConsultantException {
         return employeePTService.registerEmployeeForPT(companyName, month, year, file);
     }
 
@@ -60,7 +60,7 @@ public class EmployeePTController {
             @PathVariable String companyName,
             @PathVariable String employeeId,
             @PathVariable String id,
-            @RequestBody EmployeePTUpdate request) throws IOException, AccountantException {
+            @RequestBody EmployeePTUpdate request) throws IOException, TaxConsultantException {
         return employeePTService.updateEmployeeForPT(companyName, employeeId, id, request);
     }
 
@@ -71,7 +71,7 @@ public class EmployeePTController {
     public ResponseEntity<?> addSingleEmployeeForPT(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName, @RequestBody EmployeePTRequest request) throws  IOException, AccountantException {
+            @PathVariable String companyName, @RequestBody EmployeePTRequest request) throws  IOException, TaxConsultantException {
         return employeePTService.addSingleEmployeeForPT(companyName, request);
     }
 

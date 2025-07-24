@@ -3,11 +3,9 @@ package com.pb.employee.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.persistance.model.*;
-import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeResponse;
 import com.pb.employee.request.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -340,21 +338,21 @@ public class EmployeeUtils {
 
 
 
-    public static EmployeeAccountsResponse unMaskEmployeeAccountProperties(EmployeeSalaryEntity salaryEntity, EmployeeEntity employee) {
+    public static EmployeeResponse unMaskEmployeeAccountProperties(EmployeeSalaryEntity salaryEntity, EmployeeEntity employee) {
         String te= null, tax = null, itax = null, ttax = null, tded = null, net = null;
         Double pfEmpr = null, pfEmp= null;
-        EmployeeAccountsResponse employeeAccountsResponse = new EmployeeAccountsResponse();
+        EmployeeResponse employeeResponse = new EmployeeResponse();
 
         if(salaryEntity.getPfTax() != null) {
             tax = new String((Base64.getDecoder().decode(salaryEntity.getPfTax().toString().getBytes())));
             double pfTax = Double.parseDouble(tax); // Parse tax to double
-            employeeAccountsResponse.setPfTax(String.format("%.2f",pfTax/12));
+            employeeResponse.setPfTax(String.format("%.2f",pfTax/12));
         }
         if (salaryEntity.getIncomeTax() != null){
             itax = new String((Base64.getDecoder().decode(salaryEntity.getIncomeTax().toString().getBytes())));
             salaryEntity.setIncomeTax(itax);
             double incomeTax = Double.parseDouble(itax); // Parse itax to double
-            employeeAccountsResponse.setTds(String.format("%.2f",incomeTax/12));
+            employeeResponse.setTds(String.format("%.2f",incomeTax/12));
         }
         if(salaryEntity.getTotalEarnings() != null) {
             te = new String((Base64.getDecoder().decode(salaryEntity.getTotalEarnings().toString().getBytes())));
@@ -372,7 +370,7 @@ public class EmployeeUtils {
 
             double totalAmount = tdedValue+ttaxValue;
             double netAmount = tEarValue -totalAmount;
-            employeeAccountsResponse.setEmployeeSalary(String.format("%.2f",netAmount/12));
+            employeeResponse.setEmployeeSalary(String.format("%.2f",netAmount/12));
         }
 
         if (salaryEntity.getSalaryConfigurationEntity().getDeductions() != null) {
@@ -381,22 +379,22 @@ public class EmployeeUtils {
                 if (entry.getKey().equalsIgnoreCase("Provident Fund Employee")) {
                     String pfEmployer = unMaskValue(entry.getValue());
                     pfEmp = Double.parseDouble(pfEmployer); // Parse pf to double
-                    employeeAccountsResponse.setPfAmount(String.format("%.2f",pfEmp/12));
+                    employeeResponse.setPfAmount(String.format("%.2f",pfEmp/12));
                 }
                 if (entry.getKey().equalsIgnoreCase("Provident Fund Employer")) {
                     String pfEmployer = unMaskValue(entry.getValue());
                     pfEmpr = Double.parseDouble(pfEmployer); // Parse pf to double
-                    employeeAccountsResponse.setPfAmount(String.format("%.2f", pfEmpr / 12));                }
+                    employeeResponse.setPfAmount(String.format("%.2f", pfEmpr / 12));                }
             }
-            employeeAccountsResponse.setPfAmount(String.valueOf((pfEmpr + pfEmp)));
-            employeeAccountsResponse.setFirstName(employee.getFirstName());
-            employeeAccountsResponse.setLastName(employee.getLastName());
-            employeeAccountsResponse.setEmailId(employee.getEmailId());
-            employeeAccountsResponse.setUanNumber(employee.getUanNo() != null ? employee.getUanNo() : null);
-            employeeAccountsResponse.setAadhaarId(employee.getAadhaarId() != null ? employee.getAadhaarId() : null);
-            employeeAccountsResponse.setPanNo(employee.getPanNo() != null ? employee.getPanNo() : null);
+            employeeResponse.setPfAmount(String.valueOf((pfEmpr + pfEmp)));
+            employeeResponse.setFirstName(employee.getFirstName());
+            employeeResponse.setLastName(employee.getLastName());
+            employeeResponse.setEmailId(employee.getEmailId());
+            employeeResponse.setUanNumber(employee.getUanNo() != null ? employee.getUanNo() : null);
+            employeeResponse.setAadhaarId(employee.getAadhaarId() != null ? employee.getAadhaarId() : null);
+            employeeResponse.setPanNo(employee.getPanNo() != null ? employee.getPanNo() : null);
         }
-        return employeeAccountsResponse;
+        return employeeResponse;
     }
     public static EmployeeSalaryEntity unMaskEmployeeSalaryProperties(EmployeeSalaryEntity salaryEntity) {
 

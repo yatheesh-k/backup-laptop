@@ -1,7 +1,7 @@
 package com.ems.taxConsultant.controller;
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.PFReceiptsEntity;
@@ -40,7 +40,7 @@ public class PFReceiptController {
                                            @RequestHeader(Constants.AUTH_KEY) String authToken,
                                            @PathVariable String companyName,
                                            @Parameter(required = true, description = "${api.addPFResponsePayload.description}")
-                                           @ModelAttribute @Valid PFReceiptsRequest request) throws AccountantException {
+                                           @ModelAttribute @Valid PFReceiptsRequest request) throws TaxConsultantException {
         return pfReceiptsService.addPFReceipts(companyName, request);
     }
 
@@ -52,11 +52,11 @@ public class PFReceiptController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String receiptId, HttpServletRequest request) throws AccountantException {
+            @PathVariable String receiptId, HttpServletRequest request) throws TaxConsultantException {
         Collection<PFReceiptsEntity> receipts = pfReceiptsService.getPfReceipts(companyName, receiptId, null, null, request);
         if (receipts.isEmpty()) {
             log.error("PF Receipts not found for company: {}, receiptId: {}", companyName, receiptId);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PF_RECEIPTS_NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.PF_RECEIPTS_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(receipts), HttpStatus.OK);
     }
@@ -83,7 +83,7 @@ public class PFReceiptController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @PathVariable String receiptId,
-            @Valid @RequestBody PFReceiptUpdateRequest updateRequest) throws AccountantException {
+            @Valid @RequestBody PFReceiptUpdateRequest updateRequest) throws TaxConsultantException {
         return pfReceiptsService.updatePFReceipt(companyName, receiptId, updateRequest);
     }
 
@@ -95,7 +95,7 @@ public class PFReceiptController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String receiptId) throws AccountantException, IOException {
+            @PathVariable String receiptId) throws TaxConsultantException, IOException {
 
         pfReceiptsService.deletePFReceiptById(companyName, receiptId);
         return new ResponseEntity<>(

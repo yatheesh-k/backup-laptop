@@ -1,7 +1,7 @@
 package com.ems.taxConsultant.controller;
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.persistance.EmployeeAccountEntity;
 import com.ems.taxConsultant.request.EmployeePFRequest;
 import com.ems.taxConsultant.request.EmployeePFUpdate;
@@ -35,7 +35,7 @@ public class EmployeePFController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file")MultipartFile file) throws  IOException, AccountantException {
+            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file")MultipartFile file) throws  IOException, TaxConsultantException {
         return employeePFService.employeePFComparing(companyName, month, year, file);
     }
 
@@ -48,7 +48,7 @@ public class EmployeePFController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file")MultipartFile file) throws  IOException, AccountantException {
+            @RequestParam(required = true) String month, @RequestParam(required = true) String year, @RequestParam("file")MultipartFile file) throws  IOException, TaxConsultantException {
         return employeePFService.registerEmployeeForPF(companyName, month, year, file);
     }
 
@@ -60,7 +60,7 @@ public class EmployeePFController {
     public ResponseEntity<?> addSingleEmployeeForPF(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName, @RequestBody EmployeePFRequest request) throws  IOException, AccountantException {
+            @PathVariable String companyName, @RequestBody EmployeePFRequest request) throws  IOException, TaxConsultantException {
         return employeePFService.addSingleEmployeeForPF(companyName, request);
     }
 
@@ -95,7 +95,7 @@ public class EmployeePFController {
     public ResponseEntity<?> getEmployeeAccountsById(
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
-            @PathVariable String companyName, @PathVariable String employeeId, @PathVariable String accountId) throws  IOException, AccountantException {
+            @PathVariable String companyName, @PathVariable String employeeId, @PathVariable String accountId) throws  IOException, TaxConsultantException {
         Collection<EmployeeAccountEntity> employeeAccountEntities = employeePFService.getEmployeeAccountDetails(companyName, employeeId, accountId, null, null);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(employeeAccountEntities), HttpStatus.OK);
     }
@@ -109,7 +109,7 @@ public class EmployeePFController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName, @PathVariable String employeeId, @PathVariable String id, @RequestBody EmployeePFUpdate request
-    ) throws  IOException, AccountantException {
+    ) throws  IOException, TaxConsultantException {
 
         return employeePFService.updateEmployeeForPf(companyName, employeeId, id, request);
     }
@@ -127,4 +127,30 @@ public class EmployeePFController {
         employeePFService.deleteEmployeeAccountDetails(companyName, employeeId, accountId);
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.DELETED), HttpStatus.OK);
     }
+
+
+    @RequestMapping(value = "{companyName}/pf/comparing", method = RequestMethod.GET, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.employeePFComparing.tag}", description = "${api.employeePFComparing.description}")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
+    public ResponseEntity<?> employeePFComparing(
+            @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+            @RequestHeader(Constants.AUTH_KEY) String authToken,
+            @PathVariable String companyName,
+            @RequestParam String month, @RequestParam String year) throws IOException, TaxConsultantException {
+        return employeePFService.employeesPFComparing(companyName, month, year);
+    }
+
+    @RequestMapping(value = "{companyName}/pf", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.employeePFComparing.tag}", description = "${api.employeePFComparing.description}")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
+    public ResponseEntity<?> registerEmployeeForPF(
+            @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+            @RequestHeader(Constants.AUTH_KEY) String authToken,
+            @PathVariable String companyName,
+            @RequestParam String month, @RequestParam String year) throws TaxConsultantException {
+        return employeePFService.registerEmployeeForPF(companyName, month, year);
+    }
+
 }

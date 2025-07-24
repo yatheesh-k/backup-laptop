@@ -11,10 +11,9 @@ import com.pb.employee.exception.EmployeeException;
 import com.pb.employee.exception.ErrorMessageHandler;
 import com.pb.employee.opensearch.OpenSearchOperations;
 import com.pb.employee.persistance.model.*;
-import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeAccountsResponse;
+import com.pb.employee.persistance.model.EmployeeAccounts.EmployeeResponse;
 import com.pb.employee.request.*;
 import com.pb.employee.response.EmployeeDownloadResponse;
-import com.pb.employee.response.EmployeeResponse;
 import com.pb.employee.service.AttendanceService;
 import com.pb.employee.service.EmployeeService;
 import com.pb.employee.util.*;
@@ -178,7 +177,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public ResponseEntity<?> getEmployees(String companyName, HttpServletRequest request) throws EmployeeException, IOException {
         String index = ResourceIdUtils.generateCompanyIndex(companyName);
         List<EmployeeEntity> employeeEntities = null;
-        List<EmployeeResponse> employeeResponses = new ArrayList<>();
+        List<com.pb.employee.response.EmployeeResponse> employeeResponses = new ArrayList<>();
         EmployeePersonnelEntity employeePersonnelEntity = null;
 
         try {
@@ -235,7 +234,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     employeePersonnelEntity = openSearchOperations.getEmployeePersonnelDetails(employee.getId(), index);
 
                 }
-                EmployeeResponse employeeResponse = objectMapper.convertValue(employee, EmployeeResponse.class);
+                com.pb.employee.response.EmployeeResponse employeeResponse = objectMapper.convertValue(employee, com.pb.employee.response.EmployeeResponse.class);
                 if (employee.getProfileImage()!= null && !employee.getProfileImage().isEmpty()) {
                     String baseUrl = getBaseUrl(request);
                     String image = baseUrl + "/var/www/ems/assets/img/" + employee.getProfileImage();
@@ -259,11 +258,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeResponse getEmployeeById(String companyName, String employeeId, HttpServletRequest request) throws EmployeeException {
+    public com.pb.employee.response.EmployeeResponse getEmployeeById(String companyName, String employeeId, HttpServletRequest request) throws EmployeeException {
         log.info("getting details of {}", employeeId);
         EmployeeEntity entity = null;
         String index = ResourceIdUtils.generateCompanyIndex(companyName);
-        EmployeeResponse employeeResponse = null;
+        com.pb.employee.response.EmployeeResponse employeeResponse = null;
         EmployeePersonnelEntity employeePersonnelEntity = null;
         try {
             entity = openSearchOperations.getEmployeeById(employeeId, null, index);
@@ -278,7 +277,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             if (!entity.getEmployeeType().equalsIgnoreCase(Constants.ADMIN)) {
                 employeePersonnelEntity = openSearchOperations.getEmployeePersonnelDetails(employeeId, index);
             }
-            employeeResponse = objectMapper.convertValue(entity, EmployeeResponse.class);
+            employeeResponse = objectMapper.convertValue(entity, com.pb.employee.response.EmployeeResponse.class);
             if (entity.getProfileImage()!= null && !entity.getProfileImage().isEmpty() && request != null) {
                 String baseUrl = getBaseUrl(request);
                 String image = baseUrl + "/var/www/ems/assets/img/" + entity.getProfileImage();
@@ -374,7 +373,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public ResponseEntity<?> deleteEmployeeById(String companyName, String employeeId) throws EmployeeException {
         log.info("Attempting to delete employee with ID: {}", employeeId);
-        EmployeeResponse entity = null;
+        com.pb.employee.response.EmployeeResponse entity = null;
         String index = ResourceIdUtils.generateCompanyIndex(companyName);
         try {
             entity = this.getEmployeeById(companyName, employeeId, null);
@@ -934,10 +933,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeAccountsResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException {
-        String index = ResourceIdUtils.generateCompanyIndex(companyName);
+    public List<EmployeeResponse> getEmployeesAccountsDetails(String companyName) throws EmployeeException {
         List<EmployeeEntity> employeeEntities;
-        List<EmployeeAccountsResponse> employeeResponses = new ArrayList<>();
+        List<EmployeeResponse> employeeResponses = new ArrayList<>();
         try {
             employeeEntities = openSearchOperations.getCompanyEmployees(companyName);
 
@@ -947,8 +945,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                     List<EmployeeSalaryEntity> employeeSalaryEntity = openSearchOperations.getEmployeeSalaries(companyName, employee.getId(), Constants.ACTIVE);
                     if (employeeSalaryEntity != null && !employeeSalaryEntity.isEmpty()) {
                         EmployeeSalaryEntity activeSalary = employeeSalaryEntity.get(0);
-                        EmployeeAccountsResponse employeeAccountsResponse = EmployeeUtils.unMaskEmployeeAccountProperties(activeSalary, employee);
-                        employeeResponses.add(employeeAccountsResponse);
+                        EmployeeResponse employeeResponse = EmployeeUtils.unMaskEmployeeAccountProperties(activeSalary, employee);
+                        employeeResponses.add(employeeResponse);
                     }
                 }
 

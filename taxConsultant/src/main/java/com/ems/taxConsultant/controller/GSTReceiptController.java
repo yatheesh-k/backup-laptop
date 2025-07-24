@@ -1,7 +1,7 @@
 package com.ems.taxConsultant.controller;
 
 import com.ems.taxConsultant.common.ResponseBuilder;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.GSTReceiptEntity;
@@ -40,7 +40,7 @@ public class GSTReceiptController {
                                            @RequestHeader(Constants.AUTH_KEY) String authToken,
                                            @PathVariable String companyName,
                                            @Parameter(required = true, description = "${api.addGSTReceiptPayload.description}")
-                                           @ModelAttribute @Valid GSTReceiptRequest request) throws AccountantException {
+                                           @ModelAttribute @Valid GSTReceiptRequest request) throws TaxConsultantException {
         return gstReceiptService.addGstReceipts(companyName, request);
     }
 
@@ -52,11 +52,11 @@ public class GSTReceiptController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String receiptId, HttpServletRequest request) throws AccountantException {
+            @PathVariable String receiptId, HttpServletRequest request) throws TaxConsultantException {
         Collection<GSTReceiptEntity> receipts = gstReceiptService.getGstReceipts(companyName, receiptId, null, null, request);
         if (receipts.isEmpty()) {
             log.error("GST Receipts not found for company: {}, receiptId: {}", companyName, receiptId);
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RECEIPTS_NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RECEIPTS_NOT_FOUND), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(receipts), HttpStatus.OK);
     }
@@ -83,7 +83,7 @@ public class GSTReceiptController {
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
             @PathVariable String receiptId,
-            @Valid @RequestBody GSTReceiptUpdateRequest updateRequest) throws AccountantException {
+            @Valid @RequestBody GSTReceiptUpdateRequest updateRequest) throws TaxConsultantException {
         return gstReceiptService.updateGstReceipt(companyName, receiptId, updateRequest);
     }
 
@@ -95,7 +95,7 @@ public class GSTReceiptController {
             @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
             @RequestHeader(Constants.AUTH_KEY) String authToken,
             @PathVariable String companyName,
-            @PathVariable String receiptId) throws AccountantException, IOException {
+            @PathVariable String receiptId) throws TaxConsultantException, IOException {
 
         gstReceiptService.deleteGstReceiptById(companyName, receiptId);
         return new ResponseEntity<>(

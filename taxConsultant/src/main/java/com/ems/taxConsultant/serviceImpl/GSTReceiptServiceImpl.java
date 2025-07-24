@@ -3,7 +3,7 @@ package com.ems.taxConsultant.serviceImpl;
 import com.ems.taxConsultant.common.ResponseBuilder;
 import com.ems.taxConsultant.dao.GSTReceiptDao;
 import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
-import com.ems.taxConsultant.exception.AccountantException;
+import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
@@ -51,7 +51,7 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
     private OpenSearchOperations openSearchOperations;
 
     @Override
-    public ResponseEntity<?> addGstReceipts(String companyName, GSTReceiptRequest request) throws AccountantException {
+    public ResponseEntity<?> addGstReceipts(String companyName, GSTReceiptRequest request) throws TaxConsultantException {
         log.debug("validating company existence for companyName {}", companyName);
         String resourceId = ResourceIdUtils.generateGSTReceiptsResourceId(companyName, request.getMonth(), request.getYear());
         CompanyEntity companyEntity;
@@ -60,21 +60,21 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
             companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null) {
                 log.error("Company not found with name {}", companyName);
-                throw new AccountantException("Company not found", HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException("Company not found", HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException accountantException) {
-            log.error("Error while fetching company details: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while fetching company details: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         }
         try {
             receiptsEntity = receiptsDao.get(resourceId, companyName).orElse(null);
             if (receiptsEntity != null) {
                 log.error("GST Receipts with resourceId {} already exists for company {}", resourceId, companyName);
-                throw new AccountantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RECEIPTS_ALREADY_EXISTS), resourceId, companyName), HttpStatus.CONFLICT);
+                throw new TaxConsultantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RECEIPTS_ALREADY_EXISTS), resourceId, companyName), HttpStatus.CONFLICT);
             }
             if (request.getFile().isEmpty()) {
                 log.error("GST Receipts file is empty for month {} and year {}", request.getMonth(), request.getYear());
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RECEIPTS_FILE_EMPTY), HttpStatus.BAD_REQUEST);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RECEIPTS_FILE_EMPTY), HttpStatus.BAD_REQUEST);
             }
 
             GSTReceiptEntity receipts = new GSTReceiptEntity();
@@ -90,12 +90,12 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
             receiptsDao.save(receipts, companyName);
 
 
-        } catch (AccountantException accountantException) {
-            log.error("Error while saving GST receipt: {}", accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while saving GST receipt: {}", taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception e) {
             log.error("Unable to save GST Receipts for company {} due to {}", companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_GST_RECEIPTS), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_GST_RECEIPTS), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(
@@ -109,7 +109,7 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
             CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
             if (companyEntity == null){
                 log.error("Exception while fetching company details for companyName: {}", companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
             }
             log.debug("Getting GST Receipts for companyName: {}, gstReceiptsId: {}, month: {}, year: {}", companyName, gstReceiptsId, month, year);
             Collection<GSTReceiptEntity> gstReceiptsEntities = receiptsDao.getGstReceipts(companyName, companyEntity.getId(), gstReceiptsId, month, year);
@@ -129,7 +129,7 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
     }
 
     @Override
-    public ResponseEntity<?> updateGstReceipt(String companyName, String gstReceiptId, GSTReceiptUpdateRequest updateRequest) throws AccountantException {
+    public ResponseEntity<?> updateGstReceipt(String companyName, String gstReceiptId, GSTReceiptUpdateRequest updateRequest) throws TaxConsultantException {
         Collection<GSTReceiptEntity> gstReceiptEntity;
         GSTReceiptEntity gstReceiptsEntity;
         log.debug("Validating company existence for companyName {}", companyName);
@@ -141,9 +141,9 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
                     .orElse(null);
             if (gstReceiptEntity == null) {
                 log.error("GST Receipts with ID {} not found for company {}", gstReceiptId, companyName);
-                throw new AccountantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RECEIPTS_NOT_FOUND), gstReceiptId, companyName), HttpStatus.NOT_FOUND);
+                throw new TaxConsultantException(String.format(ErrorMessageHandler.getMessage(ErrorMessageKey.GST_RECEIPTS_NOT_FOUND), gstReceiptId, companyName), HttpStatus.NOT_FOUND);
             }
-        } catch (AccountantException e) {
+        } catch (TaxConsultantException e) {
             log.error("Unable to fetch GST Receipts with ID {} for company {} due to {}", gstReceiptId, companyName, e.getMessage());
             throw e;
         }
@@ -153,7 +153,7 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
                     && (updateRequest.getGstReceiptNumber().equals(gstReceiptsEntity.getGstReceiptNumber()))
                     && (updateRequest.getGstTotalAmount().equals(gstReceiptsEntity.getGstTotalAmount()))) {
                 log.warn("No changes detected in GST Receipts with ID {} for company {}", gstReceiptId, companyName);
-                throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }
 
 
@@ -164,18 +164,18 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
             BeanUtils.copyProperties(updatedData, gstReceiptsEntity, getNullPropertyNames(updatedData));
             storeEmployeeGstReceipts(updateRequest.getFile(), companyName, gstReceiptsEntity);
             receiptsDao.save(gstReceiptsEntity, companyName);
-        } catch (AccountantException ex) {
+        } catch (TaxConsultantException ex) {
             log.error("Unable to update GST Receipts with ID {} for company {} due to {}", gstReceiptId, companyName, ex.getMessage());
             throw ex;
         } catch (Exception e) {
             log.error("Unable to update GST Receipts with ID {} for company {} due to {}", gstReceiptId, companyName, e.getMessage());
-            throw new AccountantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_GST_RECEIPT), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_UPDATE_GST_RECEIPT), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.OK);
     }
 
     @Override
-    public void deleteGstReceiptById(String companyName, String receiptId) throws AccountantException {
+    public void deleteGstReceiptById(String companyName, String receiptId) throws TaxConsultantException {
 
         try {
             GSTReceiptEntity gstReceiptsEntity = this.getGstReceipts(companyName, receiptId, null, null, null)
@@ -184,12 +184,12 @@ public class GSTReceiptServiceImpl implements GSTReceiptService {
                     .orElse(null);
             receiptsDao.delete(receiptId, companyName);
             log.info("Successfully deleted GST Receipts with ID {} for company {}", receiptId, companyName);
-        } catch (AccountantException accountantException) {
-            log.error("Error while deleting GST Receipts with ID {} for company {}: {}", receiptId, companyName, accountantException.getMessage());
-            throw accountantException;
+        } catch (TaxConsultantException taxConsultantException) {
+            log.error("Error while deleting GST Receipts with ID {} for company {}: {}", receiptId, companyName, taxConsultantException.getMessage());
+            throw taxConsultantException;
         } catch (Exception exception) {
             log.error("Unexpected error while deleting GST Receipts with ID {} for company {}: {}", receiptId, companyName, exception.getMessage());
-            throw new AccountantException(
+            throw new TaxConsultantException(
                     ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_DELETE_GST_RECEIPTS),HttpStatus.INTERNAL_SERVER_ERROR);
         }
         

@@ -1,18 +1,17 @@
-package com.pb.employee.persistance.model.EmployeeAccounts;
+package com.ems.taxConsultant.persistance;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.naming.ldap.PagedResultsControl;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeAccountsResponse {
+public class EmployeeResponse {
 
+    private String id;
     private String firstName;
     private String lastName;
     private String emailId;
