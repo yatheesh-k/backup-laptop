@@ -113,7 +113,9 @@ public class PFResponseServiceImpl implements PFResponseService {
         }
         try {
             if ((updateRequest.getInvalidPFAmounts() .equals(pfResponseEntity.getInvalidPFAmounts()))
-                    && (updateRequest.getIgnoredCompanyEmployees().equals(pfResponseEntity.getIgnoredCompanyEmployees()))) {
+                    && (updateRequest.getIgnoredCompanyEmployees().equals(pfResponseEntity.getIgnoredCompanyEmployees()))
+                    && (updateRequest.getNewAddedEmployees().equals(pfResponseEntity.getNewAddedEmployees()))
+                    && (updateRequest.getPreviousMonthMissedEmp().equals(pfResponseEntity.getPreviousMonthMissedEmp()))){
                 log.warn("No changes detected in PF Response with ID {} for company {}", pfResponseId, companyName);
                 throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }

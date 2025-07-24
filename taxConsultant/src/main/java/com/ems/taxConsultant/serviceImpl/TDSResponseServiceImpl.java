@@ -116,8 +116,10 @@ public class TDSResponseServiceImpl implements TDSResponseService {
             throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_FETCH_TDS_RESPONSE), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         try {
-            if ((updateRequest.getInvalidTDSAmounts() .equals(response.getInvalidTDSAmounts()))
-                    && (updateRequest.getIgnoredCompanyEmployees().equals(response.getIgnoredCompanyEmployees()))) {
+            if ((updateRequest.getInvalidTDSAmounts().equals(response.getInvalidTDSAmounts()))
+                    && (updateRequest.getIgnoredCompanyEmployees().equals(response.getIgnoredCompanyEmployees()))
+                    && (updateRequest.getNewAddedEmployees().equals(response.getNewAddedEmployees()))
+                    && (updateRequest.getPreviousMonthMissedEmp().equals(response.getPreviousMonthMissedEmp()))) {
                 log.warn("No changes detected in PF Response with ID {} for company {}", tdsId, companyName);
                 throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }

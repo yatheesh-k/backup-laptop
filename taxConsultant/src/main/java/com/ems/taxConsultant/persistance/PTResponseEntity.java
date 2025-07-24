@@ -17,5 +17,7 @@ public class PTResponseEntity extends AbstractEntity {
     private String year;
     private String companyId;
     private String ignoredCompanyEmployees;
+    private String previousMonthMissedEmp;
+    private String newAddedEmployees;
     private String invalidPTAmounts;
 }

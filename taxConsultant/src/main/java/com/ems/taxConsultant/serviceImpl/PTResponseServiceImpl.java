@@ -115,7 +115,9 @@ public class PTResponseServiceImpl implements PTResponseService {
         }
         try {
             if ((updateRequest.getInvalidPTAmounts() .equals(ptResponseEntity.getInvalidPTAmounts()))
-                    && (updateRequest.getIgnoredCompanyEmployees().equals(ptResponseEntity.getIgnoredCompanyEmployees()))) {
+                    && (updateRequest.getIgnoredCompanyEmployees().equals(ptResponseEntity.getIgnoredCompanyEmployees()))
+                    && (updateRequest.getNewAddedEmployees().equals(ptResponseEntity.getNewAddedEmployees()))
+                    && (updateRequest.getPreviousMonthMissedEmp().equals(ptResponseEntity.getPreviousMonthMissedEmp()))) {
                 log.warn("No changes detected in PT Response with ID {} for company {}", ptResponseId, companyName);
                 throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.NO_CHANGES_DETECTED), HttpStatus.NOT_MODIFIED);
             }
