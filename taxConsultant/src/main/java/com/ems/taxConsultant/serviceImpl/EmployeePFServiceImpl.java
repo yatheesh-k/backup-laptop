@@ -10,6 +10,7 @@ import com.ems.taxConsultant.persistance.*;
 import com.ems.taxConsultant.request.EmployeePFRequest;
 import com.ems.taxConsultant.request.EmployeePFUpdate;
 import com.ems.taxConsultant.service.EmployeePFService;
+import com.ems.taxConsultant.service.EmployeeService;
 import com.ems.taxConsultant.utils.Constants;
 import com.ems.taxConsultant.utils.EmployeeUtils;
 import com.ems.taxConsultant.utils.ResourceIdUtils;
@@ -46,6 +47,10 @@ public class EmployeePFServiceImpl implements EmployeePFService {
 
     @Autowired
     private EmployeeAccountDao accountDao;
+
+
+    @Autowired
+    private EmployeeService employeeService;
 
 
     @Override
@@ -507,7 +512,7 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             }
             log.info("Processing employee accounts for company: {}", companyName);
             String indexName = ResourceIdUtils.generateCompanyIndex(companyName);
-            List<EmployeeResponse> employeeAccountsResponse = this.getEmployeesAccountsDetails(companyName)
+            List<EmployeeResponse> employeeAccountsResponse = employeeService.getEmployeeResponseDetails(companyName)
                     .stream()
                     .filter(emp -> emp.getPfAmount() != null && !emp.getPfAmount().isEmpty()
                             && emp.getPanNo() != null && !emp.getPanNo().isEmpty()
@@ -604,39 +609,42 @@ public class EmployeePFServiceImpl implements EmployeePFService {
             log.info("Processing employee accounts for company: {}", companyName);
             String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
 
-            List<EmployeeResponse> employees = this.getEmployeesAccountsDetails(companyName);
+            List<EmployeeResponse> employees = employeeService.getEmployeeResponseDetails(companyName);
             if (employees == null || employees.isEmpty()) {
                 log.error("No employee accounts found for company: {}", companyName);
                 throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
-
-            List<EmployeeAccountEntity> validEmployees = employees.stream()
-                    .filter(emp -> emp.getPfAmount() != null && !emp.getPfAmount().isEmpty()
-                            && emp.getPanNo() != null && !emp.getPanNo().isEmpty()
-                            && emp.getUanNumber() != null && !emp.getUanNumber().isEmpty())
-                    .map(emp -> {
-                        EmployeeAccountEntity employeeAccount = new EmployeeAccountEntity();
-                        employeeAccount.setId(ResourceIdUtils.generateEmployeeAccountResourceId(emp.getPanNo(), month, year));
-                        employeeAccount.setEmployeeId(emp.getId());
-                        employeeAccount.setEmployeeName(emp.getFirstName() + " " + emp.getLastName());
-                        employeeAccount.setCompanyId(companyEntity.getId());
-                        employeeAccount.setPanNo(base64Encode(emp.getPanNo()));
-                        employeeAccount.setUanNo(base64Encode(emp.getUanNumber()));
-                        employeeAccount.setMonth(month);
-                        employeeAccount.setYear(year);
-                        employeeAccount.setProvidentFund(base64Encode(emp.getPfAmount()));
-                        employeeAccount.setType(Constants.EMPLOYEE_ACCOUNT);
-                        return employeeAccount;
-                    })
-                    .collect(Collectors.toList());
-
-            if (validEmployees.isEmpty()) {
+            if (employees.stream().noneMatch(emp -> emp.getPfAmount() != null && !emp.getPfAmount().isEmpty()
+                    && emp.getPanNo() != null && !emp.getPanNo().isEmpty()
+                    && emp.getUanNumber() != null && !emp.getUanNumber().isEmpty())) {
                 log.error("No employee has salary for company: {}", companyName);
                 throw new TaxConsultantException("No employee has salary", HttpStatus.NOT_FOUND);
             }
+            for (EmployeeResponse employeeResponse :employees) {
+                Collection<EmployeeAccountEntity> validEmployees = accountDao.getEmployeeAccountByPanMonthYear(null, companyEntity.getId(), month, year, companyEntity.getShortName(), employeeResponse.getId(), null);
+                if (validEmployees == null || validEmployees.isEmpty()) {
+                    EmployeeAccountEntity employee = new EmployeeAccountEntity();
+                    String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(employeeResponse.getPanNo(), month, year);
+                    employee.setId(resourceId);
+                    employee.setEmployeeName(employeeResponse.getFirstName() + " " + employeeResponse.getLastName());
+                    employee.setEmployeeId(employeeResponse.getId());
+                    employee.setPanNo(base64Encode(employeeResponse.getPanNo()));
+                    employee.setUanNo(base64Encode(employeeResponse.getUanNumber()));
+                    employee.setProvidentFund(base64Encode(employeeResponse.getPfAmount()));
+                    employee.setMonth(month);
+                    employee.setYear(year);
+                    employee.setCompanyId(companyEntity.getId());
+                    employee.setType(Constants.EMPLOYEE_ACCOUNT);
+                    openSearchOperations.saveEntity(employee, resourceId, indexName);
+                } else if (validEmployees.stream().anyMatch(emp -> emp.getProvidentFund() != null && !emp.getProvidentFund().isEmpty())) {
+                    log.error("Employee account already exists for ID: {}", validEmployees.iterator().next().getId());
+                } else {
+                    EmployeeAccountEntity employee = validEmployees.iterator().next();
+                    employee.setProvidentFund(base64Encode(employeeResponse.getPfAmount()));
+                    employee.setUanNo(base64Encode(employeeResponse.getUanNumber()));
+                    openSearchOperations.saveEntity(employee, employee.getId(), indexName);
+                }
 
-            for (EmployeeAccountEntity employee : validEmployees) {
-                openSearchOperations.saveEntity(employee, employee.getId(), indexName);
             }
 
         } catch (TaxConsultantException e) {
@@ -649,31 +657,4 @@ public class EmployeePFServiceImpl implements EmployeePFService {
         return new ResponseEntity<>(
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
     }
-    public List<EmployeeResponse> getEmployeesAccountsDetails(String companyName) throws TaxConsultantException {
-        List<EmployeeEntity> employeeEntities;
-        List<EmployeeResponse> employeeResponses = new ArrayList<>();
-        try {
-            employeeEntities = openSearchOperations.getCompanyEmployees(companyName);
-
-            for (EmployeeEntity employee : employeeEntities) {
-                if (employee.getStatus().equalsIgnoreCase(Constants.ACTIVE) && !employee.getEmployeeType().equalsIgnoreCase(Constants.ADMIN)) {
-                    EmployeeUtils.unmaskEmployeeProperties(employee);
-                    List<EmployeeSalaryEntity> employeeSalaryEntity = openSearchOperations.getEmployeeSalaries(companyName, employee.getId(), Constants.ACTIVE);
-                    if (employeeSalaryEntity != null && !employeeSalaryEntity.isEmpty()) {
-                        EmployeeSalaryEntity activeSalary = employeeSalaryEntity.get(0);
-                        EmployeeResponse employeeResponse = EmployeeUtils.unMaskEmployeeAccountProperties(activeSalary, employee);
-                        employeeResponses.add(employeeResponse);
-                    }
-                }
-
-            }
-        } catch (Exception ex) {
-            log.error("Exception while fetching employees for company {}: {}", companyName, ex.getMessage());
-            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_GET_EMPLOYEES),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return employeeResponses;
-    }
-
 }

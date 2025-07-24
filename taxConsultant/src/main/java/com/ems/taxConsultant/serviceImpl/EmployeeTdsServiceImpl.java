@@ -5,6 +5,7 @@ import com.ems.taxConsultant.dao.EmployeeAccountDao;
 import com.ems.taxConsultant.persistance.*;
 import com.ems.taxConsultant.request.EmployeeTDSRequest;
 import com.ems.taxConsultant.service.EmployeePFService;
+import com.ems.taxConsultant.service.EmployeeService;
 import com.ems.taxConsultant.service.EmployeeTdsService;
 import com.ems.taxConsultant.utils.EmployeeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +50,9 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
 
     @Autowired
     private EmployeePFService pfService;
+
+    @Autowired
+    private EmployeeService employeeService;
 
     @Override
     public ResponseEntity<?> employeeTDSComparing(String companyName, String month, String year, MultipartFile file) throws TaxConsultantException, IOException {
@@ -478,7 +482,7 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             log.info("Processing TDS comparison for company: {}", companyName);
             String indexName = ResourceIdUtils.generateCompanyIndex(companyName);
 
-            List<EmployeeResponse> employeeAccountsResponse = getEmployeeAccountDetailsForTDS(companyName);
+            List<EmployeeResponse> employeeAccountsResponse = employeeService.getEmployeeResponseDetails(companyName);
             if (employeeAccountsResponse == null || employeeAccountsResponse.isEmpty()) {
                 log.warn("No employee TDS data found for company: {}", companyName);
                 throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
@@ -498,31 +502,6 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
                 ResponseBuilder.builder().build().createSuccessResponse(responseBody), HttpStatus.CREATED);
     }
 
-
-
-    private List<EmployeeResponse> getEmployeeAccountDetailsForTDS(String companyName) throws TaxConsultantException {
-        List<EmployeeEntity> employeeEntities;
-        List<EmployeeResponse> employeeResponses = new ArrayList<>();
-        try {
-            employeeEntities = openSearchOperations.getCompanyEmployees(companyName);
-
-            for (EmployeeEntity employee : employeeEntities) {
-                if (employee.getStatus().equalsIgnoreCase(Constants.ACTIVE) && !employee.getEmployeeType().equalsIgnoreCase(Constants.ADMIN)) {
-                    EmployeeUtils.unmaskEmployeeProperties(employee);
-                    List<EmployeeSalaryEntity> salaries = openSearchOperations.getEmployeeSalaries(companyName, employee.getId(), Constants.ACTIVE);
-                    if (salaries != null && !salaries.isEmpty()) {
-                        EmployeeSalaryEntity activeSalary = salaries.get(0);
-                        EmployeeResponse response = EmployeeUtils.unMaskEmployeeAccountProperties(activeSalary, employee);
-                        employeeResponses.add(response);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            log.error("Error fetching employee TDS details for {}: {}", companyName, ex.getMessage());
-            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_GET_EMPLOYEES), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return employeeResponses;
-    }
 
     private Map<String, Object> forComparingTDS(CompanyEntity companyEntity, String month, String year,
                                                 String indexName, List<EmployeeResponse> employeeAccountsResponse) throws TaxConsultantException {
@@ -596,29 +575,41 @@ public class EmployeeTdsServiceImpl implements EmployeeTdsService {
             }
             log.info("Registering employee TDS for company: {}", companyName);
             String indexName = ResourceIdUtils.generateCompanyIndex(companyEntity.getShortName());
-
-            List<EmployeeAccountEntity> employees = getEmployeeAccountDetailsForTDS(companyName).stream()
-                    .filter(emp -> emp.getTds() != null && !emp.getTds().isEmpty()
-                            && emp.getPanNo() != null && !emp.getPanNo().isEmpty())
-                    .map(emp -> {
-                        EmployeeAccountEntity account = new EmployeeAccountEntity();
-                        account.setId(ResourceIdUtils.generateEmployeeAccountResourceId(emp.getPanNo(), month, year));
-                        account.setEmployeeId(emp.getId());
-                        account.setEmployeeName(emp.getFirstName() + " " + emp.getLastName());
-                        account.setCompanyId(companyEntity.getId());
-                        account.setPanNo(base64Encode(emp.getPanNo()));
-                        account.setMonth(month);
-                        account.setYear(year);
-                        account.setTds(base64Encode(emp.getTds()));
-                        account.setType(Constants.EMPLOYEE_ACCOUNT);
-                        return account;
-                    })
-                    .collect(Collectors.toList());
-
-            for (EmployeeAccountEntity employee : employees) {
-                openSearchOperations.saveEntity(employee, employee.getId(), indexName);
+            List<EmployeeResponse> employees = employeeService.getEmployeeResponseDetails(companyName);
+            if (employees == null || employees.isEmpty()) {
+                log.error("No employee accounts found for company: {}", companyName);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
             }
+            if (employees.stream().noneMatch(emp -> emp.getPfAmount() != null && !emp.getPfAmount().isEmpty()
+                    && emp.getPanNo() != null && !emp.getPanNo().isEmpty()
+                    && emp.getUanNumber() != null && !emp.getUanNumber().isEmpty())) {
+                log.error("No employee has salary for company: {}", companyName);
+                throw new TaxConsultantException("No employee has salary", HttpStatus.NOT_FOUND);
+            }
+            for (EmployeeResponse employeeResponse :employees) {
+                Collection<EmployeeAccountEntity> validEmployees = accountDao.getEmployeeAccountByPanMonthYear(null, companyEntity.getId(), month, year, companyEntity.getShortName(), employeeResponse.getId(), null);
+                if (validEmployees == null || validEmployees.isEmpty()) {
+                    EmployeeAccountEntity employee = new EmployeeAccountEntity();
+                    String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(employeeResponse.getPanNo(), month, year);
+                    employee.setId(resourceId);
+                    employee.setEmployeeName(employeeResponse.getFirstName() + " " + employeeResponse.getLastName());
+                    employee.setEmployeeId(employeeResponse.getId());
+                    employee.setPanNo(base64Encode(employeeResponse.getPanNo()));
+                    employee.setTds(base64Encode(employeeResponse.getTds()));
+                    employee.setMonth(month);
+                    employee.setYear(year);
+                    employee.setCompanyId(companyEntity.getId());
+                    employee.setType(Constants.EMPLOYEE_ACCOUNT);
+                    openSearchOperations.saveEntity(employee, resourceId, indexName);
+                } else if (validEmployees.stream().anyMatch(emp -> emp.getProvidentFund() != null && !emp.getProvidentFund().isEmpty())) {
+                    log.error("Employee account already exists for ID: {}", validEmployees.iterator().next().getId());
+                } else {
+                    EmployeeAccountEntity employee = validEmployees.iterator().next();
+                    employee.setTds(base64Encode(employeeResponse.getTds()));
+                    openSearchOperations.saveEntity(employee, employee.getId(), indexName);
+                }
 
+            }
         } catch (TaxConsultantException e) {
             log.error("Error registering TDS: {}", e.getMessage());
             throw e;
