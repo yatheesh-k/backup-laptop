@@ -69,4 +69,28 @@ public class EmployeeTDSController {
             @PathVariable String companyName, @RequestBody EmployeeTDSRequest request) throws  IOException, TaxConsultantException {
         return employeeTDSService.addSingleEmployeeForTDS(companyName, request);
     }
+
+    @GetMapping("{companyName}/tds/comparing")
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.employeeTDSComparing.tag}", description = "${api.employeeTDSComparing.description}")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
+    public ResponseEntity<?> employeeTDSComparingDB(
+            @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+            @RequestHeader(Constants.AUTH_KEY) String authToken,
+            @PathVariable String companyName,
+            @RequestParam String month, @RequestParam String year) throws IOException, TaxConsultantException {
+        return employeeTDSService.employeeTDSComparingDB(companyName, month, year);
+    }
+
+    @RequestMapping(value = "{companyName}/tds", method = RequestMethod.POST)
+    @io.swagger.v3.oas.annotations.Operation(security = {@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = Constants.AUTH_KEY) },
+            summary = "${api.registerEmployeeForTDS.tag}", description = "${api.registerEmployeeForTDS.description}")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "OK")
+    public ResponseEntity<?> registerEmployeeForTDS(
+            @Parameter(hidden = true, required = true, description = "${apiAuthToken.description}", example = "Bearer abcdef12-1234-1234-1234-abcdefabcdef")
+            @RequestHeader(Constants.AUTH_KEY) String authToken,
+            @PathVariable String companyName,
+            @RequestParam String month, @RequestParam String year) throws TaxConsultantException {
+        return employeeTDSService.registerEmployeeForTDSDB(companyName, month, year);
+    }
 }

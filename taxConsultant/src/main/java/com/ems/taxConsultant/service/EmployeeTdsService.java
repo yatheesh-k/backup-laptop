@@ -16,4 +16,8 @@ public interface EmployeeTdsService {
 
     ResponseEntity<?> addSingleEmployeeForTDS(String companyName, EmployeeTDSRequest employeeTDSRequest) throws TaxConsultantException;
 
-}
+    ResponseEntity<?> employeeTDSComparingDB(String companyName, String month, String year) throws TaxConsultantException;
+
+    ResponseEntity<?> registerEmployeeForTDSDB(String companyName, String month, String year) throws TaxConsultantException;
+
+    }
