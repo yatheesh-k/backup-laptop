@@ -291,6 +291,9 @@ public class CompanyUtils {
             ifscCode = Base64.getEncoder().encodeToString(employeeUpdateRequest.getIfscCode().getBytes());
             user.setIfscCode(ifscCode);
         }
+        if (employeeUpdateRequest.getPfNo() != null) {
+            user.setIfscCode(employeeUpdateRequest.getPfNo());
+        }
 
         return user;
     }

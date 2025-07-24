@@ -230,6 +230,12 @@ public class EmployeeUtils {
         }if (!user.getBankName().equals(employeeUpdateRequest.getBankName())){
             noOfChanges +=1;
         }
+        if (!user.getBankBranch().equals(employeeUpdateRequest.getBankBranch())){
+            noOfChanges +=1;
+        }
+        if (!user.getPfNo().equals(employeeUpdateRequest.getPfNo())){
+            noOfChanges +=1;
+        }
 
         if (employeePersonnel != null) {
             noOfChanges += compareEmployeeExperience(
