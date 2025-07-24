@@ -320,6 +320,11 @@ public class GSTAccountServiceImpl implements GSTAccountService {
         responseBody.put(Constants.NEW_GST_FILING, notCompanyCustomers);
         responseBody.put(Constants.DUPLICATE_GST,duplicateGstCustomers );
 
+        YearMonth current = YearMonth.of(Integer.parseInt(year), Month.valueOf(month.toUpperCase()));
+        YearMonth previous = current.minusMonths(1);
+        String prevMonth = previous.getMonth().toString();  // e.g., JUNE
+        String prevYear = String.valueOf(previous.getYear());
+
         // Step 1: Parse Excel data
         Map<String, List<GSTAccountEntity>> excelGstData = new HashMap<>();
         Map<String, Integer> gstCountMap = new HashMap<>();
@@ -372,7 +377,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
 
         // Step 2: Fetch GST data from OpenSearch (Elastic only)
         Collection<GSTAccountEntity> dbGstAccounts = gstAccountDao.findByCompanyIdAndMonthAndYear(
-                company.getShortName(), company.getId(), year, null, null);
+                company.getShortName(), company.getId(), year, prevMonth, null);
 
         Map<String, List<GSTAccountEntity>> dbGstMap = new HashMap<>();
         for (GSTAccountEntity entity : dbGstAccounts) {
