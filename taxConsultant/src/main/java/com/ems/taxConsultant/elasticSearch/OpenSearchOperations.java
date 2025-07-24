@@ -13,6 +13,7 @@ import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
 import com.ems.taxConsultant.persistance.CompanyEntity;
 import com.ems.taxConsultant.persistance.EmployeeEntity;
+import com.ems.taxConsultant.persistance.InvoiceModel;
 import com.ems.taxConsultant.persistance.EmployeeSalaryEntity;
 import com.ems.taxConsultant.persistance.model.Entity;
 import com.ems.taxConsultant.utils.Constants;
@@ -24,8 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class OpenSearchOperations {
@@ -40,7 +41,7 @@ public class OpenSearchOperations {
     public Entity saveEntity(Entity entity, String Id, String index) throws TaxConsultantException {
         co.elastic.clients.elasticsearch.core.IndexResponse indexResponse = null;
         try {
-            synchronized (entity){
+            synchronized (entity) {
                 indexResponse = esClient.index(builder -> builder.index(index)
                         .id(Id)
                         .document(entity));
@@ -58,13 +59,13 @@ public class OpenSearchOperations {
         logger.debug("Deleting the Entity {}", id);
         co.elastic.clients.elasticsearch.core.DeleteResponse deleteResponse = null;
         try {
-            synchronized (id){
+            synchronized (id) {
                 deleteResponse = esClient.delete(b -> b.index(index)
                         .id(id));
 
             }
-            if(deleteResponse.result() == Result.NotFound) {
-                throw new TaxConsultantException(String.format("Entity Id not found",id), HttpStatus.NOT_FOUND);
+            if (deleteResponse.result() == Result.NotFound) {
+                throw new TaxConsultantException(String.format("Entity Id not found", id), HttpStatus.NOT_FOUND);
             }
             logger.debug("Deleted the Entity {}, Delete response {}", id, deleteResponse);
         } catch (IOException e) {
@@ -178,6 +179,44 @@ public class OpenSearchOperations {
         return null;
     }
 
+    public List<InvoiceModel> getInvoicesByCustomerId(String customerId, String index) throws TaxConsultantException {
+        logger.debug("Getting invoices for company {} from index {}", customerId, index);
+
+        try {
+            // Build bool query
+            BoolQuery boolQuery = BoolQuery.of(b -> b
+                    .filter(f -> f.matchPhrase(mp -> mp.field(Constants.TYPE).query(Constants.INVOICE)))
+                    .filter(f -> f.matchPhrase(mp -> mp.field(Constants.CUSTOMER_ID).query(customerId)))
+            );
+
+            // Execute search
+            SearchResponse<InvoiceModel> searchResponse = esClient.search(s -> s
+                            .index(index)
+                            .size(SIZE_ELASTIC_SEARCH_MAX_VAL)
+                            .query(q -> q.bool(boolQuery)),
+                    InvoiceModel.class
+            );
+
+            List<Hit<InvoiceModel>> hits = Optional.ofNullable(searchResponse.hits())
+                    .map(h -> h.hits())
+                    .orElse(Collections.emptyList());
+
+            logger.info("Number of invoice hits for company {}: {}", customerId, hits.size());
+
+            return hits.stream()
+                    .map(Hit::source)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+        } catch (IOException e) {
+            logger.error("Error fetching invoices for company {}: {}", customerId, e.getMessage(), e);
+            throw new TaxConsultantException(
+                    ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_TO_SEARCH),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    
     public List<EmployeeSalaryEntity> getEmployeeSalaries(String companyName, String employeeId, String status) throws TaxConsultantException {
 
         logger.debug("Getting employees for salary details {}", companyName);

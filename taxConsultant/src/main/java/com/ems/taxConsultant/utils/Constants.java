@@ -44,21 +44,8 @@ public class Constants {
     public static final Object DELETED = "Deleted";
     public static final String CUSTOMER_ID = "customerId";
     public static final String GST_ACCOUNT = "gst_account";
-    public static final String MISSED_COMPANY_CUSTOMER = "Company Customers Who are not in the Sheet";
-    public static final String NOT_COMPANY_CUSTOMERS = "Customers Not existed in company";
-    public static final String GST_MISS_MATCH_CUSTOMERS = "GST Mismatch Customers";
     public static final String CUSTOMER_GST = "customerGstNo";
-    public static final String COMPANY_NAME = "companyName";
-    public static final String TOTAL_AMOUNT = "totalAmount";
-    public static final String SUB_TOTAL = "subTotal";
-    public static final String C_GST = "cGst";
-    public static final String S_GST = "sGst";
-    public static final String I_GST = "iGst";
-    public static final String EXCEL = "Excel: ";
-    public static final String DB = ", DB: ";
-    public static final String INVOICE_NUMBER = "invoiceNumber";
     public static final String CUSTOMER_NAME = "customerName";
-    public static final String DIFFERENCES = "Differences";
     public static final String PF_RESPONSE = "pf_response";
     public static final String FILED = "Filed";
     public static final String PT_MISMATCH_EMPLOYEES = "PT Mismatch Employees";
@@ -81,9 +68,12 @@ public class Constants {
     public static final String TAX_CONSULTANT =  "tax_consultant";
     public static final String HR_MANAGEMENT =  "hr_management";
     public static final String INVOICE_MANAGEMENT =  "invoice_management";
-
-
     public static final String DUE_DATES = "due_dates";
+    public static final String INVOICE = "invoice";
+    public static final String DUPLICATE_GST = "Duplicate GST";
+    public static final String THIS_MONTH_MISSING_GST_FILING = "This Month Missing GST Filing Customers";
+    public static final String NEW_GST_FILING = "New GST Filing Customers";
+    public static final String COUNT = "count";
     public static final String SALARY = "salary";
     public static final String STATUS = "status";
     public static final String ADMIN = "CompanyAdmin";

@@ -13,6 +13,8 @@ public interface GSTAccountService {
 
     ResponseEntity<?> gstComparing(String companyName, String month, String year, MultipartFile file) throws TaxConsultantException, IOException;
 
+    ResponseEntity<?> getGstAccountComparing(String companyName, String month, String year) throws TaxConsultantException;
+
     ResponseEntity<?> registerGSTAccount(String companyName, String month, String year, MultipartFile file) throws TaxConsultantException;
 
     ResponseEntity<?> addSingleGSTAccount(String companyName,GSTAccountRequest gstAccountRequest) throws TaxConsultantException;
@@ -22,5 +24,7 @@ public interface GSTAccountService {
     ResponseEntity<?> updateGSTAccount(String companyName, String Id, GSTAccountRequest gstAccountRequest) throws TaxConsultantException;
 
     ResponseEntity<?> deleteGSTAccount(String companyName, String Id) throws TaxConsultantException;
+
+    ResponseEntity<?> GstAccountRegister( String companyName, String month, String year) throws TaxConsultantException;
 
 }
