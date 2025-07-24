@@ -53,13 +53,13 @@ public class EmployeeUtils {
         if(salaryEntity.getPfTax() != null) {
             tax = new String((Base64.getDecoder().decode(salaryEntity.getPfTax().toString().getBytes())));
             double pfTax = Double.parseDouble(tax); // Parse tax to double
-            employeeResponse.setPfTax(String.format("%.2f",pfTax/12));
+            employeeResponse.setPfTax(String.valueOf(Math.round(pfTax/12)));
         }
         if (salaryEntity.getIncomeTax() != null){
             itax = new String((Base64.getDecoder().decode(salaryEntity.getIncomeTax().toString().getBytes())));
             salaryEntity.setIncomeTax(itax);
             double incomeTax = Double.parseDouble(itax); // Parse itax to double
-            employeeResponse.setTds(String.format("%.2f",incomeTax/12));
+            employeeResponse.setTds(String.valueOf(Math.round(incomeTax/12)));
         }
         if(salaryEntity.getTotalEarnings() != null) {
             te = new String((Base64.getDecoder().decode(salaryEntity.getTotalEarnings().toString().getBytes())));
@@ -77,7 +77,7 @@ public class EmployeeUtils {
 
             double totalAmount = tdedValue+ttaxValue;
             double netAmount = tEarValue -totalAmount;
-            employeeResponse.setEmployeeSalary(String.format("%.2f",netAmount/12));
+            employeeResponse.setEmployeeSalary(String.valueOf(Math.round(netAmount/12)));
         }
 
         if (salaryEntity.getSalaryConfigurationEntity().getDeductions() != null) {

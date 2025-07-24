@@ -6,13 +6,12 @@ import com.ems.taxConsultant.elasticSearch.OpenSearchOperations;
 import com.ems.taxConsultant.exception.TaxConsultantException;
 import com.ems.taxConsultant.exception.ErrorMessageHandler;
 import com.ems.taxConsultant.exception.ErrorMessageKey;
-import com.ems.taxConsultant.persistance.CompanyEntity;
-import com.ems.taxConsultant.persistance.EmployeeAccountEntity;
-import com.ems.taxConsultant.persistance.EmployeeEntity;
+import com.ems.taxConsultant.persistance.*;
 import com.ems.taxConsultant.request.EmployeePTRequest;
 import com.ems.taxConsultant.request.EmployeePTUpdate;
 import com.ems.taxConsultant.service.EmployeePTService;
 import com.ems.taxConsultant.utils.Constants;
+import com.ems.taxConsultant.utils.EmployeeUtils;
 import com.ems.taxConsultant.utils.ResourceIdUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -200,6 +200,187 @@ public class EmployeePTServiceImpl implements EmployeePTService {
                 ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
 
     }
+
+    @Override
+    public ResponseEntity<?> employeesPTComparing(String companyName, String month, String year) throws TaxConsultantException {
+        Map<String, Object> responseBody;
+        try {
+            CompanyEntity companyEntity = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (companyEntity == null) {
+                log.error("Company not found with name: {}", companyName);
+                throw new TaxConsultantException("Company not found", HttpStatus.NOT_FOUND);
+            }
+            log.info("Processing employee accounts for company: {}", companyName);
+            String indexName = ResourceIdUtils.generateCompanyIndex(companyName);
+            List<EmployeeResponse> employeeAccountsResponse = this.getEmployeesAccountsDetails(companyName)
+                    .stream()
+                    .filter(emp -> emp.getPfTax() != null && !emp.getPfTax().isEmpty()
+                            && emp.getPanNo() != null && !emp.getPanNo().isEmpty()
+                           )
+                    .collect(Collectors.toList());
+
+            if (employeeAccountsResponse == null || employeeAccountsResponse.isEmpty()) {
+                log.warn("No employee accounts found for company: {}", companyName);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+            responseBody = forComparing(companyEntity, month, year, indexName, employeeAccountsResponse);
+
+        } catch (TaxConsultantException e) {
+            log.error("Exception while fetching company details: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("An unexpected error occurred while fetching company details: {}", e.getMessage());
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_PT), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(
+                ResponseBuilder.builder().build().createSuccessResponse(responseBody), HttpStatus.CREATED);
+
+    }
+
+    @Override
+    public ResponseEntity<?> registerEmployeesForPT(String companyName, String month, String year) throws TaxConsultantException {
+        try {
+            CompanyEntity company = openSearchOperations.getCompanyByCompanyName(companyName, Constants.INDEX_EMS);
+            if (company == null) {
+                log.error("Company not found with name: {}", companyName);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            }
+
+            String indexName = ResourceIdUtils.generateCompanyIndex(company.getShortName());
+            List<EmployeeResponse> employees = this.getEmployeesAccountsDetails(companyName);
+            if (employees == null || employees.isEmpty()) {
+                log.error("No employees found for company: {}", companyName);
+                throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+
+            List<EmployeeAccountEntity> employeesToSave = new ArrayList<>();
+
+            for (EmployeeResponse emp : employees) {
+                String panPlain = emp.getPanNo();
+                String salaryStr = emp.getEmployeeSalary();
+
+                double salary;
+                try {
+                    salary = Double.parseDouble(salaryStr);
+                } catch (NumberFormatException e) {
+                    throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.INVALID_SALARY_FORMAT), HttpStatus.BAD_REQUEST);
+                }
+
+                int ptAmount;
+                if (salary <= 15000) {
+                    ptAmount = 0;
+                } else if (salary <= 20000) {
+                    ptAmount = 150;
+                } else {
+                    ptAmount = 200;
+                }
+
+                String panEncoded = base64Encode(panPlain);
+
+                String resourceId = ResourceIdUtils.generateEmployeeAccountResourceId(panPlain, month, year);
+                Optional<EmployeeAccountEntity> existingAccount = accountDao.get(resourceId, company.getShortName());
+
+                EmployeeAccountEntity employee;
+
+                if (existingAccount.isPresent()) {
+                    EmployeeAccountEntity acc = existingAccount.get();
+                    if (acc.getProfessionalTax() != null && !acc.getProfessionalTax().isEmpty()) {
+                        log.error("PT already registered for employee with ID: {}", resourceId);
+                        throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.EMPLOYEE_PT_ALREADY_EXISTS), HttpStatus.BAD_REQUEST);
+                    } else {
+                        acc.setProfessionalTax(base64Encode(String.valueOf(ptAmount)));
+                        employee = acc;
+                    }
+                } else {
+                    employee = new EmployeeAccountEntity();
+                    employee.setId(resourceId);
+                    employee.setEmployeeName(emp.getFirstName() + " " + emp.getLastName());
+                    employee.setEmployeeId(emp.getId());
+                    employee.setPanNo(panEncoded);
+                    employee.setMonth(month);
+                    employee.setYear(year);
+                    employee.setCompanyId(company.getId());
+                    employee.setProfessionalTax(base64Encode(String.valueOf(ptAmount)));
+                    employee.setType(Constants.EMPLOYEE_ACCOUNT);
+                }
+
+                employeesToSave.add(employee);
+            }
+
+            for (EmployeeAccountEntity employee : employeesToSave) {
+                openSearchOperations.saveEntity(employee, employee.getId(), indexName);
+            }
+
+            return new ResponseEntity<>(ResponseBuilder.builder().build().createSuccessResponse(Constants.SUCCESS), HttpStatus.CREATED);
+
+        } catch (TaxConsultantException e) {
+            log.error("PT registration error: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error in PT registration: {}", e.getMessage());
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_SAVE_EMPLOYEE_PT), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private Map<String, Object> forComparing(CompanyEntity companyEntity, String month, String year, String indexName, List<EmployeeResponse> employeeAccountsResponse) throws TaxConsultantException {
+        List<Object> previousMonthMissed = new ArrayList<>();
+        List<Object> currentMonthAdded = new ArrayList<>();
+        List<Object> ptMismatchEmployees = new ArrayList<>();
+
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put(Constants.PREVIOUS_MONTH_MISSED_EMP, previousMonthMissed);
+        responseBody.put(Constants.CURRENT_MONTH_ADDED_EMP, currentMonthAdded);
+        responseBody.put(Constants.PT_MISMATCH_EMPLOYEES, ptMismatchEmployees);
+
+        YearMonth current = YearMonth.of(Integer.parseInt(year), Month.valueOf(month.toUpperCase()));
+        YearMonth previous = current.minusMonths(1);
+        String prevMonth = previous.getMonth().toString();  // e.g., JUNE
+        String prevYear = String.valueOf(previous.getYear());
+
+        Set<String> currentMonthEmpIds = employeeAccountsResponse.stream()
+                .map(EmployeeResponse::getId)
+                .collect(Collectors.toSet());
+
+        Collection<EmployeeAccountEntity> previousMonthAccounts = accountDao.getEmployeeAccountByPanMonthYear(null,
+                companyEntity.getId(), prevMonth, prevYear, companyEntity.getShortName(), null, null);
+
+        Set<String> previousMonthEmpIds = new HashSet<>();
+        Map<String, EmployeeAccountEntity> previousEmpMap = new HashMap<>();
+        if (previousMonthAccounts != null) {
+            for (EmployeeAccountEntity prevEmp : previousMonthAccounts) {
+                previousMonthEmpIds.add(prevEmp.getEmployeeId());
+                previousEmpMap.put(prevEmp.getEmployeeId(), prevEmp);
+            }
+        }
+
+        for (EmployeeResponse currentEmp : employeeAccountsResponse) {
+            String empId = currentEmp.getId();
+            if (!previousMonthEmpIds.contains(empId)) {
+                currentMonthAdded.add(currentEmp.getFirstName() + " " + currentEmp.getLastName());
+            } else {
+                EmployeeAccountEntity prevEntity = previousEmpMap.get(empId);
+                String decodedPt = new String(Base64.getDecoder().decode(prevEntity.getProfessionalTax()));
+                if (!currentEmp.getPfTax().equalsIgnoreCase(decodedPt)) {
+                    ptMismatchEmployees.add(
+                            String.format("%s %s (Previous PT: %s, Current PT: %s)",
+                                    currentEmp.getFirstName(), currentEmp.getLastName(),
+                                    decodedPt,
+                                    currentEmp.getPfTax())
+                    );
+                }
+            }
+        }
+
+        for (EmployeeAccountEntity prevEmp : previousMonthAccounts) {
+            String empId = prevEmp.getEmployeeId();
+            if (!currentMonthEmpIds.contains(empId)) {
+                previousMonthMissed.add(prevEmp.getEmployeeName());
+            }
+        }
+
+        return responseBody;
+    }
+
 
     private Map<String, Object> parseExcelSheetForPTComparing(
             CompanyEntity company, String month, String year, MultipartFile file, String indexName) throws IOException, TaxConsultantException {
@@ -480,5 +661,33 @@ public class EmployeePTServiceImpl implements EmployeePTService {
         }
         return emptyNames.toArray(new String[0]);
     }
+
+    public List<EmployeeResponse> getEmployeesAccountsDetails(String companyName) throws TaxConsultantException {
+        List<EmployeeEntity> employeeEntities;
+        List<EmployeeResponse> employeeResponses = new ArrayList<>();
+        try {
+            employeeEntities = openSearchOperations.getCompanyEmployees(companyName);
+
+            for (EmployeeEntity employee : employeeEntities) {
+                if (employee.getStatus().equalsIgnoreCase(Constants.ACTIVE) && !employee.getEmployeeType().equalsIgnoreCase(Constants.ADMIN)) {
+                    EmployeeUtils.unmaskEmployeeProperties(employee);
+                    List<EmployeeSalaryEntity> employeeSalaryEntity = openSearchOperations.getEmployeeSalaries(companyName, employee.getId(), Constants.ACTIVE);
+                    if (employeeSalaryEntity != null && !employeeSalaryEntity.isEmpty()) {
+                        EmployeeSalaryEntity activeSalary = employeeSalaryEntity.get(0);
+                        EmployeeResponse employeeResponse = EmployeeUtils.unMaskEmployeeAccountProperties(activeSalary, employee);
+                        employeeResponses.add(employeeResponse);
+                    }
+                }
+
+            }
+        } catch (Exception ex) {
+            log.error("Exception while fetching employees for company {}: {}", companyName, ex.getMessage());
+            throw new TaxConsultantException(ErrorMessageHandler.getMessage(ErrorMessageKey.UNABLE_GET_EMPLOYEES),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return employeeResponses;
+    }
+
 
 }
