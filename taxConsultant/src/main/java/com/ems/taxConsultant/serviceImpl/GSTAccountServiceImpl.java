@@ -34,6 +34,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Month;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -455,6 +457,11 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                 Map<String, String> currentGstMap = new HashMap<>();
                 Map<String, Long> gstDuplicateMap = new HashMap<>();
 
+            YearMonth current = YearMonth.of(Integer.parseInt(year), Month.valueOf(month.toUpperCase()));
+            YearMonth previous = current.minusMonths(1);
+            String prevMonth = previous.getMonth().toString();  // e.g., JUNE
+            String prevYear = String.valueOf(previous.getYear());
+
                 for (CustomerModel customer : customerModels) {
                     if (customer.getCustomerId() == null || customer.getCustomerGstNo() == null) continue;
 
@@ -480,7 +487,7 @@ public class GSTAccountServiceImpl implements GSTAccountService {
                         companyEntity.getShortName(),
                         companyEntity.getId(),
                         year,
-                        null,
+                        prevMonth,
                         null
                 );
 
