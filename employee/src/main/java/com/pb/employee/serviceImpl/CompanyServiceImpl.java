@@ -580,7 +580,7 @@ public class CompanyServiceImpl implements CompanyService {
 
         if (company == null) {
             log.error("Company not found for short name: {}", shortName);
-            throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.COMPANY_NOT_EXIST), HttpStatus.NOT_FOUND);
+            throw new EmployeeException(ErrorMessageHandler.getMessage(EmployeeErrorMessageKey.INVALID_SERVICE_NAME), HttpStatus.NOT_FOUND);
         }
 
         log.info("Company validation successful for short name: {}", shortName);
