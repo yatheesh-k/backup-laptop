@@ -81,7 +81,7 @@ public class RestFilter implements Filter {
         }
 
         // Check if the URI is in the exclude list or Swagger URLs
-        if (EXCLUDE_API_LIST.contains(uri) || isInSwaggerUiWhiteList(uri)) {
+        if (EXCLUDE_API_LIST.contains(uri) || isInSwaggerUiWhiteList(uri)||isCompanyValidate(uri.substring(req.getContextPath().length()))) {
             logger.debug("Token validation is not required for url {}", req.getRequestURI());
         } else {
             if (StringUtils.isNotBlank(token)) {
@@ -194,6 +194,9 @@ public class RestFilter implements Filter {
             return SWAGGER_URLS_TO_BYPASS_AUTH.contains(uri) || uri.startsWith(prefix_swagger_ui_resources);
         }
         return false;
+    }
+    private boolean isCompanyValidate(String uri) {
+        return uri.matches("^/company/[^/]+/validate$");
     }
 }
 
