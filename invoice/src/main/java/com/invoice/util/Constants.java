@@ -69,4 +69,6 @@ public class Constants {
     public static final String BANK_1 = "bank";
     public static final String TEMPLATE = "template";
     public static final String SHIPPED_TO = "shipped";
+    public static final String SUCCESS = "Success";
+
 }

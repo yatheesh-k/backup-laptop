@@ -197,7 +197,8 @@ public enum EmployeeErrorMessageKey {
     INVALID_ROLE("invalid.role"),
     UNABLE_UPDATE_COMPANY_ROLES("unable.update.company.roles"),
     EMAIL_ALREADY_USED_BY_CANDIDATE("email.already.used.by.candidate"),
-    UNABLE_TO_DOWNLOAD_PAYSLIP("unable.to.download.payslip"),;
+    UNABLE_TO_DOWNLOAD_PAYSLIP("unable.to.download.payslip"),
+    INVALID_SERVICE_NAME("invalid.service.name"),;
     private final String key;
 
     EmployeeErrorMessageKey(String keyVal) {
