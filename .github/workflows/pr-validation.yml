@@ -1,0 +1,66 @@
+name: PR Validation (Java + Node)
+
+on:
+  pull_request:
+    branches:
+      - main  # or your default branch
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      #### ---- Node.js Tests ---- ####
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Node.js dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Run Node.js tests
+        working-directory: ./frontend
+        run: npm test
+
+      #### ---- Java Tests ---- ####
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'  # or 17 or 11, depending on your project
+
+      - name: Build and test Java code (Maven or Gradle)
+        working-directory: ./backend
+        run: |
+          if [ -f "pom.xml" ]; then
+            mvn clean install
+          elif [ -f "build.gradle" ]; then
+            ./gradlew build
+          else
+            echo "No build tool found"
+            exit 1
+          fi
+
+      #### ---- Check for Required Files ---- ####
+      - name: Ensure required files exist
+        run: |
+          required_files=(
+            "./frontend/__tests__/app.test.js"
+            "./backend/src/test/java/com/example/AppTest.java"
+          )
+
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing required file: $file"
+              exit 1
+            fi
+          done
+
