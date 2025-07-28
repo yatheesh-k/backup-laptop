@@ -3,7 +3,7 @@ name: PR Validation (Java + Node)
 on:
   pull_request:
     branches:
-      - main  # or your default branch
+      - main
 
 jobs:
   validate:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      #### ---- Node.js Tests ---- ####
+      #### ---- Node.js Tests (React) ---- ####
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -26,16 +26,35 @@ jobs:
         working-directory: ./frontend
         run: npm install
 
+      - name: Install Babel and Jest config for ESM
+        working-directory: ./frontend
+        run: |
+          npm install --save-dev babel-jest @babel/preset-env @babel/preset-react
+
+          # Create babel.config.js
+          echo "module.exports = {
+            presets: ['@babel/preset-env', '@babel/preset-react']
+          };" > babel.config.js
+
+          # Create jest.config.js
+          echo "module.exports = {
+            testEnvironment: 'jsdom',
+            transform: {
+              '^.+\\\\.(js|jsx)$': 'babel-jest'
+            },
+            moduleFileExtensions: ['js', 'jsx']
+          };" > jest.config.js
+
       - name: Run Node.js tests
         working-directory: ./frontend
-        run: npm test
+        run: CI=false npm test
 
       #### ---- Java Tests ---- ####
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '21'  # or 17 or 11, depending on your project
+          java-version: '21'
 
       - name: Build and test Java code (Maven or Gradle)
         working-directory: ./backend
@@ -53,7 +72,7 @@ jobs:
       - name: Ensure required files exist
         run: |
           required_files=(
-            "./frontend/__tests__/app.test.js"
+            "./frontend/src/App.test.js"
             "./backend/src/test/java/com/example/AppTest.java"
           )
 
@@ -61,6 +80,9 @@ jobs:
             if [ ! -f "$file" ]; then
               echo "❌ Missing required file: $file"
               exit 1
+            fi
+          done
+
             fi
           done
 
