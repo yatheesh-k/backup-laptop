@@ -34,7 +34,11 @@ jobs:
           if [ -f "pom.xml" ]; then
             mvn clean install
           elif [ -f "build.gradle" ]; then
+            chmod +x ./gradlew
             ./gradlew build
+          else
+            echo "No build tool found"
+            exit 1
           fi
 
       - name: Build identity service
@@ -43,7 +47,11 @@ jobs:
           if [ -f "pom.xml" ]; then
             mvn clean install
           elif [ -f "build.gradle" ]; then
+            chmod +x ./gradlew
             ./gradlew build
+          else
+            echo "No build tool found"
+            exit 1
           fi
 
       - name: Build invoice service
@@ -52,7 +60,11 @@ jobs:
           if [ -f "pom.xml" ]; then
             mvn clean install
           elif [ -f "build.gradle" ]; then
+            chmod +x ./gradlew
             ./gradlew build
+          else
+            echo "No build tool found"
+            exit 1
           fi
 
       ######################################
