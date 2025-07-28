@@ -16,27 +16,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      #### ---- Node.js Tests (React) ---- ####
+      #### ---- Node.js Tests (React UI) ---- ####
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
       - name: Install Node.js dependencies
-        working-directory: ./frontend
-        run: npm install
-
-      - name: Install Babel and Jest config for ESM
-        working-directory: ./frontend
+        working-directory: ./ui
         run: |
-          npm install --save-dev babel-jest @babel/preset-env @babel/preset-react
+          npm install
+          npm install --save-dev jest babel-jest @babel/preset-env @babel/preset-react
 
-          # Create babel.config.js
+      - name: Create Babel & Jest config
+        working-directory: ./ui
+        run: |
           echo "module.exports = {
             presets: ['@babel/preset-env', '@babel/preset-react']
           };" > babel.config.js
 
-          # Create jest.config.js
           echo "module.exports = {
             testEnvironment: 'jsdom',
             transform: {
@@ -46,7 +44,7 @@ jobs:
           };" > jest.config.js
 
       - name: Run Node.js tests
-        working-directory: ./frontend
+        working-directory: ./ui
         run: CI=false npm test
 
       #### ---- Java Tests ---- ####
@@ -56,33 +54,38 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Build and test Java code (Maven or Gradle)
-        working-directory: ./backend
+      - name: Build and test employee service
+        working-directory: ./employee
         run: |
           if [ -f "pom.xml" ]; then
             mvn clean install
           elif [ -f "build.gradle" ]; then
             ./gradlew build
           else
-            echo "No build tool found"
+            echo "No build tool found in employee"
             exit 1
           fi
 
-      #### ---- Check for Required Files ---- ####
-      - name: Ensure required files exist
+      - name: Build and test identity service
+        working-directory: ./identity
         run: |
-          required_files=(
-            "./frontend/src/App.test.js"
-            "./backend/src/test/java/com/example/AppTest.java"
-          )
+          if [ -f "pom.xml" ]; then
+            mvn clean install
+          elif [ -f "build.gradle" ]; then
+            ./gradlew build
+          else
+            echo "No build tool found in identity"
+            exit 1
+          fi
 
-          for file in "${required_files[@]}"; do
-            if [ ! -f "$file" ]; then
-              echo "❌ Missing required file: $file"
-              exit 1
-            fi
-          done
-
-            fi
-          done
-
+      - name: Build and test invoice service
+        working-directory: ./invoice
+        run: |
+          if [ -f "pom.xml" ]; then
+            mvn clean install
+          elif [ -f "build.gradle" ]; then
+            ./gradlew build
+          else
+            echo "No build tool found in invoice"
+            exit 1
+          fi
