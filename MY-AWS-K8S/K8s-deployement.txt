@@ -1,0 +1,42 @@
+k8s deployement files 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emp-deployment
+  namespace: prod
+  labels:
+    app: employee
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee
+  template:
+    metadata:
+      labels:
+        app: employee
+    spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      containers:
+      - name: employee-testing-container
+        image: employee-testing:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8012
+        env:
+        - name: ELASTICSEARCH_URL
+          value: http://172.31.43.44:9201
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://172.31.43.44:3306/invoicetest
+        volumeMounts:
+        - name: image-testing-volume
+          mountPath: /home/ubuntu/ems_testing_imag_bkp
+      volumes:
+      - name: image-testing-volume
+        persistentVolumeClaim:
+          claimName: prod-pvc
+======================
